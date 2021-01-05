@@ -1,0 +1,62 @@
+{
+  "name": "mkt-bot-assistant",
+  "version": "1.0.0",
+  "description": "FB Messenger bot to manage my US Stock Market portfolio",
+  "main": "app.js",
+  "engines": {
+    "node": "12.x"
+  },
+  "scripts": {
+    "start": "nodemon --exec babel-node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafmme/mkt-bot-assistant.git"
+  },
+  "keywords": [
+    "Bot",
+    "Messenger",
+    "Wit.ai"
+  ],
+  "author": "Timileyin Farayola",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafmme/mkt-bot-assistant/issues"
+  },
+  "homepage": "https://github.com/rafmme/mkt-bot-assistant#readme",
+  "dependencies": {
+    "apollo-server-express": "^2.19.1",
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "graphql": "^15.4.0",
+    "node-wit": "^6.0.0",
+    "pg": "^8.5.1",
+    "pg-hstore": "^2.3.3",
+    "pingmydyno": "^1.5.1",
+    "sequelize": "^6.3.5",
+    "twilio": "^3.54.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/node": "^7.12.10",
+    "@babel/register": "^7.12.10",
+    "chai": "^4.2.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-node": "^4.1.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.0",
+    "mocha": "^8.2.1",
+    "nodemon": "^2.0.6",
+    "prettier": "^2.2.1",
+    "sinon": "^9.2.2",
+    "supertest": "^6.0.1"
+  }
+}
