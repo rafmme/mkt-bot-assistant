@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 const { VERIFY_TOKEN, FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
 
+/**
+ * @description Route handler function that handles FB Messenger webhook verification
+ * @param {Object} req Express HTTP Request Object
+ * @param {Object} res Express HTTP Response Object
+ */
 const verifyWebhook = (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -16,9 +21,14 @@ const verifyWebhook = (req, res) => {
   }
 };
 
+/**
+ * @description function that handles sending messenger messeages to users
+ * @param {*} sender FB User's ID
+ * @param {String} text Text to send to FB User
+ */
 const sendTextMessage = (sender, text) => {
   const messageData = {
-    text: text,
+    text,
   };
 
   request(
@@ -45,16 +55,21 @@ const sendTextMessage = (sender, text) => {
   );
 };
 
+/**
+ * @description Route handler function that allows FB Messenger send Webhook events & users messages
+ * @param {Object} req Express HTTP Request Object
+ * @param {Object} res Express HTTP Response Object
+ */
 const postWebhook = (req, res) => {
   const messagingEvents = req.body.entry[0].messaging;
-  for (let i = 0; i < messagingEvents.length; i += 1) {
-    const event = req.body.entry[0].messaging[i];
+  messagingEvents.forEach((event) => {
     const sender = event.sender.id;
     if (event.message && event.message.text) {
       const { text } = event.message;
       sendTextMessage(sender, `${text}!`);
     }
-  }
+  });
+
   res.sendStatus(200);
 };
 
