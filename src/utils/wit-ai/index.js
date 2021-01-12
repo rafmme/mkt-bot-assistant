@@ -16,13 +16,21 @@ const wit = new Wit({
  * @param {*} sender
  */
 const processMessage = async (text, sender) => {
+  let err = false;
+
   try {
-    processResponse(await wit.message(text), sender);
+    return processResponse(await wit.message(text), sender);
   } catch (error) {
-    console.log(error);
+    if (error) {
+      err = true;
+    }
+
     console.error('Oops! Got an error from Wit: ', error.stack || error);
   } finally {
-    sendTextMessage(sender, `Sorry, I can't process your request now. My house is currently not in order`);
+    if (err === true) {
+      sendTextMessage(sender, `Sorry, I can't process your request now. My house is currently not in order`);
+    }
+    err = false;
   }
 };
 

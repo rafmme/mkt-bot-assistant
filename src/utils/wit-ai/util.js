@@ -91,15 +91,24 @@ const processResponse = ({ entities, intents, traits }, sender) => {
     case 'stock_news':
     case 'show_my_portfolio':
     case 'market_news':
+    case 'check_stock_price':
+    case 'create_portfolio':
+    case 'delete_portfolio':
+    case 'show_crypto_prices':
+    case 'show_crypto_holdings':
     case 'portfolio_news':
     case 'convert_currency':
     case 'check_crypto_coin':
-      sendTextMessage(sender, `Hi, this feature isn't available for now. We are currently worling on it. Please bear with us.`);
+      sendTextMessage(sender, `Hi, this feature ${intent} isn't available for now. We are currently worling on it. Please bear with us.`);
       break;
 
     default:
-      sendTextMessage(sender, `Sorry,  I don't recognize what you are trying to do`);
-      sendTextMessage(sender, `Check Portfolio? Check Stock Price? Check Crypto prices?`);
+      sendTextMessage(
+        sender,
+        `Sorry,  I don't understand ${intent} what you are trying to do.
+        Check Portfolio? Check Stock Price? Check Crypto prices?
+      `,
+      );
       break;
   }
 };
