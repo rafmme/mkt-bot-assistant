@@ -1,42 +1,4 @@
-import dotenv from 'dotenv';
-import request from 'request';
-
-dotenv.config();
-const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
-
-/**
- * @description function that handles sending messenger messeages to users
- * @param {*} sender FB User's ID
- * @param {String} text Text to send to FB User
- */
-const sendTextMessage = (sender, text) => {
-  const messageData = {
-    text,
-  };
-
-  request(
-    {
-      url: SEND_API,
-      qs: {
-        access_token: FB_PAGE_ACCESS_TOKEN,
-      },
-      method: 'POST',
-      json: {
-        recipient: {
-          id: sender,
-        },
-        message: messageData,
-      },
-    },
-    (error, response, body) => {
-      if (error) {
-        console.log('Error:', error);
-      } else if (response.body.error) {
-        console.log('Error: ', response.body.error);
-      }
-    },
-  );
-};
+import { sendTextMessage } from '../fb-webhook/util';
 
 /**
  * @description
@@ -106,11 +68,10 @@ const processResponse = ({ entities, intents, traits }, sender) => {
       sendTextMessage(
         sender,
         `Sorry,  I don't understand ${intent} what you are trying to do.
-        Check Portfolio? Check Stock Price? Check Crypto prices?
-      `,
+      Check Portfolio? Check Stock Price? Check Crypto prices?`,
       );
       break;
   }
 };
 
-export { analyzeTraits, analyzeIntent, processResponse, sendTextMessage };
+export { analyzeTraits, analyzeIntent, processResponse };
