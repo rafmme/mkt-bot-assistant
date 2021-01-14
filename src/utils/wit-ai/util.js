@@ -1,4 +1,5 @@
-import { sendTextMessage } from '../fb-webhook/util';
+import { sendAttachment, sendTextMessage } from '../fb-webhook/util';
+import { firstButtons, menuButtonTemplate, secondButtons } from '../fb-webhook/messenger_templates/button/menu';
 
 /**
  * @description
@@ -35,7 +36,7 @@ const analyzeIntent = (intent) => {
  * @param {*} param
  * @param {*} sender
  */
-const processResponse = ({ entities, intents, traits }, sender) => {
+const processResponse = async ({ entities, intents, traits }, sender) => {
   const intent = analyzeIntent(intents);
   const { trait, value } = analyzeTraits(traits);
 
@@ -61,15 +62,19 @@ const processResponse = ({ entities, intents, traits }, sender) => {
     case 'portfolio_news':
     case 'convert_currency':
     case 'check_crypto_coin':
-      sendTextMessage(sender, `Hi, this feature ${intent} isn't available for now. We are currently worling on it. Please bear with us.`);
+      sendTextMessage(sender, `Hi, this feature ${intent} isn't available for now.\nWe are currently worling on it. Please bear with us.`);
       break;
 
     default:
-      sendTextMessage(
-        sender,
-        `Sorry,  I don't understand ${intent} what you are trying to do.
-      Check Portfolio? Check Stock Price? Check Crypto prices?`,
-      );
+      await sendAttachment(sender, {
+        type: 'template',
+        templateObject: menuButtonTemplate(`Sorry, I don't understand ${intent} what you are trying to do.`, firstButtons),
+      });
+
+      await sendAttachment(sender, {
+        type: 'template',
+        templateObject: menuButtonTemplate('OR', secondButtons),
+      });
       break;
   }
 };

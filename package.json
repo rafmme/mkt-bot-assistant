@@ -45,7 +45,6 @@
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
     "pingmydyno": "^1.5.1",
-    "request": "^2.88.2",
     "sequelize": "^6.3.5",
     "twilio": "^3.54.1"
   },

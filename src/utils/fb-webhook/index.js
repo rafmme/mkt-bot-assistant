@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import processMessage from '../wit-ai';
-import { retrieveFBUserProfile } from './util';
+import { handlePostbackPayload } from './util';
 
 dotenv.config();
 const { VERIFY_TOKEN } = process.env;
@@ -29,18 +29,14 @@ const verifyWebhook = (req, res) => {
  */
 const postWebhook = (req, res) => {
   const messagingEvents = req.body.entry[0].messaging;
-  messagingEvents.forEach((event) => {
+  messagingEvents.forEach(async (event) => {
     const sender = event.sender.id;
 
     if (event.message && event.message.text) {
       const { text } = event.message;
       processMessage(text, sender);
-    } else if (event.postback && event.postback.payload === 'GET_STARTED_PAYLOAD') {
-      const { first_name: firstName } = retrieveFBUserProfile(sender);
-      const msg = `Hi ${firstName},
-      I am Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market`;
-
-      processMessage(msg, sender);
+    } else if (event.postback) {
+      handlePostbackPayload(sender, event.postback.payload);
     }
   });
 

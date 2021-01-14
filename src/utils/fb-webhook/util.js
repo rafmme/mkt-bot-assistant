@@ -1,5 +1,7 @@
+import axios from 'axios';
 import dotenv from 'dotenv';
-import request from 'request';
+import { firstButtons, menuButtonTemplate, secondButtons } from './messenger_templates/button/menu';
+// import processMessage from '../wit-ai';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -10,32 +12,24 @@ const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
  * @param {*} message
  * @returns
  */
-const makeHTTPRequestToGraphAPI = ({ url, qs, method, sender, key }, message) => {
-  let res;
-  request(
-    {
+const makeHTTPRequestToGraphAPI = async ({ url, qs, method, sender, key }, message) => {
+  try {
+    const response = await axios({
+      method,
       url,
-      qs,
-      method: method,
-      json: {
+      params: qs,
+      data: {
         recipient: {
           id: sender,
         },
         [key]: message,
       },
-    },
-    (error, response, body) => {
-      res = response.body;
-      if (error) {
-        console.log('Error:', error);
-      } else if (response.body.error) {
-        console.log('Error: ', response.body.error);
-      }
-    },
-  );
+    });
 
-  console.log(res);
-  return res;
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 /**
@@ -56,6 +50,23 @@ const createSenderAction = (sender) => {
   };
 
   return makeHTTPRequestToGraphAPI(data, messageData);
+};
+
+/**
+ * @description
+ * @param {*} sender
+ */
+const retrieveFBUserProfile = (sender) => {
+  const data = {
+    url: `https://graph.facebook.com/${sender}`,
+    qs: {
+      fields: 'first_name,last_name,profile_pic',
+      access_token: FB_PAGE_ACCESS_TOKEN,
+    },
+    method: 'GET',
+  };
+
+  return makeHTTPRequestToGraphAPI(data);
 };
 
 /**
@@ -85,18 +96,94 @@ const sendTextMessage = (sender, text) => {
 /**
  * @description
  * @param {*} sender
+ * @param {*} imageUrl
+ * @paramsß
  */
-const retrieveFBUserProfile = (sender) => {
+const sendAttachment = async (sender, { type, imageUrl, templateObject }) => {
+  let messageData;
+
+  switch (type) {
+    case 'image':
+      messageData = {
+        attachment: {
+          type,
+          payload: {
+            url: imageUrl,
+            is_reusable: true,
+          },
+        },
+      };
+      break;
+
+    case 'template':
+      messageData = {
+        attachment: templateObject,
+      };
+      break;
+
+    default:
+      break;
+  }
+
   const data = {
-    url: `https://graph.facebook.com/${sender}`,
+    url: SEND_API,
     qs: {
-      fields: 'first_name,last_name,profile_pic',
       access_token: FB_PAGE_ACCESS_TOKEN,
     },
-    method: 'GET',
+    method: 'POST',
+    sender,
+    key: 'message',
   };
 
-  makeHTTPRequestToGraphAPI(data);
+  createSenderAction(sender);
+  await makeHTTPRequestToGraphAPI(data, messageData);
 };
 
-export { sendTextMessage, makeHTTPRequestToGraphAPI, createSenderAction, retrieveFBUserProfile };
+/**
+ * @description
+ * @param {String} firstName
+ * @returns {String} msg
+ */
+const getStartedGreeting = async (sender) => {
+  const { first_name: firstName } = await retrieveFBUserProfile(sender);
+  const msg = firstName
+    ? `Hi ${firstName}, I am Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market`
+    : 'Hi there, I am Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market';
+
+  await sendAttachment(sender, {
+    type: 'template',
+    templateObject: menuButtonTemplate(msg, firstButtons),
+  });
+
+  await sendAttachment(sender, {
+    type: 'template',
+    templateObject: menuButtonTemplate('OR', secondButtons),
+  });
+};
+
+/**
+ * @description
+ * @param {*} sender
+ * @param {*} postbackPayload
+ */
+const handlePostbackPayload = (sender, postbackPayload) => {
+  switch (postbackPayload) {
+    case 'GET_STARTED_PAYLOAD':
+      getStartedGreeting(sender);
+      break;
+    default:
+      // processMessage('Hey', sender);
+      break;
+  }
+};
+
+// eslint-disable-next-line prettier/prettier
+export {
+  sendTextMessage,
+  makeHTTPRequestToGraphAPI,
+  createSenderAction,
+  retrieveFBUserProfile,
+  sendAttachment,
+  getStartedGreeting,
+  handlePostbackPayload,
+};

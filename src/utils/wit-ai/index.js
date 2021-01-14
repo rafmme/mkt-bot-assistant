@@ -16,11 +16,11 @@ const wit = new Wit({
  * @param {*} text
  * @param {*} sender
  */
-const processMessage = async (text, sender) => {
+export default async (text, sender) => {
   let err = false;
 
   try {
-    return processResponse(await wit.message(text), sender);
+    return await processResponse(await wit.message(text), sender);
   } catch (error) {
     if (error) {
       err = true;
@@ -34,5 +34,3 @@ const processMessage = async (text, sender) => {
     err = false;
   }
 };
-
-export default processMessage;
