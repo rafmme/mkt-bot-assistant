@@ -1,42 +1,5 @@
-import dotenv from 'dotenv';
-import request from 'request';
-
-dotenv.config();
-const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
-
-/**
- * @description function that handles sending messenger messeages to users
- * @param {*} sender FB User's ID
- * @param {String} text Text to send to FB User
- */
-const sendTextMessage = (sender, text) => {
-  const messageData = {
-    text,
-  };
-
-  request(
-    {
-      url: SEND_API,
-      qs: {
-        access_token: FB_PAGE_ACCESS_TOKEN,
-      },
-      method: 'POST',
-      json: {
-        recipient: {
-          id: sender,
-        },
-        message: messageData,
-      },
-    },
-    (error, response, body) => {
-      if (error) {
-        console.log('Error:', error);
-      } else if (response.body.error) {
-        console.log('Error: ', response.body.error);
-      }
-    },
-  );
-};
+import { sendAttachment, sendTextMessage } from '../fb-webhook/util';
+import { firstButtons, menuButtonTemplate, secondButtons } from '../fb-webhook/messenger_templates/button/menu';
 
 /**
  * @description
@@ -73,7 +36,7 @@ const analyzeIntent = (intent) => {
  * @param {*} param
  * @param {*} sender
  */
-const processResponse = ({ entities, intents, traits }, sender) => {
+const processResponse = async ({ entities, intents, traits }, sender) => {
   const intent = analyzeIntent(intents);
   const { trait, value } = analyzeTraits(traits);
 
@@ -99,18 +62,21 @@ const processResponse = ({ entities, intents, traits }, sender) => {
     case 'portfolio_news':
     case 'convert_currency':
     case 'check_crypto_coin':
-      sendTextMessage(sender, `Hi, this feature ${intent} isn't available for now. We are currently worling on it. Please bear with us.`);
+      sendTextMessage(sender, `Hi, this feature ${intent} isn't available for now.\nWe are currently worling on it. Please bear with us.`);
       break;
 
     default:
-      sendTextMessage(
-        sender,
-        `Sorry,  I don't understand ${intent} what you are trying to do.
-        Check Portfolio? Check Stock Price? Check Crypto prices?
-      `,
-      );
+      await sendAttachment(sender, {
+        type: 'template',
+        templateObject: menuButtonTemplate(`Sorry, I don't understand ${intent} what you are trying to do.`, firstButtons),
+      });
+
+      await sendAttachment(sender, {
+        type: 'template',
+        templateObject: menuButtonTemplate('OR', secondButtons),
+      });
       break;
   }
 };
 
-export { analyzeTraits, analyzeIntent, processResponse, sendTextMessage };
+export { analyzeTraits, analyzeIntent, processResponse };

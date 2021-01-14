@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import processMessage from '../wit-ai';
+import { handlePostbackPayload } from './util';
 
 dotenv.config();
 const { VERIFY_TOKEN } = process.env;
@@ -28,12 +29,14 @@ const verifyWebhook = (req, res) => {
  */
 const postWebhook = (req, res) => {
   const messagingEvents = req.body.entry[0].messaging;
-  messagingEvents.forEach((event) => {
+  messagingEvents.forEach(async (event) => {
     const sender = event.sender.id;
 
     if (event.message && event.message.text) {
       const { text } = event.message;
       processMessage(text, sender);
+    } else if (event.postback) {
+      handlePostbackPayload(sender, event.postback.payload);
     }
   });
 
