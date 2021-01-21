@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import morgan from 'morgan';
 import pingmydyno from 'pingmydyno';
-import { verifyWebhook, postWebhook } from './utils/fb-webhook';
+import WebhookRouteHandler from './fb_messenger';
 
 dotenv.config();
 
@@ -22,8 +22,8 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/webhook', verifyWebhook);
-app.post('/webhook', postWebhook);
+app.get('/webhook', WebhookRouteHandler.VerifyWebhook);
+app.post('/webhook', WebhookRouteHandler.PostWebhook);
 
 if (!module.parent) {
   app.listen(PORT, () => {

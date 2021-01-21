@@ -8,11 +8,11 @@
   },
   "scripts": {
     "build": "npm run clean && npm run build-server",
-    "build-server": "babel -d dist src -s",
+    "build-server": "babel -d dist server -s",
     "clean": "rm -rf dist && mkdir dist",
-    "dev": "nodemon --exec babel-node src/app.js",
+    "dev": "nodemon --exec babel-node server/src/app.js",
     "postinstall": "npm run build",
-    "start": "node dist/app.js",
+    "start": "node dist/src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
