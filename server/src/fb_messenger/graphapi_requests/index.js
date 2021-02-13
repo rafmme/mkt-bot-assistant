@@ -171,8 +171,8 @@ export default class FBGraphAPIRequest {
   static async GetStartedGreeting(sender) {
     const { first_name: firstName } = await this.RetrieveFBUserProfile(sender);
     const text = firstName
-      ? `Hi ${firstName}, I am Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market`
-      : 'Hi there, I am Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market';
+      ? `Hi ${firstName}, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market`
+      : 'Hi there, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market';
 
     await this.CreateMessengerButtonOptions(sender, text, menuButtons);
   }
