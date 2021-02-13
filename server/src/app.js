@@ -11,7 +11,7 @@ import WebhookRouteHandler from './fb_messenger';
 
 dotenv.config();
 
-const { PORT: APP_PORT, HEROKU_APP_URL } = process.env;
+const { PORT: APP_PORT, HEROKU_APP_URL, PING_DYNO } = process.env;
 const PORT = Number.parseInt(APP_PORT, 10) || 3000;
 const app = express();
 
@@ -45,7 +45,13 @@ app.post('/webhook', WebhookRouteHandler.PostWebhook);
 
 if (!module.parent) {
   app.listen(PORT, () => {
-    pingmydyno(`${HEROKU_APP_URL}`);
+    if (PING_DYNO && (PING_DYNO === 'yes' || PING_DYNO === 'allow' || PING_DYNO === 'true')) {
+      pingmydyno(`${HEROKU_APP_URL}`, {
+        onSuccess: () => {
+          console.log('PINGED');
+        },
+      });
+    }
     console.log(`App is live on ${PORT}`);
   });
 }
