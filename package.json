@@ -9,12 +9,12 @@
   },
   "scripts": {
     "build": "npm run clean && npm run build-server",
-    "build-server": "babel -d dist server -s",
+    "build-server": "babel -d dist server --ignore 'node_modules','server/public','server/test' -s",
     "clean": "rm -rf dist && mkdir dist",
     "dev": "nodemon --exec babel-node server/src/app.js",
     "postinstall": "npm run build",
     "start": "node dist/src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cross-env NODE_ENV=test mocha --require @babel/register server/test/**/*.spec.js --exit"
   },
   "repository": {
     "type": "git",
@@ -48,6 +48,7 @@
     "pingmydyno": "^1.5.1",
     "puppeteer": "^5.5.0",
     "puppeteer-core": "^5.5.0",
+    "redis": "^3.0.2",
     "sequelize": "^6.3.5",
     "twilio": "^3.54.1"
   },

@@ -1,9 +1,5 @@
 # Description
 
-# Closes issue(s)
-
-# How to test / repro
-
 # Screenshots
 
 # Changes include
@@ -14,5 +10,4 @@
 # Checklist
 - [ ] I have tested this code
 - [ ] I have updated the Readme
-
-# Other comments
+- [ ] 
