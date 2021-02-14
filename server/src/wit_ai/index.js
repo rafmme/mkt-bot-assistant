@@ -45,7 +45,7 @@ export default class WitAIHelper {
       console.error('Oops! Got an error from Wit: ', error.stack || error);
     } finally {
       if (err === true) {
-        await FBGraphAPIRequest.SendTextMessage(sender, `Sorry, I can't process your request now. My house is currently not in order`);
+        await FBGraphAPIRequest.SendTextMessage(sender, `Sorry 😔, I can't process your request now. My home 💻 is currently not in order`);
       }
       err = false;
     }
@@ -98,9 +98,9 @@ export default class WitAIHelper {
     switch (intent) {
       case 'greetings':
         if (trait === 'wit$greetings') {
-          await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, 'Hi, how can I be of help?', menuButtons);
+          await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, 'Hi 👋🏾, how can I be of help? 😎', menuButtons);
         } else if (trait === 'wit$sentiment') {
-          const response = value === 'positive' ? 'Glad I could be of help.' : 'Hmm.';
+          const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);
         }
         break;
@@ -117,12 +117,12 @@ export default class WitAIHelper {
       case 'portfolio_news':
       case 'convert_currency':
       case 'check_crypto_coin':
-        await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available for now.\nWe are currently worling on it. Please bear with us.`);
+        await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available yet, we are still working 👷🏾‍♀️ on it.\nPlease bear with us.`);
         break;
 
       default:
         // eslint-disable-next-line no-case-declarations
-        const text = `Sorry, I don't understand ${intent} what you are trying to do.`;
+        const text = `Sorry 😕, I don't understand ${intent} what you are trying to do.`;
         await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, text, menuButtons);
         break;
     }
