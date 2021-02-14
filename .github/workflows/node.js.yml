@@ -28,10 +28,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
-      - run: npm ci
+          node-version: '14.x'
+      - run: npm install
       # run the migration in the test database
-      - run: npm run db:push
+      # - run: npm run db:push
       - run: npm run test
   deploy:
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
+      - run: npm install
       - uses: akhileshns/heroku-deploy@v3.4.6
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
