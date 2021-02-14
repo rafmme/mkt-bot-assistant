@@ -98,11 +98,7 @@ export default class WitAIHelper {
     switch (intent) {
       case 'greetings':
         if (trait === 'wit$greetings') {
-<<<<<<< HEAD
           await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, 'Hi 👋🏾, how can I be of help? 😎', menuButtons);
-=======
-          await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, 'Hi 👋🏾, how can I be of help?', menuButtons);
->>>>>>> Add emojis to the bot response
         } else if (trait === 'wit$sentiment') {
           const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);

@@ -2,5 +2,6 @@
   "plugins": ["@babel/plugin-transform-runtime"],
   "presets": [
     "@babel/preset-env"
-  ]
+  ],
+  "ignore": ["node_modules", "server/public", "server/test"]
 }
