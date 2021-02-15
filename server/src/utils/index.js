@@ -65,4 +65,23 @@ export default class Util {
 
     return list;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {*} entities
+   */
+  static FormatTickers(entities) {
+    let tickers = 'TICKERS: ';
+    if (entities.length < 1) {
+      return;
+    }
+
+    for (let i = 0; i < entities.length; i += 1) {
+      const { term, label } = entities[i];
+      tickers += `${label}(${term.split('TICKER:')[1]}) ||`;
+    }
+
+    return tickers;
+  }
 }

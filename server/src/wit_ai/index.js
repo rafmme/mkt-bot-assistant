@@ -3,7 +3,7 @@ import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import menuButtons from '../fb_messenger/messenger_buttons/menu';
-import StockAPI from '../stock_apis';
+import MarketNewsButtons from '../fb_messenger/messenger_buttons/marketNewsButtons';
 
 /**
  * @class WitAIHelper
@@ -38,7 +38,7 @@ export default class WitAIHelper {
     const wit = this.InitializeWitAIObject();
 
     try {
-      await this.ProcessResponse(await wit.message(text), sender);
+      await this.ProcessResponse(await wit.message(text), sender, text);
     } catch (error) {
       if (error) {
         err = true;
@@ -92,8 +92,9 @@ export default class WitAIHelper {
    * @description
    * @param {*} param
    * @param {*} sender
+   * @param {*} text
    */
-  static async ProcessResponse({ entities, intents, traits }, sender) {
+  static async ProcessResponse({ entities, intents, traits }, sender, text) {
     const intent = this.AnalyzeIntent(intents);
     const { trait, value } = this.AnalyzeTraits(traits);
 
@@ -121,17 +122,12 @@ export default class WitAIHelper {
         await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available yet, we are still working 👷🏾‍♀️ on it.\nPlease bear with us.`);
         break;
       case 'market_news':
-        const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
-
-        for (let i = 0; i < news.length; i += 10) {
-          const newsList = news.slice(i, i + 10);
-          FBGraphAPIRequest.CreateMessengerListOptions(sender, newsList);
-        }
+        FBGraphAPIRequest.CreateMessengerButtonOptions(sender, `How'd you like me display the Market news?`, MarketNewsButtons);
         break;
 
       default:
-        const text = `Sorry 😕, I don't understand ${intent} what you are trying to do.`;
-        await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, text, menuButtons);
+        const msg = `Sorry 😕, I don't understand ${intent} what you are trying to do.`;
+        await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, msg, menuButtons);
         break;
     }
   }
