@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import morgan from 'morgan';
+import path from 'path';
 import pingmydyno from 'pingmydyno';
 import context from './graphql/context';
 import resolvers from './graphql/resolvers';
@@ -18,6 +19,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use('/static', express.static(path.resolve('./server/public')));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
 const apolloServer = new ApolloServer({
