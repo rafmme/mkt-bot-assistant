@@ -1,7 +1,9 @@
+/* eslint-disable no-case-declarations */
 import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import menuButtons from '../fb_messenger/messenger_buttons/menu';
+import StockAPI from '../stock_apis';
 
 /**
  * @class WitAIHelper
@@ -108,7 +110,6 @@ export default class WitAIHelper {
       case 'check_stock':
       case 'stock_news':
       case 'show_my_portfolio':
-      case 'market_news':
       case 'check_stock_price':
       case 'create_portfolio':
       case 'delete_portfolio':
@@ -119,9 +120,16 @@ export default class WitAIHelper {
       case 'check_crypto_coin':
         await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available yet, we are still working 👷🏾‍♀️ on it.\nPlease bear with us.`);
         break;
+      case 'market_news':
+        const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+
+        for (let i = 0; i < news.length; i += 10) {
+          const newsList = news.slice(i, i + 10);
+          FBGraphAPIRequest.CreateMessengerListOptions(sender, newsList);
+        }
+        break;
 
       default:
-        // eslint-disable-next-line no-case-declarations
         const text = `Sorry 😕, I don't understand ${intent} what you are trying to do.`;
         await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, text, menuButtons);
         break;

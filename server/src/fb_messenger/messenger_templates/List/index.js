@@ -7,15 +7,12 @@ import MessengerTemplate from '../MessengerTemplate';
 export default class ListTemplate extends MessengerTemplate {
   /**
    * @constructor
-   * @param {*} listType
+
    * @param {*} elements
-   * @param {*} buttons
    */
-  constructor(listType, elements, buttons) {
+  constructor(elements) {
     super();
-    this.payload.template_type = 'list';
-    this.payload.top_element_style = listType === 'compact' ? listType : undefined;
+    this.payload.template_type = 'generic';
     this.payload.elements = elements;
-    this.payload.buttons = buttons;
   }
 }

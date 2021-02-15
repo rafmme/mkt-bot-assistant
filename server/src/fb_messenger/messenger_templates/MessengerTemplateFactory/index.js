@@ -22,7 +22,7 @@ export default class MessengerTemplateFactory {
         break;
 
       case 'list':
-        template = new ListTemplate(listType, elements, buttons);
+        template = new ListTemplate(elements);
         break;
 
       case 'media':

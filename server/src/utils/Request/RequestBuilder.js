@@ -35,6 +35,16 @@ export default class RequestBuilder {
 
   /**
    * @method
+   * @param {*} headers
+   * @returns
+   */
+  headers(headers) {
+    this.request.headers = headers;
+    return this;
+  }
+
+  /**
+   * @method
    * @param {*} qs
    * @returns
    */

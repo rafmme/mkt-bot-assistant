@@ -1,8 +1,10 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable no-await-in-loop */
 import dotenv from 'dotenv';
 import RequestBuilder from '../../utils/Request/RequestBuilder';
 import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFactory';
 import menuButtons from '../messenger_buttons/menu';
+import StockAPI from '../../stock_apis';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -187,8 +189,36 @@ export default class FBGraphAPIRequest {
       case 'GET_STARTED_PAYLOAD':
         this.GetStartedGreeting(sender);
         break;
+      case 'MARKET_NEWS':
+        const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+
+        for (let i = 0; i < news.length; i += 10) {
+          const newsList = news.slice(i, i + 10);
+          this.CreateMessengerListOptions(sender, newsList);
+        }
+        break;
       default:
         break;
     }
+  }
+
+  /**
+   * @description
+   * @param {*} sender
+   * @param {*} elements
+   */
+  static async CreateMessengerListOptions(sender, elements) {
+    if (elements.length === 0) {
+      throw new Error(`You can't send an empty list`);
+    }
+
+    if (elements.length === undefined) {
+      throw new TypeError('It requires an array');
+    }
+
+    await this.SendAttachment(sender, {
+      type: 'template',
+      templateObject: MessengerTemplateFactory.CreateTemplate({ type: 'list', elements }),
+    });
   }
 }

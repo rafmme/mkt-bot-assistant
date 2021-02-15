@@ -15,6 +15,7 @@ export default class Request {
     this.params = {};
     this.method = '';
     this.data = {};
+    this.headers = {};
   }
 
   /**
