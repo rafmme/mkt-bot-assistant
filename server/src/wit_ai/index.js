@@ -3,7 +3,6 @@ import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import menuButtons from '../fb_messenger/messenger_buttons/menu';
-import MarketNewsButtons from '../fb_messenger/messenger_buttons/marketNewsButtons';
 
 /**
  * @class WitAIHelper
@@ -122,7 +121,7 @@ export default class WitAIHelper {
         await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available yet, we are still working 👷🏾‍♀️ on it.\nPlease bear with us.`);
         break;
       case 'market_news':
-        FBGraphAPIRequest.CreateMessengerButtonOptions(sender, `How'd you like me display the Market news?`, MarketNewsButtons);
+        FBGraphAPIRequest.fetchNews(sender);
         break;
 
       default:

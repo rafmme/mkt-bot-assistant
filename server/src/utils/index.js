@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 import axios from 'axios';
 import dotenv from 'dotenv';
-import MessengerButtonFactory from '../fb_messenger/messenger_buttons/ButtonFactory';
+import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
 
 dotenv.config();
 
@@ -47,7 +47,7 @@ export default class Util {
     }
 
     for (let i = 0; i < response.length; i += 1) {
-      const { title, link: url, summary: subtitle, main_image: mainImg } = response[i];
+      const { uuid: newsId, title, link: url, summary: subtitle, main_image: mainImg } = response[i];
       const imageURL = mainImg !== null ? mainImg.resolutions[1].url : `${HEROKU_APP_URL}/static/screenshots/mart_image.jpeg`;
 
       list.push({
@@ -59,7 +59,7 @@ export default class Util {
           url,
           webview_height_ratio: 'full',
         },
-        buttons: [MessengerButtonFactory.CreateButton({ type: 'web_url', url, title: 'View' })],
+        buttons: createNewsOptionButtons(newsId, url),
       });
     }
 
@@ -77,9 +77,15 @@ export default class Util {
       return;
     }
 
+    if (entities.length === 1) {
+      const { term, label } = entities[0];
+      tickers += `${label}<${term.split('TICKER:')[1]}>`;
+      return tickers;
+    }
+
     for (let i = 0; i < entities.length; i += 1) {
       const { term, label } = entities[i];
-      tickers += `${label}(${term.split('TICKER:')[1]}) ||`;
+      tickers = i + 1 === entities.length ? `${label}<${term.split('TICKER:')[1]}>` : `${label}<${term.split('TICKER:')[1]}>; `;
     }
 
     return tickers;

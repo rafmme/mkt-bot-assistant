@@ -12,9 +12,8 @@ export default class StockAPI {
   /**
    * @static
    * @description
-   * @param format
    */
-  static async GetGeneralMarketNewsFromYahooFinance(format) {
+  static async GetGeneralMarketNewsFromYahooFinance() {
     const { X_RAPIDAPI_KEY, X_RAPIDAPI_HOST } = process.env;
     const response = await new RequestBuilder()
       .withURL('https://apidojo-yahoo-finance-v1.p.rapidapi.com/news/list')
@@ -35,10 +34,6 @@ export default class StockAPI {
       items: { result },
     } = response;
 
-    if (format === 'preview') {
-      return Util.convertAPIResponseToMessengerList(result);
-    }
-
-    return result;
+    return Util.convertAPIResponseToMessengerList(result);
   }
 }

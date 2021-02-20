@@ -5,7 +5,7 @@ import RequestBuilder from '../../utils/Request/RequestBuilder';
 import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFactory';
 import menuButtons from '../messenger_buttons/menu';
 import StockAPI from '../../stock_apis';
-import MarketNewsButtons from '../messenger_buttons/marketNewsButtons';
+import MarketNewsButtons from '../messenger_buttons/newsButtons';
 import Util from '../../utils';
 
 dotenv.config();
@@ -187,26 +187,20 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
-    switch (postbackPayload) {
+    const newsId = postbackPayload.split('|')[1];
+
+    switch (postbackPayload.split('|')[0]) {
       case 'GET_STARTED_PAYLOAD':
         this.GetStartedGreeting(sender);
         break;
       case 'MARKET_NEWS':
-        this.CreateMessengerButtonOptions(sender, `How'd you like me display the Market news?`, MarketNewsButtons);
+        this.fetchNews(sender);
         break;
       case 'SHOW_MARKET_NEWS_CONTENT':
-        this.SendMarketNews(sender);
+        this.SendNews(sender, newsId);
         break;
       case 'SHOW_MARKET_NEWS_SUMMARY':
-        this.SendMarketNews(sender, 'summary');
-        break;
-      case 'SHOW_MARKET_NEWS_PREVIEW':
-        const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance('preview');
-
-        for (let i = 0; i < news.length; i += 10) {
-          const newsList = news.slice(i, i + 10);
-          this.CreateMessengerListOptions(sender, newsList);
-        }
+        this.SendNews(sender, newsId);
         break;
       default:
         break;
@@ -238,21 +232,37 @@ export default class FBGraphAPIRequest {
    * @param {*} sender
    * @param {*} choice
    */
-  static async SendMarketNews(sender, choice) {
-    const result = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+  static async SendNews(sender, choice) {
+    await this.SendTextMessage(sender, choice);
+
+    /* const result = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
     result.forEach(async (element) => {
       const { title, link, content, summary, entities } = element;
       const tickers = Util.FormatTickers(entities);
-      let news = choice === 'summary' ? `${title.toUpperCase()}\n\n${summary}\n\nLink: ${link}` : `${title.toUpperCase()}\n\n${content.replace(/<[^>]+>/g, '')}`;
+      let news = choice === 'summary' ? `\n${title.toUpperCase()}\n\n${summary}\n\n${link}\n` : `\n${title.toUpperCase()}\n\n${content.replace(/<[^>]+>/g, '')}\n`;
 
       if (tickers) {
         news =
           choice === 'summary'
-            ? `${title.toUpperCase()}\n\n${tickers}\n\n${summary}\n\nLink: ${link}`
-            : `${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}`;
+            ? `\n${title.toUpperCase()}\n\n${tickers}\n\n${summary}\n\n${link}\n`
+            : `\n${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}\n`;
       }
 
       await this.SendTextMessage(sender, news);
-    });
+    }); */
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {*} newsType
+   */
+  static async fetchNews(sender, newsType) {
+    const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+
+    for (let i = 0; i < news.length; i += 10) {
+      const newsList = news.slice(i, i + 10);
+      this.CreateMessengerListOptions(sender, newsList);
+    }
   }
 }
