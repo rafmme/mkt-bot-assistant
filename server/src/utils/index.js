@@ -90,4 +90,18 @@ export default class Util {
 
     return tickers;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {*} newsList
+   * @param {*} newsId
+   */
+  static FindNewsItem(newsList, newsId) {
+    for (let index = 0; index < newsList.length; index += 1) {
+      if (newsList[index].uuid === newsId) {
+        return newsList[index];
+      }
+    }
+  }
 }

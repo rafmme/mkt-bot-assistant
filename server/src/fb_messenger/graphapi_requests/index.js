@@ -7,6 +7,7 @@ import menuButtons from '../messenger_buttons/menu';
 import StockAPI from '../../stock_apis';
 import MarketNewsButtons from '../messenger_buttons/newsButtons';
 import Util from '../../utils';
+import RedisCache from '../../cache/redis';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -197,10 +198,10 @@ export default class FBGraphAPIRequest {
         this.fetchNews(sender);
         break;
       case 'SHOW_MARKET_NEWS_CONTENT':
-        this.SendNews(sender, newsId);
+        this.SendNews(sender, 'full', newsId);
         break;
       case 'SHOW_MARKET_NEWS_SUMMARY':
-        this.SendNews(sender, newsId);
+        this.SendNews(sender, 'summary', newsId);
         break;
       default:
         break;
@@ -231,13 +232,21 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {*} sender
    * @param {*} choice
+   * @param {*} newsId
    */
-  static async SendNews(sender, choice) {
-    await this.SendTextMessage(sender, choice);
+  static async SendNews(sender, choice, newsId) {
+    const newsList = await RedisCache.GetItem('generalnews');
+    const marketNews = newsList ? JSON.parse(newsList) : null;
 
-    /* const result = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
-    result.forEach(async (element) => {
-      const { title, link, content, summary, entities } = element;
+    if (marketNews === null) {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+      return;
+    }
+
+    const newsItem = Util.FindNewsItem(marketNews, newsId);
+
+    if (newsItem) {
+      const { title, link, content, summary, entities } = newsItem;
       const tickers = Util.FormatTickers(entities);
       let news = choice === 'summary' ? `\n${title.toUpperCase()}\n\n${summary}\n\n${link}\n` : `\n${title.toUpperCase()}\n\n${content.replace(/<[^>]+>/g, '')}\n`;
 
@@ -249,7 +258,9 @@ export default class FBGraphAPIRequest {
       }
 
       await this.SendTextMessage(sender, news);
-    }); */
+    } else {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+    }
   }
 
   /**
@@ -258,10 +269,17 @@ export default class FBGraphAPIRequest {
    * @param {*} newsType
    */
   static async fetchNews(sender, newsType) {
-    const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+    const news = await RedisCache.GetItem('generalnews');
+    let marketNews = news ? JSON.parse(news) : null;
 
-    for (let i = 0; i < news.length; i += 10) {
-      const newsList = news.slice(i, i + 10);
+    if (marketNews === null) {
+      marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+      await RedisCache.SetItem('generalnews', JSON.stringify(marketNews), 7200);
+      console.log('not from cache');
+    }
+
+    for (let i = 0; i < marketNews.length; i += 10) {
+      const newsList = marketNews.slice(i, i + 10);
       this.CreateMessengerListOptions(sender, newsList);
     }
   }

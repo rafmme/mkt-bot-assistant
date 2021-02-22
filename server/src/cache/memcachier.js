@@ -50,7 +50,9 @@ export default class MemCachier {
   static async GetItem(key) {
     try {
       const { value } = await this.GetInstance().memCachierClient.get(key);
-      return value.toString();
+
+      const item = value ? value.toString() : value;
+      return item;
     } catch (error) {
       console.error(error);
     }
@@ -67,6 +69,7 @@ export default class MemCachier {
   static async SetItem(key, value, ttl) {
     try {
       const result = await this.GetInstance().memCachierClient.set(key, value, { expires: ttl });
+
       return result;
     } catch (error) {
       console.error(error);
@@ -82,7 +85,9 @@ export default class MemCachier {
   static async GetHashItem(key) {
     try {
       const { value } = await this.GetInstance().memCachierClient.get(key);
-      return JSON.parse(value.toString());
+
+      const item = value ? JSON.parse(value.toString()) : value;
+      return item;
     } catch (error) {
       console.error(error);
     }
@@ -100,6 +105,22 @@ export default class MemCachier {
     try {
       const str = JSON.stringify(value);
       const result = await this.GetInstance().memCachierClient.set(key, str, { expires: ttl });
+
+      return result;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} key
+   * @returns {Boolean} result
+   */
+  static async DeleteItem(key) {
+    try {
+      const result = await this.GetInstance().memCachierClient.delete(key);
 
       return result;
     } catch (error) {

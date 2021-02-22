@@ -32,6 +32,7 @@ export default class RedisCache {
     this.hmsetAsync = promisify(this.redisClient.hmset).bind(this.redisClient);
     this.hgetallAsync = promisify(this.redisClient.hgetall).bind(this.redisClient);
     this.expire = promisify(this.redisClient.expire).bind(this.redisClient);
+    this.del = promisify(this.redisClient.del).bind(this.redisClient);
 
     this.redisClient.on('error', (err) => {
       console.error(err);
@@ -59,6 +60,7 @@ export default class RedisCache {
   static async GetItem(key) {
     try {
       const item = await this.GetInstance().getAsync(key);
+
       return item;
     } catch (error) {
       console.error(error);
@@ -91,6 +93,7 @@ export default class RedisCache {
   static async GetHashItem(key) {
     try {
       const item = await this.GetInstance().hgetallAsync(key);
+
       return item;
     } catch (error) {
       console.error(error);
@@ -109,6 +112,22 @@ export default class RedisCache {
     try {
       await this.GetInstance().hmsetAsync(key, value);
       await this.GetInstance().expire(key, ttl);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} key
+   * @returns {Boolean} result
+   */
+  static async DeleteItem(key) {
+    try {
+      const result = await this.GetInstance().del(key);
+
+      return result;
     } catch (error) {
       console.error(error);
     }
