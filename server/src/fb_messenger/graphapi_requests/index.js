@@ -5,8 +5,8 @@ import RequestBuilder from '../../utils/Request/RequestBuilder';
 import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFactory';
 import menuButtons from '../messenger_buttons/menu';
 import StockAPI from '../../stock_apis';
-import MarketNewsButtons from '../messenger_buttons/marketNewsButtons';
 import Util from '../../utils';
+import MemCachier from '../../cache/memcachier';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -187,26 +187,20 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
-    switch (postbackPayload) {
+    const newsId = postbackPayload.split('|')[1];
+
+    switch (postbackPayload.split('|')[0]) {
       case 'GET_STARTED_PAYLOAD':
         this.GetStartedGreeting(sender);
         break;
       case 'MARKET_NEWS':
-        this.CreateMessengerButtonOptions(sender, `How'd you like me display the Market news?`, MarketNewsButtons);
+        this.fetchNews(sender);
         break;
       case 'SHOW_MARKET_NEWS_CONTENT':
-        this.SendMarketNews(sender);
+        this.SendNews(sender, 'full', newsId);
         break;
       case 'SHOW_MARKET_NEWS_SUMMARY':
-        this.SendMarketNews(sender, 'summary');
-        break;
-      case 'SHOW_MARKET_NEWS_PREVIEW':
-        const news = await StockAPI.GetGeneralMarketNewsFromYahooFinance('preview');
-
-        for (let i = 0; i < news.length; i += 10) {
-          const newsList = news.slice(i, i + 10);
-          this.CreateMessengerListOptions(sender, newsList);
-        }
+        this.SendNews(sender, 'summary', newsId);
         break;
       default:
         break;
@@ -237,22 +231,60 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {*} sender
    * @param {*} choice
+   * @param {*} newsId
    */
-  static async SendMarketNews(sender, choice) {
-    const result = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
-    result.forEach(async (element) => {
-      const { title, link, content, summary, entities } = element;
+  static async SendNews(sender, choice, newsId) {
+    const marketNews = await MemCachier.GetHashItem('generalnews');
+
+    if (!marketNews) {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+      return;
+    }
+
+    const newsItem = Util.FindNewsItem(marketNews, newsId);
+
+    if (newsItem) {
+      const { title, link, content, summary, entities } = newsItem;
       const tickers = Util.FormatTickers(entities);
-      let news = choice === 'summary' ? `${title.toUpperCase()}\n\n${summary}\n\nLink: ${link}` : `${title.toUpperCase()}\n\n${content.replace(/<[^>]+>/g, '')}`;
+      let news = choice === 'summary' ? `${title.toUpperCase()}\n\n${summary}\n\n${link}` : `${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}`;
 
       if (tickers) {
         news =
-          choice === 'summary'
-            ? `${title.toUpperCase()}\n\n${tickers}\n\n${summary}\n\nLink: ${link}`
-            : `${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}`;
+          choice === 'summary' ? `${title.toUpperCase()}\n\n${tickers}\n\n${summary}\n\n${link}` : `${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}`;
+      }
+
+      if (choice === 'full') {
+        for (let index = 0; index < news.length; index += 2000) {
+          if (index === 0) {
+            await this.SendTextMessage(sender, news.slice(0, 2000));
+          } else {
+            await this.SendTextMessage(sender, news.slice(index, index + 2001));
+          }
+        }
       }
 
       await this.SendTextMessage(sender, news);
-    });
+    } else {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+    }
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {*} newsType
+   */
+  static async fetchNews(sender, newsType) {
+    let marketNews = await MemCachier.GetHashItem('generalnews');
+
+    if (!marketNews) {
+      marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+    }
+
+    const news = Util.convertAPIResponseToMessengerList(marketNews);
+    for (let i = 0; i < news.length; i += 10) {
+      const newsList = news.slice(i, i + 10);
+      this.CreateMessengerListOptions(sender, newsList);
+    }
   }
 }

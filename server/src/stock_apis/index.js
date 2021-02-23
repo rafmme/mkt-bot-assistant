@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import Util from '../utils';
+import MemCachier from '../cache/memcachier';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
@@ -12,9 +12,8 @@ export default class StockAPI {
   /**
    * @static
    * @description
-   * @param format
    */
-  static async GetGeneralMarketNewsFromYahooFinance(format) {
+  static async GetGeneralMarketNewsFromYahooFinance() {
     const { X_RAPIDAPI_KEY, X_RAPIDAPI_HOST } = process.env;
     const response = await new RequestBuilder()
       .withURL('https://apidojo-yahoo-finance-v1.p.rapidapi.com/news/list')
@@ -35,10 +34,7 @@ export default class StockAPI {
       items: { result },
     } = response;
 
-    if (format === 'preview') {
-      return Util.convertAPIResponseToMessengerList(result);
-    }
-
+    await MemCachier.SetHashItem('generalnews', result, 3600 * 12);
     return result;
   }
 }
