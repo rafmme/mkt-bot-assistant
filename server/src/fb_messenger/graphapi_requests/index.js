@@ -5,9 +5,8 @@ import RequestBuilder from '../../utils/Request/RequestBuilder';
 import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFactory';
 import menuButtons from '../messenger_buttons/menu';
 import StockAPI from '../../stock_apis';
-import MarketNewsButtons from '../messenger_buttons/newsButtons';
 import Util from '../../utils';
-import RedisCache from '../../cache/redis';
+import MemCachier from '../../cache/memcachier';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -235,10 +234,9 @@ export default class FBGraphAPIRequest {
    * @param {*} newsId
    */
   static async SendNews(sender, choice, newsId) {
-    const newsList = await RedisCache.GetItem('generalnews');
-    const marketNews = newsList ? JSON.parse(newsList) : null;
+    const marketNews = await MemCachier.GetHashItem('generalnews');
 
-    if (marketNews === null) {
+    if (!marketNews) {
       await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
       return;
     }
@@ -248,13 +246,21 @@ export default class FBGraphAPIRequest {
     if (newsItem) {
       const { title, link, content, summary, entities } = newsItem;
       const tickers = Util.FormatTickers(entities);
-      let news = choice === 'summary' ? `\n${title.toUpperCase()}\n\n${summary}\n\n${link}\n` : `\n${title.toUpperCase()}\n\n${content.replace(/<[^>]+>/g, '')}\n`;
+      let news = choice === 'summary' ? `${title.toUpperCase()}\n\n${summary}\n\n${link}` : `${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}`;
 
       if (tickers) {
         news =
-          choice === 'summary'
-            ? `\n${title.toUpperCase()}\n\n${tickers}\n\n${summary}\n\n${link}\n`
-            : `\n${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}\n`;
+          choice === 'summary' ? `${title.toUpperCase()}\n\n${tickers}\n\n${summary}\n\n${link}` : `${title.toUpperCase()}\n\n${tickers}\n\n${content.replace(/<[^>]+>/g, '')}`;
+      }
+
+      if (choice === 'full') {
+        for (let index = 0; index < news.length; index += 2000) {
+          if (index === 0) {
+            await this.SendTextMessage(sender, news.slice(0, 2000));
+          } else {
+            await this.SendTextMessage(sender, news.slice(index, index + 2001));
+          }
+        }
       }
 
       await this.SendTextMessage(sender, news);
@@ -269,17 +275,15 @@ export default class FBGraphAPIRequest {
    * @param {*} newsType
    */
   static async fetchNews(sender, newsType) {
-    const news = await RedisCache.GetItem('generalnews');
-    let marketNews = news ? JSON.parse(news) : null;
+    let marketNews = await MemCachier.GetHashItem('generalnews');
 
-    if (marketNews === null) {
+    if (!marketNews) {
       marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
-      await RedisCache.SetItem('generalnews', JSON.stringify(marketNews), 7200);
-      console.log('not from cache');
     }
 
-    for (let i = 0; i < marketNews.length; i += 10) {
-      const newsList = marketNews.slice(i, i + 10);
+    const news = Util.convertAPIResponseToMessengerList(marketNews);
+    for (let i = 0; i < news.length; i += 10) {
+      const newsList = news.slice(i, i + 10);
       this.CreateMessengerListOptions(sender, newsList);
     }
   }

@@ -5,8 +5,9 @@ import MessengerButtonFactory from './ButtonFactory';
  * @description
  * @param {*} newsId
  * @param {*} url
+ * @param {} content
  */
-const createNewsOptionButtons = (newsId, url) => {
+const createNewsOptionButtons = (newsId, url, content) => {
   const buttons = new ButtonList();
 
   buttons.addButton(
@@ -25,13 +26,15 @@ const createNewsOptionButtons = (newsId, url) => {
     }),
   );
 
-  buttons.addButton(
-    MessengerButtonFactory.CreateButton({
-      type: 'postback',
-      title: 'Show Content',
-      payload: `SHOW_MARKET_NEWS_CONTENT|${newsId}`,
-    }),
-  );
+  if (content) {
+    buttons.addButton(
+      MessengerButtonFactory.CreateButton({
+        type: 'postback',
+        title: 'Show Content',
+        payload: `SHOW_MARKET_NEWS_CONTENT|${newsId}`,
+      }),
+    );
+  }
 
   return buttons.getButtons();
 };

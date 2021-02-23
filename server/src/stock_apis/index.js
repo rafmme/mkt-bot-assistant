@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import Util from '../utils';
+import MemCachier from '../cache/memcachier';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
@@ -34,6 +34,7 @@ export default class StockAPI {
       items: { result },
     } = response;
 
-    return Util.convertAPIResponseToMessengerList(result);
+    await MemCachier.SetHashItem('generalnews', result, 3600 * 12);
+    return result;
   }
 }

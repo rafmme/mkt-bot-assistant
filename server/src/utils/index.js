@@ -47,7 +47,7 @@ export default class Util {
     }
 
     for (let i = 0; i < response.length; i += 1) {
-      const { uuid: newsId, title, link: url, summary: subtitle, main_image: mainImg } = response[i];
+      const { uuid: newsId, title, content, link: url, summary: subtitle, main_image: mainImg } = response[i];
       const imageURL = mainImg !== null ? mainImg.resolutions[1].url : `${HEROKU_APP_URL}/static/screenshots/mart_image.jpeg`;
 
       list.push({
@@ -59,7 +59,7 @@ export default class Util {
           url,
           webview_height_ratio: 'full',
         },
-        buttons: createNewsOptionButtons(newsId, url),
+        buttons: createNewsOptionButtons(newsId, url, content),
       });
     }
 
