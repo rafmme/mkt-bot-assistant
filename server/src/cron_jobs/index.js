@@ -27,9 +27,12 @@ export default class Cron {
       const task = cron.schedule(
         schedule,
         async () => {
+          const marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+          const news = Util.convertAPIResponseToMessengerList(marketNews);
+
           for (let index = 0; index < users.length; index += 1) {
-            const marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
-            const news = Util.convertAPIResponseToMessengerList(marketNews);
+            const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
+            await FBGraphAPIRequest.SendTextMessage(users[index], `👋🏾 Hi ${firstName}, here is your Market news update 📰 for today. Enjoy.🙂`, 'CONFIRMED_EVENT_UPDATE');
 
             for (let i = 0; i < news.length; i += 10) {
               const newsList = news.slice(i, i + 10);
@@ -51,6 +54,6 @@ export default class Cron {
    * @description
    */
   static StartCronJobs() {
-    this.SendDailyNewsUpdate('45 15 * * *').start();
+    this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
   }
 }

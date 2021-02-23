@@ -57,11 +57,31 @@ export default class FBGraphAPIRequest {
    * @description function that handles sending messenger messeages to users
    * @param {*} sender FB User's ID
    * @param {String} text Text to send to FB User
+   * @param {} tag
    */
-  static async SendTextMessage(sender, text) {
+  static async SendTextMessage(sender, text, tag) {
+    let data;
     const messageData = {
       text,
     };
+
+    if (tag) {
+      data = {
+        recipient: {
+          id: sender,
+        },
+        message: messageData,
+        messaging_type: 'MESSAGE_TAG',
+        tag,
+      };
+    } else {
+      data = {
+        recipient: {
+          id: sender,
+        },
+        message: messageData,
+      };
+    }
 
     await this.CreateSenderAction(sender);
     await new RequestBuilder()
@@ -70,12 +90,7 @@ export default class FBGraphAPIRequest {
         access_token: FB_PAGE_ACCESS_TOKEN,
       })
       .method('POST')
-      .data({
-        recipient: {
-          id: sender,
-        },
-        message: messageData,
-      })
+      .data(data)
       .build()
       .send();
   }
