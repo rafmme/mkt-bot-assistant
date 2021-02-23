@@ -9,6 +9,7 @@ import context from './graphql/context';
 import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schemas';
 import WebhookRouteHandler from './fb_messenger';
+import Cron from './cron_jobs';
 
 dotenv.config();
 
@@ -44,6 +45,8 @@ app.get('/', (req, res) => {
 
 app.get('/webhook', WebhookRouteHandler.VerifyWebhook);
 app.post('/webhook', WebhookRouteHandler.PostWebhook);
+
+Cron.StartCronJobs();
 
 if (!module.parent) {
   app.listen(PORT, () => {
