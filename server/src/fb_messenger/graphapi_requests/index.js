@@ -1,12 +1,18 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-await-in-loop */
 import dotenv from 'dotenv';
 import RequestBuilder from '../../utils/Request/RequestBuilder';
 import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFactory';
-import menuButtons from '../messenger_buttons/menu';
 import StockAPI from '../../stock_apis';
 import Util from '../../utils';
 import MemCachier from '../../cache/memcachier';
+import Menu from '../messenger_buttons/Menu';
+import crypto from '../messenger_buttons/Menu/crypto';
+import us from '../messenger_buttons/Menu/us';
+import ngn from '../messenger_buttons/Menu/ngn';
+import newsOps from '../messenger_buttons/Menu/news';
+import stockOps from '../messenger_buttons/Menu/us_stock';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -190,10 +196,10 @@ export default class FBGraphAPIRequest {
   static async GetStartedGreeting(sender) {
     const { first_name: firstName } = await this.RetrieveFBUserProfile(sender);
     const text = firstName
-      ? `Hi ${firstName}, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market`
-      : 'Hi there, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market';
+      ? `Hi ${firstName}, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market\nWhat'd you like to do?`
+      : `Hi there, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market\nWhat'd you like to do?`;
 
-    await this.CreateMessengerButtonOptions(sender, text, menuButtons);
+    await this.SendQuickReplies(sender, text, Menu);
   }
 
   /**
@@ -208,15 +214,19 @@ export default class FBGraphAPIRequest {
       case 'GET_STARTED_PAYLOAD':
         this.GetStartedGreeting(sender);
         break;
+
       case 'MARKET_NEWS':
         this.fetchNews(sender);
         break;
+
       case 'SHOW_MARKET_NEWS_CONTENT':
         this.SendNews(sender, 'full', newsId);
         break;
+
       case 'SHOW_MARKET_NEWS_SUMMARY':
         this.SendNews(sender, 'summary', newsId);
         break;
+
       case 'SHOW_CRYPTOS_PRICES':
         let cryptoPricesData = await MemCachier.GetHashItem('cryptoPrices');
 
@@ -226,6 +236,27 @@ export default class FBGraphAPIRequest {
 
         this.CreateMessengerListOptions(sender, Util.ParseCryptoPricesData(cryptoPricesData));
         break;
+
+      case 'MENU_CRYPTO':
+        this.SendQuickReplies(sender, `What'd you like to do regarding Cryptos?`, crypto);
+        break;
+
+      case 'MENU_US_MARKET':
+        this.SendQuickReplies(sender, `What'd you like to do regarding the US Stock Market?`, us);
+        break;
+
+      case 'MENU_NGN_UPDATES':
+        this.SendQuickReplies(sender, `What'd you like to do regarding the Nigeria Market?`, ngn);
+        break;
+
+      case 'MENU_NEWS':
+        this.SendQuickReplies(sender, `What news do you want to read?`, newsOps);
+        break;
+
+      case 'STOCK_OPS':
+        this.SendQuickReplies(sender, `What'd you like to do regarding a US Stock?`, stockOps);
+        break;
+
       default:
         break;
     }
@@ -310,5 +341,35 @@ export default class FBGraphAPIRequest {
       const newsList = news.slice(i, i + 10);
       this.CreateMessengerListOptions(sender, newsList);
     }
+  }
+
+  /**
+   * @description function that handles sending messenger quick replies to users
+   * @param {*} sender FB User's ID
+   * @param {String} text Text to send to FB User
+   * @param {} quickReplies
+   */
+  static async SendQuickReplies(sender, text, quickReplies) {
+    const messageData = {
+      text,
+      quick_replies: quickReplies,
+    };
+
+    await this.CreateSenderAction(sender);
+    await new RequestBuilder()
+      .withURL(SEND_API)
+      .queryParams({
+        access_token: FB_PAGE_ACCESS_TOKEN,
+      })
+      .method('POST')
+      .data({
+        recipient: {
+          id: sender,
+        },
+        message: messageData,
+        messaging_type: 'RESPONSE',
+      })
+      .build()
+      .send();
   }
 }

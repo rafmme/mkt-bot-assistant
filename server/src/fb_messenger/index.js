@@ -36,7 +36,14 @@ export default class WebhookRouteHandler {
       const sender = event.sender.id;
 
       if (event.message && event.message.text) {
-        const { text } = event.message;
+        const { text, quick_reply: quickReply } = event.message;
+
+        if (quickReply) {
+          const { payload } = quickReply;
+          await FBGraphAPIRequest.HandlePostbackPayload(sender, payload);
+          return;
+        }
+
         await WitAIHelper.ProcessMessage(text, sender);
       } else if (event.postback) {
         await FBGraphAPIRequest.HandlePostbackPayload(sender, event.postback.payload);
