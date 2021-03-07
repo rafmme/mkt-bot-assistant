@@ -125,7 +125,46 @@ export default class WitAIHelper {
         break;
 
       default:
-        const msg = `Sorry 😕, I don't understand ${intent} what you are trying to do.`;
+        await this.UnknownResponseHandler(sender, text);
+        break;
+    }
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} sender
+   * @param {*} text
+   */
+  static async UnknownResponseHandler(sender, text) {
+    switch (text.toLowerCase().trim().replace('?', '')) {
+      case 'menu':
+      case 'show menu':
+      case 'help':
+        await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
+        break;
+
+      case 'who are you':
+      case 'what are you':
+        const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(sender);
+        const response = firstName
+          ? `Hi ${firstName}, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market\nHow can I be of assistance?`
+          : `Hi there, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market\n\nHow can I be of assistance?`;
+
+        await FBGraphAPIRequest.SendQuickReplies(sender, response, Menu);
+        break;
+
+      case '👍🏿':
+      case '👍':
+      case '👍🏽':
+      case '👍🏾':
+      case '👍🏻':
+      case '👍🏼':
+        await FBGraphAPIRequest.SendTextMessage(sender, `Glad I could be of help 🙂.\nIf you don't mind, Buy me a coffee 😉`);
+        break;
+
+      default:
+        const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
         await FBGraphAPIRequest.SendQuickReplies(sender, msg, Menu);
         break;
     }

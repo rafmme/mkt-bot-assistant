@@ -11,7 +11,7 @@ import Menu from '../messenger_buttons/Menu';
 import crypto from '../messenger_buttons/Menu/crypto';
 import us from '../messenger_buttons/Menu/us';
 import ngn from '../messenger_buttons/Menu/ngn';
-import news from '../messenger_buttons/Menu/news';
+import newsOps from '../messenger_buttons/Menu/news';
 import stockOps from '../messenger_buttons/Menu/us_stock';
 
 dotenv.config();
@@ -250,7 +250,7 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'MENU_NEWS':
-        this.SendQuickReplies(sender, `What news do you want to read?`, news);
+        this.SendQuickReplies(sender, `What news do you want to read?`, newsOps);
         break;
 
       case 'STOCK_OPS':
