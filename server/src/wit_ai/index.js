@@ -2,7 +2,7 @@
 import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
-import menuButtons from '../fb_messenger/messenger_buttons/menu';
+import Menu from '../fb_messenger/messenger_buttons/Menu';
 
 /**
  * @class WitAIHelper
@@ -100,7 +100,7 @@ export default class WitAIHelper {
     switch (intent) {
       case 'greetings':
         if (trait === 'wit$greetings') {
-          await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, 'Hi 👋🏾, how can I be of help? 😎', menuButtons);
+          await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
         } else if (trait === 'wit$sentiment') {
           const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);
@@ -126,7 +126,7 @@ export default class WitAIHelper {
 
       default:
         const msg = `Sorry 😕, I don't understand ${intent} what you are trying to do.`;
-        await FBGraphAPIRequest.CreateMessengerButtonOptions(sender, msg, menuButtons);
+        await FBGraphAPIRequest.SendQuickReplies(sender, msg, Menu);
         break;
     }
   }

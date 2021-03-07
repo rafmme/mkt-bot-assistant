@@ -1,4 +1,5 @@
 import PostBackButton from '../PostBackButton';
+import QuickReplyPostBackButton from '../PostBackButton/quickreplyBtn';
 import WebViewButton from '../WebViewButton';
 
 /**
@@ -11,7 +12,7 @@ export default class MessengerButtonFactory {
    * @description
    * @param {*} param0
    */
-  static CreateButton({ type, url, payload, title }) {
+  static CreateButton({ type, url, payload, title, imageUrl }) {
     let button;
 
     switch (type) {
@@ -21,6 +22,10 @@ export default class MessengerButtonFactory {
 
       case 'postback':
         button = new PostBackButton(title, payload);
+        break;
+
+      case 'quick_reply':
+        button = new QuickReplyPostBackButton(title, payload, imageUrl);
         break;
 
       default:
