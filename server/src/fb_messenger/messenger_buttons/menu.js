@@ -7,7 +7,7 @@ listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'postback',
     title: 'Show Crypto coins prices',
-    payload: 'SHOW_CRYPTOS',
+    payload: 'SHOW_CRYPTOS_PRICES',
   }),
 );
 
