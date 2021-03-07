@@ -217,6 +217,15 @@ export default class FBGraphAPIRequest {
       case 'SHOW_MARKET_NEWS_SUMMARY':
         this.SendNews(sender, 'summary', newsId);
         break;
+      case 'SHOW_CRYPTOS_PRICES':
+        let cryptoPricesData = await MemCachier.GetHashItem('cryptoPrices');
+
+        if (!cryptoPricesData) {
+          cryptoPricesData = await StockAPI.GetCryptoPrices();
+        }
+
+        this.CreateMessengerListOptions(sender, Util.ParseCryptoPricesData(cryptoPricesData));
+        break;
       default:
         break;
     }

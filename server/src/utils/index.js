@@ -104,4 +104,61 @@ export default class Util {
       }
     }
   }
+
+  /**
+   * @static
+   * @description
+   * @param {*} response
+   */
+  static ParseCryptoPricesData(data) {
+    const list = [];
+    const cryptosData = Object.values(data);
+
+    for (let i = 0; i < cryptosData.length; i += 1) {
+      const {
+        name,
+        symbol,
+        quote: {
+          // eslint-disable-next-line camelcase
+          USD: { price, volume_24h, percent_change_1h, percent_change_24h, percent_change_7d, market_cap },
+        },
+      } = cryptosData[i];
+
+      list.push({
+        // eslint-disable-next-line camelcase
+        title: `${name} ${symbol}\t\tPrice: $ ${this.FormatLargeNumbers(price)}\t\tMKT Cap: ${this.FormatLargeNumbers(market_cap)}`,
+        subtitle: `24h Volume: ${this.FormatLargeNumbers(volume_24h)}\n% CHG (1h): ${this.FormatLargeNumbers(percent_change_1h)} %\n% CHG (24h): ${this.FormatLargeNumbers(
+          percent_change_24h,
+        )} %\n% CHG (7d): ${this.FormatLargeNumbers(percent_change_7d)} %`,
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} number
+   */
+  static FormatLargeNumbers(number) {
+    const n = Number.parseFloat(number);
+
+    if (Number.isNaN(n)) {
+      return '-';
+    }
+
+    if (n >= 1e3) {
+      const units = ['k', 'M', 'B', 'T'];
+
+      const unit = Math.floor((n.toFixed(0).length - 1) / 3) * 3;
+      const num = (n / `1e${unit}`).toFixed(2);
+      const unitname = units[Math.floor(unit / 3) - 1];
+      const formatedNum = num + unitname;
+
+      return formatedNum;
+    }
+
+    return n.toLocaleString();
+  }
 }
