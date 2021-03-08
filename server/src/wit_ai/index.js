@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
 import Util from '../utils';
-import RedisCache from '../cache/redis';
 import StockAPI from '../stock_apis';
+import MemCachier from '../cache/memcachier';
 
 /**
  * @class WitAIHelper
@@ -144,11 +144,12 @@ export default class WitAIHelper {
 
     if (word.startsWith('$')) {
       const ticker = word.replace('$', '');
-      let quote = await RedisCache.GetItem(`${ticker.toLowerCase()}Quote`);
+      let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
 
-      if (quote) {
+      if (!quote) {
         quote = await StockAPI.GetStockQuote(ticker);
       }
+
       await FBGraphAPIRequest.SendTextMessage(sender, Util.CreateStockQuoteText(quote, ticker));
       return;
     }

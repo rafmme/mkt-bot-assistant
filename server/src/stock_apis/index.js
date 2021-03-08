@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import MemCachier from '../cache/memcachier';
-import RedisCache from '../cache/redis';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
@@ -91,7 +90,7 @@ export default class StockAPI {
     });
 
     await MemCachier.SetHashItem('trendingTickers', trendingTickerQuotes, 3600 * 6);
-    return result;
+    return trendingTickerQuotes;
   }
 
   /**
@@ -100,18 +99,20 @@ export default class StockAPI {
    * @param {} symbol
    */
   static async GetStockQuote(symbol) {
-    const { FINNHUB } = process.env;
+    const { IEX_CLOUD } = process.env;
     const response = await new RequestBuilder()
-      .withURL('https://finnhub.io/api/v1/quote')
+      .withURL(`https://cloud.iexapis.com/stable/stock/${symbol.toLowerCase()}/batch`)
       .method('GET')
       .queryParams({
-        symbol,
-        token: FINNHUB,
+        types: 'quote',
+        token: IEX_CLOUD,
       })
       .build()
       .send();
 
-    await RedisCache.SetItem(`${symbol.toLowerCase()}Quote`, JSON.stringify(response), 60 * 5);
-    return response;
+    const { quote } = response;
+
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Quote`, quote, 60 * 5);
+    return quote;
   }
 }

@@ -189,12 +189,29 @@ export default class Util {
    * @param {} symbol
    */
   static CreateStockQuoteText(data, symbol) {
-    const quoteData = JSON.parse(data);
-    const { c: currentPrice, pc: previousClose, l: lowPrice, h: highPrice, o: openPrice, t: timestamp } = quoteData;
+    const {
+      companyName,
+      peRatio,
+      latestPrice,
+      latestTime,
+      previousClose,
+      previousVolume,
+      change,
+      changePercent,
+      avgTotalVolume,
+      marketCap,
+      week52High,
+      week52Low,
+      ytdChange,
+    } = data;
 
-    const text = `*** ${symbol} Stock Quote ***\nPrevious Close: $${previousClose}\nOpen: $${openPrice}\nHigh: $${highPrice}\nLow: $${lowPrice}\nPrice: $${currentPrice}}\nDate: ${new Date(
-      timestamp,
-    ).toLocaleString()}`;
+    const text = `*** ${companyName} (${symbol.toUpperCase()}) Stock Quote ***\n\nMarket Cap: $ ${this.FormatLargeNumbers(
+      marketCap,
+    )}\n\nPrevious Close: $ ${previousClose}\n\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\n\nAverage Total Volume: ${this.FormatLargeNumbers(
+      avgTotalVolume,
+    )}\n\nP/E Ratio: ${peRatio}\n\nPrice: $ ${latestPrice}\n\nPrice Change: $ ${change}\n\nPercent Change: ${changePercent} %\n\n52 Week High: $ ${week52High}\n\n52 Week Low: $ ${week52Low}\n\nYTD: ${this.FormatLargeNumbers(
+      ytdChange,
+    )}\n\nTime: ${latestTime}`;
     return text;
   }
 }
