@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import MemCachier from '../cache/memcachier';
+import RedisCache from '../cache/redis';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
@@ -91,5 +92,26 @@ export default class StockAPI {
 
     await MemCachier.SetHashItem('trendingTickers', trendingTickerQuotes, 3600 * 6);
     return result;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {} symbol
+   */
+  static async GetStockQuote(symbol) {
+    const { FINNHUB } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://finnhub.io/api/v1/quote')
+      .method('GET')
+      .queryParams({
+        symbol,
+        token: FINNHUB,
+      })
+      .build()
+      .send();
+
+    await RedisCache.SetItem(`${symbol.toLowerCase()}Quote`, JSON.stringify(response), 60 * 5);
+    return response;
   }
 }

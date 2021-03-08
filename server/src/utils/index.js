@@ -174,11 +174,27 @@ export default class Util {
       const { shortName, regularMarketChangePercent, regularMarketPrice, regularMarketChange, symbol, exchange } = data[i];
 
       list.push({
-        title: `(${symbol})\tPrice: $${regularMarketPrice}\t CHG: $${regularMarketChange}\t% CHG: ${regularMarketChangePercent}`,
+        title: `${symbol}\tPrice: $${regularMarketPrice}\tCHG: $${regularMarketChange}\t% CHG: ${regularMarketChangePercent}`,
         subtitle: `${shortName}\n Exchange: ${exchange}`,
       });
     }
 
     return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {} symbol
+   */
+  static CreateStockQuoteText(data, symbol) {
+    const quoteData = JSON.parse(data);
+    const { c: currentPrice, pc: previousClose, l: lowPrice, h: highPrice, o: openPrice, t: timestamp } = quoteData;
+
+    const text = `*** ${symbol} Stock Quote ***\nPrevious Close: $${previousClose}\nOpen: $${openPrice}\nHigh: $${highPrice}\nLow: $${lowPrice}\nPrice: $${currentPrice}}\nDate: ${new Date(
+      timestamp,
+    ).toLocaleString()}`;
+    return text;
   }
 }

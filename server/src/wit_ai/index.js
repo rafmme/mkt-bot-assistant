@@ -3,6 +3,9 @@ import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
+import Util from '../utils';
+import RedisCache from '../cache/redis';
+import StockAPI from '../stock_apis';
 
 /**
  * @class WitAIHelper
@@ -137,7 +140,20 @@ export default class WitAIHelper {
    * @param {*} text
    */
   static async UnknownResponseHandler(sender, text) {
-    switch (text.toLowerCase().trim().replace('?', '')) {
+    const word = text.toLowerCase().trim().replace('?', '');
+
+    if (word.startsWith('$')) {
+      const ticker = word.replace('$', '');
+      let quote = await RedisCache.GetItem(`${ticker.toLowerCase()}Quote`);
+
+      if (quote) {
+        quote = await StockAPI.GetStockQuote(ticker);
+      }
+      await FBGraphAPIRequest.SendTextMessage(sender, Util.CreateStockQuoteText(quote, ticker));
+      return;
+    }
+
+    switch (word) {
       case 'menu':
       case 'show menu':
       case 'help':
@@ -161,6 +177,10 @@ export default class WitAIHelper {
       case '👍🏻':
       case '👍🏼':
         await FBGraphAPIRequest.SendTextMessage(sender, `Glad I could be of help 🙂.\nIf you don't mind, Buy me a coffee 😉`);
+        break;
+
+      case 'news':
+        FBGraphAPIRequest.fetchNews();
         break;
 
       default:
