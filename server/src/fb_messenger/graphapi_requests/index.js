@@ -258,12 +258,12 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'TRENDING_TICKERS':
-        let list = Util.ParseTrendingTickersData(await MemCachier.GetHashItem('trendingTickers'));
+        let list = await MemCachier.GetHashItem('trendingTickers');
 
         if (!list) {
-          list = Util.ParseTrendingTickersData(await StockAPI.GetTrendingTickers());
+          list = await StockAPI.GetTrendingTickers();
         }
-        this.SendListRequest({ sender, text: `Here's a list of Trending Tickers in the US Stock Market` });
+        this.SendListRequest({ sender, text: `Here's a list of Trending Tickers in the US Stock Market`, list: Util.ParseTrendingTickersData(list) });
         break;
 
       default:
