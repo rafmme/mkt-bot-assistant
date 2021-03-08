@@ -234,7 +234,7 @@ export default class FBGraphAPIRequest {
           cryptoPricesData = await StockAPI.GetCryptoPrices();
         }
 
-        this.CreateMessengerListOptions(sender, Util.ParseCryptoPricesData(cryptoPricesData));
+        this.SendListRequest({ sender, text: `Here's the list of Crytocurrencies with their price.`, list: Util.ParseCryptoPricesData(cryptoPricesData) });
         break;
 
       case 'MENU_CRYPTO':
@@ -255,6 +255,15 @@ export default class FBGraphAPIRequest {
 
       case 'STOCK_OPS':
         this.SendQuickReplies(sender, `What'd you like to do regarding a US Stock?`, stockOps);
+        break;
+
+      case 'TRENDING_TICKERS':
+        let list = Util.ParseTrendingTickersData(await MemCachier.GetHashItem('trendingTickers'));
+
+        if (!list) {
+          list = Util.ParseTrendingTickersData(await StockAPI.GetTrendingTickers());
+        }
+        this.SendListRequest({ sender, text: `Here's a list of Trending Tickers in the US Stock Market` });
         break;
 
       default:
@@ -337,10 +346,7 @@ export default class FBGraphAPIRequest {
     }
 
     const news = Util.convertAPIResponseToMessengerList(marketNews);
-    for (let i = 0; i < news.length; i += 10) {
-      const newsList = news.slice(i, i + 10);
-      this.CreateMessengerListOptions(sender, newsList);
-    }
+    this.SendListRequest({ sender, text: `Here's the US Stock Market 📰 news update.`, list: news });
   }
 
   /**
@@ -371,5 +377,29 @@ export default class FBGraphAPIRequest {
       })
       .build()
       .send();
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendLargeMessengerList({ sender, text, list }) {
+    if (text) {
+      await this.SendTextMessage(sender, text);
+    }
+
+    for (let i = 0; i < list.length; i += 10) {
+      const newsList = list.slice(i, i + 10);
+      this.CreateMessengerListOptions(sender, newsList);
+    }
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {*} newsType
+   */
+  static async SendListRequest({ sender, text, list }) {
+    await this.SendLargeMessengerList({ sender, text, list });
   }
 }

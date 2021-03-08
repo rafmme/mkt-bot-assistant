@@ -61,4 +61,35 @@ export default class StockAPI {
     await MemCachier.SetHashItem('cryptoPrices', data, 60 * 15);
     return data;
   }
+
+  /**
+   * @static
+   * @description
+   */
+  static async GetTrendingTickers() {
+    const { X_RAPIDAPI_KEY, X_RAPIDAPI_HOST } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://apidojo-yahoo-finance-v1.p.rapidapi.com/market/get-trending-tickers')
+      .method('GET')
+      .queryParams({
+        region: 'US',
+      })
+      .headers({
+        'x-rapidapi-key': X_RAPIDAPI_KEY,
+        'x-rapidapi-host': X_RAPIDAPI_HOST,
+        useQueryString: true,
+      })
+      .build()
+      .send();
+
+    const {
+      finance: { result },
+    } = response;
+    const trendingTickerQuotes = result[0].quotes.filter((quote) => {
+      return quote.region === 'US' && quote.market === 'us_market' && (quote.quoteType === 'ETF' || quote.quoteType === 'EQUITY');
+    });
+
+    await MemCachier.SetHashItem('trendingTickers', trendingTickerQuotes, 3600 * 6);
+    return result;
+  }
 }

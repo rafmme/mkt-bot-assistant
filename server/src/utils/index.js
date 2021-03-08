@@ -108,7 +108,7 @@ export default class Util {
   /**
    * @static
    * @description
-   * @param {*} response
+   * @param {*} data
    */
   static ParseCryptoPricesData(data) {
     const list = [];
@@ -160,5 +160,25 @@ export default class Util {
     }
 
     return n.toLocaleString();
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   */
+  static ParseTrendingTickersData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { shortName, regularMarketChangePercent, regularMarketPrice, regularMarketChange, symbol, exchange } = data[i];
+
+      list.push({
+        title: `(${symbol})\tPrice: $${regularMarketPrice}\t CHG: $${regularMarketChange}\t% CHG: ${regularMarketChangePercent}`,
+        subtitle: `${shortName}\n Exchange: ${exchange}`,
+      });
+    }
+
+    return list;
   }
 }
