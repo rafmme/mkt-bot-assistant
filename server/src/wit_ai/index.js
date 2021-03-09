@@ -187,7 +187,16 @@ export default class WitAIHelper {
         break;
 
       case 'news':
-        FBGraphAPIRequest.fetchNews();
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'MARKET_NEWS');
+        break;
+      case 'crypto prices':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'SHOW_CRYPTOS_PRICES');
+        break;
+      case 'trending tickers':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TRENDING_TICKERS');
+        break;
+      case 'top movers':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TOP_MOVERS');
         break;
 
       default:
