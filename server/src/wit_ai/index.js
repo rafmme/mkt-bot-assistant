@@ -3,9 +3,6 @@ import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
-import Util from '../utils';
-import StockAPI from '../stock_apis';
-import MemCachier from '../cache/memcachier';
 
 /**
  * @class WitAIHelper
@@ -143,14 +140,23 @@ export default class WitAIHelper {
     const word = text.toLowerCase().trim().replace('?', '');
 
     if (word.startsWith('$')) {
-      const ticker = word.replace('$', '');
-      let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
+      const input = word.replace('$', '').split(' ');
+      const ticker = input[0];
 
-      if (!quote) {
-        quote = await StockAPI.GetStockQuote(ticker);
+      if (input.length > 1) {
+        switch (input[1].toLowerCase()) {
+          case 'overview':
+            await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+            break;
+          default:
+            await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+            break;
+        }
+
+        return;
       }
 
-      await FBGraphAPIRequest.SendTextMessage(sender, Util.CreateStockQuoteText(quote, ticker));
+      await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
       return;
     }
 

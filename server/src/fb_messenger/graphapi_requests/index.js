@@ -208,7 +208,7 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
-    const newsId = postbackPayload.split('|')[1];
+    const data = postbackPayload.split('|')[1];
 
     switch (postbackPayload.split('|')[0]) {
       case 'GET_STARTED_PAYLOAD':
@@ -220,11 +220,11 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'SHOW_MARKET_NEWS_CONTENT':
-        this.SendNews(sender, 'full', newsId);
+        this.SendNews(sender, 'full', data);
         break;
 
       case 'SHOW_MARKET_NEWS_SUMMARY':
-        this.SendNews(sender, 'summary', newsId);
+        this.SendNews(sender, 'summary', data);
         break;
 
       case 'SHOW_CRYPTOS_PRICES':
@@ -264,6 +264,25 @@ export default class FBGraphAPIRequest {
           list = await StockAPI.GetTrendingTickers();
         }
         this.SendListRequest({ sender, text: `Here's a list of Trending Tickers in the US Stock Market`, list: Util.ParseTrendingTickersData(list) });
+        break;
+
+      case 'TOP_MOVERS':
+        let moversData = await MemCachier.GetHashItem('movers');
+
+        if (!list) {
+          moversData = await StockAPI.GetMarketMovers();
+        }
+
+        for (let i = 0; i < moversData.length; i += 1) {
+          await this.SendListRequest({ sender, text: moversData[i].title, list: Util.ParseTopMoversData(moversData[i].listOfMovers, moversData[i].title) });
+        }
+        break;
+
+      case 'CHECK_STOCK':
+        this.SendStockQuote({ sender, ticker: data });
+        break;
+      case 'STOCK_OVERVIEW':
+        this.SendStockOverview({ sender, ticker: data });
         break;
 
       default:
@@ -318,13 +337,7 @@ export default class FBGraphAPIRequest {
       }
 
       if (choice === 'full') {
-        for (let index = 0; index < news.length; index += 2000) {
-          if (index === 0) {
-            await this.SendTextMessage(sender, news.slice(0, 2000));
-          } else {
-            await this.SendTextMessage(sender, news.slice(index, index + 2001));
-          }
-        }
+        await this.SendLongText({ sender, text: news });
       }
 
       await this.SendTextMessage(sender, news);
@@ -401,5 +414,53 @@ export default class FBGraphAPIRequest {
    */
   static async SendListRequest({ sender, text, list }) {
     await this.SendLargeMessengerList({ sender, text, list });
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendLongText({ sender, text }) {
+    for (let index = 0; index < text.length; index += 2000) {
+      if (index === 0) {
+        await this.SendTextMessage(sender, text.slice(0, 2000));
+      } else {
+        await this.SendTextMessage(sender, text.slice(index, index + 2001));
+      }
+    }
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendStockQuote({ sender, ticker }) {
+    let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
+
+    if (!quote) {
+      quote = await StockAPI.GetStockQuote(ticker);
+    }
+
+    await this.SendTextMessage(sender, Util.CreateStockQuoteText(quote, ticker));
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendStockOverview({ sender, ticker }) {
+    let overview = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Overview`);
+
+    if (!overview) {
+      overview = await StockAPI.GetStockOverview(ticker);
+    }
+
+    const { first, second, third, fourth, fifth } = Util.ParseStockOverviewData(overview, ticker);
+
+    await this.SendLongText({ sender, text: first });
+    await this.SendTextMessage(sender, second);
+    await this.SendTextMessage(sender, third);
+    await this.SendTextMessage(sender, fourth);
+    await this.SendTextMessage(sender, fifth);
   }
 }

@@ -2,6 +2,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
+import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
 
 dotenv.config();
 
@@ -176,6 +177,7 @@ export default class Util {
       list.push({
         title: `${symbol}\tPrice: $${regularMarketPrice}\tCHG: $${regularMarketChange}\t% CHG: ${regularMarketChangePercent}`,
         subtitle: `${shortName}\n Exchange: ${exchange}`,
+        buttons: createTickerOptionButtons(symbol),
       });
     }
 
@@ -207,11 +209,173 @@ export default class Util {
 
     const text = `*** ${companyName} (${symbol.toUpperCase()}) Stock Quote ***\n\nMarket Cap: $ ${this.FormatLargeNumbers(
       marketCap,
-    )}\n\nPrevious Close: $ ${previousClose}\n\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\n\nAverage Total Volume: ${this.FormatLargeNumbers(
+    )}\nPrevious Close: $ ${previousClose}\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\nAverage Total Volume: ${this.FormatLargeNumbers(
       avgTotalVolume,
-    )}\n\nP/E Ratio: ${peRatio}\n\nPrice: $ ${latestPrice}\n\nPrice Change: $ ${change}\n\nPercent Change: ${changePercent} %\n\n52 Week High: $ ${week52High}\n\n52 Week Low: $ ${week52Low}\n\nYTD: ${this.FormatLargeNumbers(
+    )}\nP/E Ratio: ${peRatio}\nPrice: $ ${latestPrice}\nPrice Change: $ ${change}\nPercent Change: ${changePercent} %\n52 Week High: $ ${week52High}\n52 Week Low: $ ${week52Low}\nYTD: ${this.FormatLargeNumbers(
       ytdChange,
-    )}\n\nTime: ${latestTime}`;
+    )}\nTime: ${latestTime}\n\n ** 15 minutes delayed quote **`;
     return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {string} text
+   */
+  static ParseTopMoversData(data, text) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { fullExchangeName, symbol } = data[i];
+
+      list.push({
+        title: `${symbol}`,
+        subtitle: `Exchange: ${fullExchangeName}\n
+        ${text.split('-'[0].trim())}
+        `,
+        buttons: createTickerOptionButtons(symbol),
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {} ticker
+   */
+  static ParseStockOverviewData(data, ticker) {
+    const {
+      Symbol: stockTicker,
+      AssetType,
+      Name,
+      Description,
+      Exchange,
+      Currency,
+      Country,
+      Sector,
+      Industry,
+      Address,
+      FullTimeEmployees,
+      FiscalYearEnd,
+      LatestQuarter,
+      MarketCapitalization,
+      EBITDA,
+      PERatio,
+      PEGRatio,
+      BookValue,
+      DividendPerShare,
+      DividendYield,
+      EPS,
+      RevenuePerShareTTM,
+      ProfitMargin,
+      OperatingMarginTTM,
+      ReturnOnAssetsTTM,
+      ReturnOnEquityTTM,
+      RevenueTTM,
+      GrossProfitTTM,
+      DilutedEPSTTM,
+      QuarterlyEarningsGrowthYOY,
+      QuarterlyRevenueGrowthYOY,
+      AnalystTargetPrice,
+      TrailingPE,
+      ForwardPE,
+      PriceToSalesRatioTTM,
+      PriceToBookRatio,
+      EVToRevenue,
+      EVToEBITDA,
+      Beta,
+      SharesOutstanding,
+      SharesFloat,
+      SharesShort,
+      SharesShortPriorMonth,
+      ShortRatio,
+      ShortPercentOutstanding,
+      ShortPercentFloat,
+      PercentInsiders,
+      PercentInstitutions,
+      ForwardAnnualDividendRate,
+      ForwardAnnualDividendYield,
+      PayoutRatio,
+      DividendDate,
+      ExDividendDate,
+      LastSplitFactor,
+      LastSplitDate,
+    } = data;
+
+    const overviewData = {
+      first: `*** ${stockTicker} Overview ***\n\nAssetType: ${AssetType}\n
+      Name: ${Name}\n
+      Description: ${Description}`,
+
+      second: `Exchange: ${Exchange}\n
+      Currency: ${Currency}\n
+      Country: ${Country}\n
+      Sector: ${Sector}\n
+      Industry: ${Industry}\n
+      Address: ${Address}\n
+      FullTimeEmployees: ${FullTimeEmployees}\n
+      FiscalYearEnd: ${FiscalYearEnd}\n
+      LatestQuarter: ${LatestQuarter}\n
+      MarketCapitalization: ${this.FormatLargeNumbers(MarketCapitalization)}\n
+      EBITDA: ${this.FormatLargeNumbers(EBITDA)}\n
+      PERatio: ${PERatio}\n
+      PEGRatio: ${PEGRatio}\n
+      BookValue: ${BookValue}\n
+      DividendPerShare: ${DividendPerShare}\n
+      DividendYield: ${DividendYield}\n
+      EPS: ${EPS}
+`,
+
+      third: `
+      RevenuePerShareTTM: ${RevenuePerShareTTM}\n
+      ProfitMargin: ${ProfitMargin}\n
+      OperatingMarginTTM: ${OperatingMarginTTM}\n
+      ReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\n
+      ReturnOnEquityTTM: ${ReturnOnEquityTTM}\n
+      RevenueTTM: ${this.FormatLargeNumbers(RevenueTTM)}\n
+      GrossProfitTTM: ${this.FormatLargeNumbers(GrossProfitTTM)}\n
+      DilutedEPSTTM: ${DilutedEPSTTM}\n
+      QuarterlyEarningsGrowthYOY: ${QuarterlyEarningsGrowthYOY}\n
+      QuarterlyRevenueGrowthYOY: ${QuarterlyRevenueGrowthYOY}\n
+      AnalystTargetPrice: ${AnalystTargetPrice}\n
+      TrailingPE: ${TrailingPE}\n
+      ForwardPE: ${ForwardPE}\n
+      PriceToSalesRatioTTM: ${PriceToSalesRatioTTM}\n
+      PriceToBookRatio: ${PriceToBookRatio}\n
+      EVToRevenue: ${EVToRevenue}\n
+      EVToEBITDA: ${EVToEBITDA}\n
+      Beta: ${Beta}\n
+      52WeekHigh: ${data['52WeekHigh']}\n
+      52WeekLow: ${data['52WeekLow']}\n
+      `,
+
+      fourth: `
+      50DayMovingAverage: ${data['50DayMovingAverage']}\n
+      200DayMovingAverage: ${data['200DayMovingAverage']}\n
+      SharesOutstanding: ${this.FormatLargeNumbers(SharesOutstanding)}\n
+      SharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\n
+      SharesShort: ${this.FormatLargeNumbers(SharesShort)}\n
+      SharesShortPriorMonth: ${this.FormatLargeNumbers(SharesShortPriorMonth)}\n
+      ShortRatio: ${ShortRatio}\n
+      ShortPercentOutstanding: ${ShortPercentOutstanding}\n
+      ShortPercentFloat: ${ShortPercentFloat}\n
+      PercentInsiders: ${PercentInsiders}\n
+      PercentInstitutions: ${PercentInstitutions}\n
+      ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\n
+      ForwardAnnualDividendYield: ${ForwardAnnualDividendYield}\n
+      PayoutRatio: ${PayoutRatio}\n
+      DividendDate: ${DividendDate}\n
+      ExDividendDate: ${ExDividendDate}\n
+      LastSplitFactor: ${LastSplitFactor}\n
+      LastSplitDate: ${LastSplitDate}`,
+
+      fifth: `For more visit https://www.earningsfly.com/stocks/${ticker}?source=t2`,
+    };
+
+    return overviewData;
   }
 }
