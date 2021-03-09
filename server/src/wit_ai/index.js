@@ -137,7 +137,30 @@ export default class WitAIHelper {
    * @param {*} text
    */
   static async UnknownResponseHandler(sender, text) {
-    switch (text.toLowerCase().trim().replace('?', '')) {
+    const word = text.toLowerCase().trim().replace('?', '');
+
+    if (word.startsWith('$')) {
+      const input = word.replace('$', '').split(' ');
+      const ticker = input[0];
+
+      if (input.length > 1) {
+        switch (input[1].toLowerCase()) {
+          case 'overview':
+            await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+            break;
+          default:
+            await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+            break;
+        }
+
+        return;
+      }
+
+      await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+      return;
+    }
+
+    switch (word) {
       case 'menu':
       case 'show menu':
       case 'help':
@@ -161,6 +184,19 @@ export default class WitAIHelper {
       case '👍🏻':
       case '👍🏼':
         await FBGraphAPIRequest.SendTextMessage(sender, `Glad I could be of help 🙂.\nIf you don't mind, Buy me a coffee 😉`);
+        break;
+
+      case 'news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'MARKET_NEWS');
+        break;
+      case 'crypto prices':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'SHOW_CRYPTOS_PRICES');
+        break;
+      case 'trending tickers':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TRENDING_TICKERS');
+        break;
+      case 'top movers':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TOP_MOVERS');
         break;
 
       default:
