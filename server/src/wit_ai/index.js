@@ -148,6 +148,13 @@ export default class WitAIHelper {
           case 'overview':
             await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
             break;
+          case 'news':
+            await FBGraphAPIRequest.fetchNews(sender, 'tickerNews', ticker);
+            break;
+          case 'balance':
+            break;
+          case 'earnings':
+            break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
             break;

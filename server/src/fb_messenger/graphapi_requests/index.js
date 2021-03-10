@@ -285,6 +285,10 @@ export default class FBGraphAPIRequest {
         this.SendStockOverview({ sender, ticker: data });
         break;
 
+      case 'CRYPTO_NEWS':
+        this.fetchNews(sender, 'cryptoNews');
+        break;
+
       default:
         break;
     }
@@ -350,16 +354,58 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {String} sender
    * @param {*} newsType
+   * @param {} ticker
    */
-  static async fetchNews(sender, newsType) {
-    let marketNews = await MemCachier.GetHashItem('generalnews');
+  static async fetchNews(sender, newsType, ticker) {
+    let finnhubNews;
+    switch (newsType) {
+      case 'forexNews':
+        finnhubNews = await MemCachier.GetHashItem(newsType);
 
-    if (!marketNews) {
-      marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType);
+        }
+
+        const forexNews = Util.ParseFinnHubNewsData(finnhubNews);
+        this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: forexNews });
+        break;
+
+      case 'cryptoNews':
+        finnhubNews = await MemCachier.GetHashItem(newsType);
+
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType);
+        }
+
+        const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews);
+        this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: cryptoNews });
+        break;
+
+      case 'tickerNews':
+        finnhubNews = await MemCachier.GetHashItem(`${ticker.toLowerCase()}News`);
+
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType, ticker);
+        }
+
+        const tickerNews = Util.ParseFinnHubNewsData(finnhubNews);
+        this.SendListRequest({ sender, text: `Here's the ${ticker.toUpperCase()} 📰 news update.`, list: tickerNews });
+        break;
+
+      case 'ngNews':
+        break;
+
+      default:
+        let marketNews = await MemCachier.GetHashItem('generalnews');
+
+        if (!marketNews) {
+          marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+        }
+
+        const news = Util.convertAPIResponseToMessengerList(marketNews);
+        this.SendListRequest({ sender, text: `Here's the US Stock Market 📰 news update.`, list: news });
+        break;
     }
-
-    const news = Util.convertAPIResponseToMessengerList(marketNews);
-    this.SendListRequest({ sender, text: `Here's the US Stock Market 📰 news update.`, list: news });
   }
 
   /**
