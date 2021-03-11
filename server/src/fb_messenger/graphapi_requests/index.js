@@ -7,6 +7,7 @@ import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFa
 import StockAPI from '../../stock_apis';
 import Util from '../../utils';
 import MemCachier from '../../cache/memcachier';
+import RedisCache from '../../cache/redis';
 import Menu from '../messenger_buttons/Menu';
 import crypto from '../messenger_buttons/Menu/crypto';
 import us from '../messenger_buttons/Menu/us';
@@ -208,6 +209,7 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
+    await RedisCache.DeleteItem(sender);
     const data = postbackPayload.split('|')[1];
 
     switch (postbackPayload.split('|')[0]) {
@@ -294,7 +296,18 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'TICKER_NEWS':
-        this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock\nFor example: $AAPL or AAPL`);
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'TICKER_NEWS', 60 * 5);
+        break;
+
+      case 'TICKER_QUOTE':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'TICKER_QUOTE', 60 * 5);
+        break;
+
+      case 'TICKER_OVERVIEW':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'TICKER_OVERVIEW', 60 * 5);
         break;
 
       case 'SHOW_FINNHUB_NEWS_SUMMARY':
@@ -513,7 +526,13 @@ export default class FBGraphAPIRequest {
       overview = await StockAPI.GetStockOverview(ticker);
     }
 
-    const { first, second, third, fourth, fifth } = Util.ParseStockOverviewData(overview, ticker);
+    const data = Util.ParseStockOverviewData(overview, ticker);
+    const { first, second, third, fourth, fifth } = data;
+
+    if (typeof data === 'string') {
+      await this.SendTextMessage(sender, data);
+      return;
+    }
 
     await this.SendLongText({ sender, text: first });
     await this.SendTextMessage(sender, second);

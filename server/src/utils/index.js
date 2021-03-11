@@ -307,6 +307,11 @@ export default class Util {
       LastSplitDate,
     } = data;
 
+    if (!Name) {
+      const overviewData = `Visit https://www.earningsfly.com/stocks/${ticker}?source=t2`;
+      return overviewData;
+    }
+
     const overviewData = {
       first: `*** ${stockTicker} Overview ***\n\nAssetType: ${AssetType}\nName: ${Name}\nDescription: ${Description}`,
 

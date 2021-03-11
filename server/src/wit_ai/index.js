@@ -3,6 +3,7 @@ import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
+import RedisCache from '../cache/redis';
 
 /**
  * @class WitAIHelper
@@ -138,6 +139,12 @@ export default class WitAIHelper {
    */
   static async UnknownResponseHandler(sender, text) {
     const word = text.toLowerCase().trim().replace('?', '');
+    const action = await RedisCache.GetItem(sender);
+
+    if (action) {
+      await this.QRButtonResponseHandler(sender, action, word);
+      return;
+    }
 
     if (word.startsWith('$')) {
       const input = word.replace('$', '').split(' ');
@@ -218,6 +225,33 @@ export default class WitAIHelper {
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
         await FBGraphAPIRequest.SendQuickReplies(sender, msg, Menu);
+        break;
+    }
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} sender
+   * @param {*} text
+   */
+  static async QRButtonResponseHandler(sender, action, text) {
+    const ticker = text.toLowerCase().replace('$', '');
+
+    switch (action) {
+      case 'TICKER_NEWS':
+        await FBGraphAPIRequest.fetchNews(sender, 'tickerNews', ticker);
+        break;
+
+      case 'TICKER_QUOTE':
+        await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+        break;
+      case 'TICKER_OVERVIEW':
+        await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+        break;
+
+      default:
+        await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
         break;
     }
   }
