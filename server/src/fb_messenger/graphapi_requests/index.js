@@ -293,6 +293,14 @@ export default class FBGraphAPIRequest {
         this.fetchNews(sender, 'forexNews');
         break;
 
+      case 'TICKER_NEWS':
+        this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock\nFor example: $AAPL or AAPL`);
+        break;
+
+      case 'SHOW_FINNHUB_NEWS_SUMMARY':
+        this.SendFinnHubNewsSummary(sender, data);
+        break;
+
       default:
         break;
     }
@@ -370,7 +378,7 @@ export default class FBGraphAPIRequest {
           finnhubNews = await StockAPI.GetOtherNews(newsType);
         }
 
-        const forexNews = Util.ParseFinnHubNewsData(finnhubNews);
+        const forexNews = Util.ParseFinnHubNewsData(finnhubNews, 'forex');
         this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: forexNews });
         break;
 
@@ -381,7 +389,7 @@ export default class FBGraphAPIRequest {
           finnhubNews = await StockAPI.GetOtherNews(newsType);
         }
 
-        const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews);
+        const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews, 'crypto');
         this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: cryptoNews });
         break;
 
@@ -392,7 +400,7 @@ export default class FBGraphAPIRequest {
           finnhubNews = await StockAPI.GetOtherNews(newsType, ticker);
         }
 
-        const tickerNews = Util.ParseFinnHubNewsData(finnhubNews);
+        const tickerNews = Util.ParseFinnHubNewsData(finnhubNews, `${ticker.toLowerCase()}`);
         this.SendListRequest({ sender, text: `Here's the ${ticker.toUpperCase()} 📰 news update.`, list: tickerNews });
         break;
 
@@ -512,5 +520,45 @@ export default class FBGraphAPIRequest {
     await this.SendTextMessage(sender, third);
     await this.SendTextMessage(sender, fourth);
     await this.SendTextMessage(sender, fifth);
+  }
+
+  /**
+   * @description
+   * @param {} sender
+   * @param {*} data
+   */
+  static async SendFinnHubNewsSummary(sender, data) {
+    const ticker = data.split('+')[0].toLowerCase();
+    const newsId = data.split('+')[1];
+    let finnhubNews;
+
+    switch (ticker) {
+      case 'forex':
+        finnhubNews = await MemCachier.GetHashItem('forexNews');
+        break;
+
+      case 'crypto':
+        finnhubNews = await MemCachier.GetHashItem('cryptoNews');
+        break;
+
+      default:
+        finnhubNews = await MemCachier.GetHashItem(`${ticker}News`);
+        break;
+    }
+
+    if (!finnhubNews) {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+      return;
+    }
+
+    const newsItem = Util.FindNewsItem(finnhubNews, newsId);
+
+    if (newsItem) {
+      const { headline, url, summary, datetime, related, source } = newsItem;
+      const news = `${headline.toUpperCase()}\n\n${summary}\n\nRelated: ${related}\nSource: ${source}\n${url}\n${new Date(datetime).toDateString()}`;
+      await this.SendLongText({ sender, text: news });
+    } else {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+    }
   }
 }

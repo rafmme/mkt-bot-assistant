@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 import axios from 'axios';
 import dotenv from 'dotenv';
+import createFinnHubNewsOptionButtons from '../fb_messenger/messenger_buttons/finnhubNewsButton';
 import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
 import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
 
@@ -342,8 +343,9 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
    * @static
    * @description
    * @param {*} data
+   * @param {} type
    */
-  static ParseFinnHubNewsData(data) {
+  static ParseFinnHubNewsData(data, type) {
     const list = [];
 
     for (let i = 0; i < data.length; i += 1) {
@@ -358,7 +360,7 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
           url,
           webview_height_ratio: 'full',
         },
-        buttons: createNewsOptionButtons(id, url),
+        buttons: createFinnHubNewsOptionButtons(id, url, type),
       });
     }
 

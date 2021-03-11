@@ -205,6 +205,15 @@ export default class WitAIHelper {
       case 'top movers':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'TOP_MOVERS');
         break;
+      case 'crypto news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_NEWS');
+        break;
+      case 'forex news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'FOREX_NEWS');
+        break;
+      case 'ticker news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_NEWS');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
