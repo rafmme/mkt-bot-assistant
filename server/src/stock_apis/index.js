@@ -182,4 +182,53 @@ export default class StockAPI {
     await MemCachier.SetHashItem(`${symbol.toLowerCase()}Overview`, response, 60 * 15);
     return response;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {} newsType
+   * @param {} symbol
+   */
+  static async GetOtherNews(newsType, symbol) {
+    let cacheKey;
+    let url = 'https://finnhub.io/api/v1/news';
+    const { FINNHUB, IEX_CLOUD } = process.env;
+    let queryObject = {
+      token: FINNHUB,
+    };
+
+    switch (newsType) {
+      case 'forexNews':
+        queryObject.category = 'forex';
+        cacheKey = newsType;
+        break;
+
+      case 'cryptoNews':
+        queryObject.category = 'crypto';
+        cacheKey = newsType;
+        break;
+
+      case 'tickerNews':
+        url = `https://cloud.iexapis.com/stable/stock/${symbol.toLowerCase()}/batch`;
+        queryObject = {
+          types: 'news',
+          token: IEX_CLOUD,
+        };
+        cacheKey = `${symbol.toLowerCase()}News`;
+        break;
+
+      default:
+        break;
+    }
+
+    const response = await new RequestBuilder().withURL(url).method('GET').queryParams(queryObject).build().send();
+
+    if (response.news) {
+      MemCachier.SetHashItem(cacheKey, response.news, 3600 * 12);
+      return response.news;
+    }
+
+    await MemCachier.SetHashItem(cacheKey, response, 3600 * 12);
+    return response;
+  }
 }

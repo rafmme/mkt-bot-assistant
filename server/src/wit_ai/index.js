@@ -3,6 +3,8 @@ import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
+import RedisCache from '../cache/redis';
+import StockAPI from '../stock_apis';
 
 /**
  * @class WitAIHelper
@@ -101,14 +103,19 @@ export default class WitAIHelper {
       case 'greetings':
         if (trait === 'wit$greetings') {
           await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
+          console.log('iex', await StockAPI.GetNews('OCGN'));
         } else if (trait === 'wit$sentiment') {
           const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);
         }
         break;
 
-      case 'check_stock':
       case 'stock_news':
+        FBGraphAPIRequest.fetchNews(sender, 'tickerNews', text.split(' ')[0].replace('$', ''));
+        break;
+      case 'check_stock':
+        FBGraphAPIRequest.SendStockQuote({ sender, ticker: text.split(' ')[0].replace('$', '') });
+        break;
       case 'show_my_portfolio':
       case 'check_stock_price':
       case 'create_portfolio':
@@ -138,6 +145,12 @@ export default class WitAIHelper {
    */
   static async UnknownResponseHandler(sender, text) {
     const word = text.toLowerCase().trim().replace('?', '');
+    const action = await RedisCache.GetItem(sender);
+
+    if (action && action !== '') {
+      await this.QRButtonResponseHandler(sender, action, word);
+      return;
+    }
 
     if (word.startsWith('$')) {
       const input = word.replace('$', '').split(' ');
@@ -147,6 +160,13 @@ export default class WitAIHelper {
         switch (input[1].toLowerCase()) {
           case 'overview':
             await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+            break;
+          case 'news':
+            await FBGraphAPIRequest.fetchNews(sender, 'tickerNews', ticker);
+            break;
+          case 'balance':
+            break;
+          case 'earnings':
             break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
@@ -198,10 +218,49 @@ export default class WitAIHelper {
       case 'top movers':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'TOP_MOVERS');
         break;
+      case 'crypto news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_NEWS');
+        break;
+      case 'forex news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'FOREX_NEWS');
+        break;
+      case 'ticker news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_NEWS');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
         await FBGraphAPIRequest.SendQuickReplies(sender, msg, Menu);
+        break;
+    }
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} sender
+   * @param {*} text
+   */
+  static async QRButtonResponseHandler(sender, action, text) {
+    await RedisCache.SetItem(sender, '', 1);
+    await RedisCache.DeleteItem(sender);
+
+    const ticker = text.toLowerCase().replace('$', '');
+
+    switch (action) {
+      case 'TICKER_NEWS':
+        await FBGraphAPIRequest.fetchNews(sender, 'tickerNews', ticker);
+        break;
+
+      case 'TICKER_QUOTE':
+        await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+        break;
+      case 'TICKER_OVERVIEW':
+        await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+        break;
+
+      default:
+        await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
         break;
     }
   }

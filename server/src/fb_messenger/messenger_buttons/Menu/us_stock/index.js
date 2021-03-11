@@ -7,7 +7,15 @@ listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
     title: 'Stock Quote',
-    payload: 'CHECK_STOCK',
+    payload: 'TICKER_QUOTE',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
+    title: 'Ticker News',
+    payload: 'TICKER_NEWS',
   }),
 );
 
@@ -15,7 +23,7 @@ listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
     title: 'Stock Overview',
-    payload: 'STOCK_OVERVIEW',
+    payload: 'TICKER_OVERVIEW',
   }),
 );
 

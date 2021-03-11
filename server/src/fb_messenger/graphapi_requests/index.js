@@ -7,6 +7,7 @@ import MessengerTemplateFactory from '../messenger_templates/MessengerTemplateFa
 import StockAPI from '../../stock_apis';
 import Util from '../../utils';
 import MemCachier from '../../cache/memcachier';
+import RedisCache from '../../cache/redis';
 import Menu from '../messenger_buttons/Menu';
 import crypto from '../messenger_buttons/Menu/crypto';
 import us from '../messenger_buttons/Menu/us';
@@ -208,6 +209,9 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
+    await RedisCache.SetItem(sender, '', 1);
+    await RedisCache.DeleteItem(sender);
+
     const data = postbackPayload.split('|')[1];
 
     switch (postbackPayload.split('|')[0]) {
@@ -285,6 +289,33 @@ export default class FBGraphAPIRequest {
         this.SendStockOverview({ sender, ticker: data });
         break;
 
+      case 'CRYPTO_NEWS':
+        this.fetchNews(sender, 'cryptoNews');
+        break;
+
+      case 'FOREX_NEWS':
+        this.fetchNews(sender, 'forexNews');
+        break;
+
+      case 'TICKER_NEWS':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'TICKER_NEWS', 60 * 5);
+        break;
+
+      case 'TICKER_QUOTE':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'TICKER_QUOTE', 60 * 5);
+        break;
+
+      case 'TICKER_OVERVIEW':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'TICKER_OVERVIEW', 60 * 5);
+        break;
+
+      case 'SHOW_FINNHUB_NEWS_SUMMARY':
+        this.SendFinnHubNewsSummary(sender, data);
+        break;
+
       default:
         break;
     }
@@ -350,16 +381,58 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {String} sender
    * @param {*} newsType
+   * @param {} ticker
    */
-  static async fetchNews(sender, newsType) {
-    let marketNews = await MemCachier.GetHashItem('generalnews');
+  static async fetchNews(sender, newsType, ticker) {
+    let finnhubNews;
+    switch (newsType) {
+      case 'forexNews':
+        finnhubNews = await MemCachier.GetHashItem(newsType);
 
-    if (!marketNews) {
-      marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType);
+        }
+
+        const forexNews = Util.ParseFinnHubNewsData(finnhubNews, 'forex');
+        this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: forexNews });
+        break;
+
+      case 'cryptoNews':
+        finnhubNews = await MemCachier.GetHashItem(newsType);
+
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType);
+        }
+
+        const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews, 'crypto');
+        this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: cryptoNews });
+        break;
+
+      case 'tickerNews':
+        finnhubNews = await MemCachier.GetHashItem(`${ticker.toLowerCase()}News`);
+
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType, ticker);
+        }
+
+        const tickerNews = Util.ParseFinnHubNewsData(finnhubNews, `${ticker.toLowerCase()}`);
+        this.SendListRequest({ sender, text: `Here's the ${ticker.toUpperCase()} 📰 news update.`, list: tickerNews });
+        break;
+
+      case 'ngNews':
+        break;
+
+      default:
+        let marketNews = await MemCachier.GetHashItem('generalnews');
+
+        if (!marketNews) {
+          marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+        }
+
+        const news = Util.convertAPIResponseToMessengerList(marketNews);
+        this.SendListRequest({ sender, text: `Here's the US Stock Market 📰 news update.`, list: news });
+        break;
     }
-
-    const news = Util.convertAPIResponseToMessengerList(marketNews);
-    this.SendListRequest({ sender, text: `Here's the US Stock Market 📰 news update.`, list: news });
   }
 
   /**
@@ -455,12 +528,59 @@ export default class FBGraphAPIRequest {
       overview = await StockAPI.GetStockOverview(ticker);
     }
 
-    const { first, second, third, fourth, fifth } = Util.ParseStockOverviewData(overview, ticker);
+    const data = Util.ParseStockOverviewData(overview, ticker);
+    const { first, second, third, fourth, fifth } = data;
+
+    if (typeof data === 'string') {
+      await this.SendTextMessage(sender, data);
+      return;
+    }
 
     await this.SendLongText({ sender, text: first });
     await this.SendTextMessage(sender, second);
     await this.SendTextMessage(sender, third);
     await this.SendTextMessage(sender, fourth);
     await this.SendTextMessage(sender, fifth);
+  }
+
+  /**
+   * @description
+   * @param {} sender
+   * @param {*} data
+   */
+  static async SendFinnHubNewsSummary(sender, data) {
+    const ticker = data.split('+')[0].toLowerCase();
+    const url = data.split('+')[1];
+
+    let finnhubNews;
+
+    switch (ticker) {
+      case 'forex':
+        finnhubNews = await MemCachier.GetHashItem('forexNews');
+        break;
+
+      case 'crypto':
+        finnhubNews = await MemCachier.GetHashItem('cryptoNews');
+        break;
+
+      default:
+        finnhubNews = await MemCachier.GetHashItem(`${ticker}News`);
+        break;
+    }
+
+    if (!finnhubNews) {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+      return;
+    }
+
+    const newsItem = Util.FindNewsItem(finnhubNews, url);
+
+    if (newsItem) {
+      const { headline, url: link, summary, datetime, related, source } = newsItem;
+      const news = `${headline.toUpperCase()}\n\n${summary}\n\nRelated: ${related}\nSource: ${source}\n${link}\n${new Date(datetime).toDateString()}`;
+      await this.SendLongText({ sender, text: news });
+    } else {
+      await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
+    }
   }
 }

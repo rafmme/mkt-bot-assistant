@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 import axios from 'axios';
 import dotenv from 'dotenv';
+import createFinnHubNewsOptionButtons from '../fb_messenger/messenger_buttons/finnhubNewsButton';
 import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
 import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
 
@@ -100,7 +101,7 @@ export default class Util {
    */
   static FindNewsItem(newsList, newsId) {
     for (let index = 0; index < newsList.length; index += 1) {
-      if (newsList[index].uuid === newsId) {
+      if (newsList[index].uuid === newsId || newsList[index].url === newsId) {
         return newsList[index];
       }
     }
@@ -127,7 +128,7 @@ export default class Util {
 
       list.push({
         // eslint-disable-next-line camelcase
-        title: `${name} ${symbol}\t\tPrice: $ ${this.FormatLargeNumbers(price)}\t\tMKT Cap: ${this.FormatLargeNumbers(market_cap)}`,
+        title: `${name} ${symbol}    $ ${this.FormatLargeNumbers(price)}    MKT Cap: ${this.FormatLargeNumbers(market_cap)}`,
         subtitle: `24h Volume: ${this.FormatLargeNumbers(volume_24h)}\n% CHG (1h): ${this.FormatLargeNumbers(percent_change_1h)} %\n% CHG (24h): ${this.FormatLargeNumbers(
           percent_change_24h,
         )} %\n% CHG (7d): ${this.FormatLargeNumbers(percent_change_7d)} %`,
@@ -175,8 +176,8 @@ export default class Util {
       const { shortName, regularMarketChangePercent, regularMarketPrice, regularMarketChange, symbol, exchange } = data[i];
 
       list.push({
-        title: `${symbol}\tPrice: $${regularMarketPrice}\tCHG: $${regularMarketChange}\t% CHG: ${regularMarketChangePercent}`,
-        subtitle: `${shortName}\n Exchange: ${exchange}`,
+        title: `${symbol}     Price: $${regularMarketPrice}`,
+        subtitle: `CHG: $${regularMarketChange}\n% CHG: ${regularMarketChangePercent}\n${shortName}\nExchange: ${exchange}`,
         buttons: createTickerOptionButtons(symbol),
       });
     }
@@ -232,7 +233,7 @@ export default class Util {
       list.push({
         title: `${symbol}`,
         subtitle: `Exchange: ${fullExchangeName}\n
-        ${text.split('-'[0].trim())}
+        ${text.split('-')[0].trim()}
         `,
         buttons: createTickerOptionButtons(symbol),
       });
@@ -306,76 +307,68 @@ export default class Util {
       LastSplitDate,
     } = data;
 
+    if (!Name) {
+      const overviewData = `Visit https://www.earningsfly.com/stocks/${ticker}?source=t2`;
+      return overviewData;
+    }
+
     const overviewData = {
-      first: `*** ${stockTicker} Overview ***\n\nAssetType: ${AssetType}\n
-      Name: ${Name}\n
-      Description: ${Description}`,
+      first: `*** ${stockTicker} Overview ***\n\nAssetType: ${AssetType}\nName: ${Name}\nDescription: ${Description}`,
 
-      second: `Exchange: ${Exchange}\n
-      Currency: ${Currency}\n
-      Country: ${Country}\n
-      Sector: ${Sector}\n
-      Industry: ${Industry}\n
-      Address: ${Address}\n
-      FullTimeEmployees: ${FullTimeEmployees}\n
-      FiscalYearEnd: ${FiscalYearEnd}\n
-      LatestQuarter: ${LatestQuarter}\n
-      MarketCapitalization: ${this.FormatLargeNumbers(MarketCapitalization)}\n
-      EBITDA: ${this.FormatLargeNumbers(EBITDA)}\n
-      PERatio: ${PERatio}\n
-      PEGRatio: ${PEGRatio}\n
-      BookValue: ${BookValue}\n
-      DividendPerShare: ${DividendPerShare}\n
-      DividendYield: ${DividendYield}\n
-      EPS: ${EPS}
-`,
+      second: `Exchange: ${Exchange}\nCurrency: ${Currency}\nCountry: ${Country}\nSector: ${Sector}\nIndustry: ${Industry}\nAddress: ${Address}\nFullTimeEmployees: ${FullTimeEmployees}\nFiscalYearEnd: ${FiscalYearEnd}\nLatestQuarter: ${LatestQuarter}\nMarketCapitalization: ${this.FormatLargeNumbers(
+        MarketCapitalization,
+      )}\nEBITDA: ${this.FormatLargeNumbers(
+        EBITDA,
+      )}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${DividendYield}\nEPS: ${EPS}`,
 
-      third: `
-      RevenuePerShareTTM: ${RevenuePerShareTTM}\n
-      ProfitMargin: ${ProfitMargin}\n
-      OperatingMarginTTM: ${OperatingMarginTTM}\n
-      ReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\n
-      ReturnOnEquityTTM: ${ReturnOnEquityTTM}\n
-      RevenueTTM: ${this.FormatLargeNumbers(RevenueTTM)}\n
-      GrossProfitTTM: ${this.FormatLargeNumbers(GrossProfitTTM)}\n
-      DilutedEPSTTM: ${DilutedEPSTTM}\n
-      QuarterlyEarningsGrowthYOY: ${QuarterlyEarningsGrowthYOY}\n
-      QuarterlyRevenueGrowthYOY: ${QuarterlyRevenueGrowthYOY}\n
-      AnalystTargetPrice: ${AnalystTargetPrice}\n
-      TrailingPE: ${TrailingPE}\n
-      ForwardPE: ${ForwardPE}\n
-      PriceToSalesRatioTTM: ${PriceToSalesRatioTTM}\n
-      PriceToBookRatio: ${PriceToBookRatio}\n
-      EVToRevenue: ${EVToRevenue}\n
-      EVToEBITDA: ${EVToEBITDA}\n
-      Beta: ${Beta}\n
-      52WeekHigh: ${data['52WeekHigh']}\n
-      52WeekLow: ${data['52WeekLow']}\n
-      `,
+      third: `RevenuePerShareTTM: ${RevenuePerShareTTM}\nProfitMargin: ${ProfitMargin}\nOperatingMarginTTM: ${OperatingMarginTTM}\nReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\nReturnOnEquityTTM: ${ReturnOnEquityTTM}\nRevenueTTM: ${this.FormatLargeNumbers(
+        RevenueTTM,
+      )}\nGrossProfitTTM: ${this.FormatLargeNumbers(
+        GrossProfitTTM,
+      )}\nDilutedEPSTTM: ${DilutedEPSTTM}\nQuarterlyEarningsGrowthYOY: ${QuarterlyEarningsGrowthYOY}\nQuarterlyRevenueGrowthYOY: ${QuarterlyRevenueGrowthYOY}\nAnalystTargetPrice: ${AnalystTargetPrice}\nTrailingPE: ${TrailingPE}\nForwardPE: ${ForwardPE}\nPriceToSalesRatioTTM: ${PriceToSalesRatioTTM}\nPriceToBookRatio: ${PriceToBookRatio}\nEVToRevenue: ${EVToRevenue}\nEVToEBITDA: ${EVToEBITDA}\nBeta: ${Beta}\n52WeekHigh: ${
+        data['52WeekHigh']
+      }\n52WeekLow: ${data['52WeekLow']}`,
 
-      fourth: `
-      50DayMovingAverage: ${data['50DayMovingAverage']}\n
-      200DayMovingAverage: ${data['200DayMovingAverage']}\n
-      SharesOutstanding: ${this.FormatLargeNumbers(SharesOutstanding)}\n
-      SharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\n
-      SharesShort: ${this.FormatLargeNumbers(SharesShort)}\n
-      SharesShortPriorMonth: ${this.FormatLargeNumbers(SharesShortPriorMonth)}\n
-      ShortRatio: ${ShortRatio}\n
-      ShortPercentOutstanding: ${ShortPercentOutstanding}\n
-      ShortPercentFloat: ${ShortPercentFloat}\n
-      PercentInsiders: ${PercentInsiders}\n
-      PercentInstitutions: ${PercentInstitutions}\n
-      ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\n
-      ForwardAnnualDividendYield: ${ForwardAnnualDividendYield}\n
-      PayoutRatio: ${PayoutRatio}\n
-      DividendDate: ${DividendDate}\n
-      ExDividendDate: ${ExDividendDate}\n
-      LastSplitFactor: ${LastSplitFactor}\n
-      LastSplitDate: ${LastSplitDate}`,
+      fourth: `50DayMovingAverage: ${data['50DayMovingAverage']}\n200DayMovingAverage: ${data['200DayMovingAverage']}\n
+SharesOutstanding: ${this.FormatLargeNumbers(SharesOutstanding)}\nSharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\nSharesShort: ${this.FormatLargeNumbers(
+        SharesShort,
+      )}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
+        SharesShortPriorMonth,
+      )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\n
+ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${ForwardAnnualDividendYield}\nPayoutRatio: ${PayoutRatio}\n
+DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
 
       fifth: `For more visit https://www.earningsfly.com/stocks/${ticker}?source=t2`,
     };
 
     return overviewData;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {} type
+   */
+  static ParseFinnHubNewsData(data, type) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { headline, url, image, summary } = data[i];
+
+      list.push({
+        title: headline.slice(0, 80),
+        subtitle: `${summary.slice(0, 77)}...`,
+        image_url: image,
+        default_action: {
+          type: 'web_url',
+          url,
+          webview_height_ratio: 'full',
+        },
+        buttons: createFinnHubNewsOptionButtons(url, type),
+      });
+    }
+
+    return list;
   }
 }
