@@ -101,7 +101,7 @@ export default class Util {
    */
   static FindNewsItem(newsList, newsId) {
     for (let index = 0; index < newsList.length; index += 1) {
-      if (newsList[index].uuid === newsId || newsList[index].id === newsId) {
+      if (newsList[index].uuid === newsId || newsList[index].url === newsId) {
         return newsList[index];
       }
     }
@@ -354,7 +354,7 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
     const list = [];
 
     for (let i = 0; i < data.length; i += 1) {
-      const { id, headline, url, image, summary } = data[i];
+      const { headline, url, image, summary } = data[i];
 
       list.push({
         title: headline.slice(0, 80),
@@ -365,7 +365,7 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
           url,
           webview_height_ratio: 'full',
         },
-        buttons: createFinnHubNewsOptionButtons(id, url, type),
+        buttons: createFinnHubNewsOptionButtons(url, type),
       });
     }
 

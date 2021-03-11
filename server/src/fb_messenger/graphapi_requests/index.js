@@ -209,7 +209,9 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
+    await RedisCache.SetItem(sender, '', 1);
     await RedisCache.DeleteItem(sender);
+
     const data = postbackPayload.split('|')[1];
 
     switch (postbackPayload.split('|')[0]) {
@@ -548,7 +550,8 @@ export default class FBGraphAPIRequest {
    */
   static async SendFinnHubNewsSummary(sender, data) {
     const ticker = data.split('+')[0].toLowerCase();
-    const newsId = data.split('+')[1];
+    const url = data.split('+')[1];
+
     let finnhubNews;
 
     switch (ticker) {
@@ -570,11 +573,11 @@ export default class FBGraphAPIRequest {
       return;
     }
 
-    const newsItem = Util.FindNewsItem(finnhubNews, newsId);
+    const newsItem = Util.FindNewsItem(finnhubNews, url);
 
     if (newsItem) {
-      const { headline, url, summary, datetime, related, source } = newsItem;
-      const news = `${headline.toUpperCase()}\n\n${summary}\n\nRelated: ${related}\nSource: ${source}\n${url}\n${new Date(datetime).toDateString()}`;
+      const { headline, url: link, summary, datetime, related, source } = newsItem;
+      const news = `${headline.toUpperCase()}\n\n${summary}\n\nRelated: ${related}\nSource: ${source}\n${link}\n${new Date(datetime).toDateString()}`;
       await this.SendLongText({ sender, text: news });
     } else {
       await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);

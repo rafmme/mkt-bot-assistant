@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
 import RedisCache from '../cache/redis';
+import StockAPI from '../stock_apis';
 
 /**
  * @class WitAIHelper
@@ -102,14 +103,19 @@ export default class WitAIHelper {
       case 'greetings':
         if (trait === 'wit$greetings') {
           await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
+          console.log('iex', await StockAPI.GetNews('OCGN'));
         } else if (trait === 'wit$sentiment') {
           const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);
         }
         break;
 
-      case 'check_stock':
       case 'stock_news':
+        FBGraphAPIRequest.fetchNews(sender, 'tickerNews', text.split(' ')[0].replace('$', ''));
+        break;
+      case 'check_stock':
+        FBGraphAPIRequest.SendStockQuote({ sender, ticker: text.split(' ')[0].replace('$', '') });
+        break;
       case 'show_my_portfolio':
       case 'check_stock_price':
       case 'create_portfolio':
@@ -141,7 +147,7 @@ export default class WitAIHelper {
     const word = text.toLowerCase().trim().replace('?', '');
     const action = await RedisCache.GetItem(sender);
 
-    if (action) {
+    if (action && action !== '') {
       await this.QRButtonResponseHandler(sender, action, word);
       return;
     }
@@ -236,6 +242,9 @@ export default class WitAIHelper {
    * @param {*} text
    */
   static async QRButtonResponseHandler(sender, action, text) {
+    await RedisCache.SetItem(sender, '', 1);
+    await RedisCache.DeleteItem(sender);
+
     const ticker = text.toLowerCase().replace('$', '');
 
     switch (action) {

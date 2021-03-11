@@ -14,6 +14,14 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
+    title: 'Ticker News',
+    payload: 'TICKER_NEWS',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
     title: 'Stock Overview',
     payload: 'TICKER_OVERVIEW',
   }),

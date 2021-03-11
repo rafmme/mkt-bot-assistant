@@ -191,8 +191,9 @@ export default class StockAPI {
    */
   static async GetOtherNews(newsType, symbol) {
     let cacheKey;
-    const { FINNHUB } = process.env;
-    const queryObject = {
+    let url = 'https://finnhub.io/api/v1/news';
+    const { FINNHUB, IEX_CLOUD } = process.env;
+    let queryObject = {
       token: FINNHUB,
     };
 
@@ -208,7 +209,11 @@ export default class StockAPI {
         break;
 
       case 'tickerNews':
-        queryObject.symbol = `${symbol.toLowerCase()}`;
+        url = `https://cloud.iexapis.com/stable/stock/${symbol.toLowerCase()}/batch`;
+        queryObject = {
+          types: 'news',
+          token: IEX_CLOUD,
+        };
         cacheKey = `${symbol.toLowerCase()}News`;
         break;
 
@@ -216,7 +221,12 @@ export default class StockAPI {
         break;
     }
 
-    const response = await new RequestBuilder().withURL('https://finnhub.io/api/v1/news').method('GET').queryParams(queryObject).build().send();
+    const response = await new RequestBuilder().withURL(url).method('GET').queryParams(queryObject).build().send();
+
+    if (response.news) {
+      MemCachier.SetHashItem(cacheKey, response.news, 3600 * 12);
+      return response.news;
+    }
 
     await MemCachier.SetHashItem(cacheKey, response, 3600 * 12);
     return response;

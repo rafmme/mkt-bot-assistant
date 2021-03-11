@@ -3,10 +3,10 @@ import MessengerButtonFactory from './ButtonFactory';
 
 /**
  * @description
- * @param {*} newsId
  * @param {*} url
+ * @param {*} type
  */
-const createFinnHubNewsOptionButtons = (newsId, url, type) => {
+const createFinnHubNewsOptionButtons = (url, type) => {
   const buttons = new ButtonList();
 
   buttons.addButton(
@@ -21,7 +21,7 @@ const createFinnHubNewsOptionButtons = (newsId, url, type) => {
     MessengerButtonFactory.CreateButton({
       type: 'postback',
       title: 'Read Summary',
-      payload: `SHOW_FINNHUB_NEWS_SUMMARY|${type}+${newsId}`,
+      payload: `SHOW_FINNHUB_NEWS_SUMMARY|${type}+${url}`,
     }),
   );
 
