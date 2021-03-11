@@ -289,6 +289,10 @@ export default class FBGraphAPIRequest {
         this.fetchNews(sender, 'cryptoNews');
         break;
 
+      case 'FOREX_NEWS':
+        this.fetchNews(sender, 'forexNews');
+        break;
+
       default:
         break;
     }
