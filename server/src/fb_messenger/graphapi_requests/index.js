@@ -14,6 +14,7 @@ import us from '../messenger_buttons/Menu/us';
 import ngn from '../messenger_buttons/Menu/ngn';
 import newsOps from '../messenger_buttons/Menu/news';
 import stockOps from '../messenger_buttons/Menu/us_stock';
+import Scraper from '../../scraper';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -313,6 +314,17 @@ export default class FBGraphAPIRequest {
       case 'CRYPTO_PRICE':
         await this.SendTextMessage(sender, `Please enter the Crypto Coin Symbol within the next 5 minutes.\nFor example: $BTC`);
         await RedisCache.SetItem(sender, 'CRYPTO_PRICE', 60 * 5);
+        break;
+
+      case 'NGN_P_RATES':
+        const ratesData = await Scraper.GetElementText('https://www.abokifx.com/home', '.grid-table');
+
+        if (ratesData === `Sorry, I can't process this request at the moment`) {
+          await this.SendTextMessage(sender, ratesData);
+          return;
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseNGNRatesData(ratesData.split('\n\n')) });
         break;
 
       default:

@@ -113,22 +113,26 @@ export default class WitAIHelper {
       case 'stock_news':
         FBGraphAPIRequest.fetchNews(sender, 'tickerNews', text.split(' ')[0].replace('$', ''));
         break;
+      case 'check_stock_price':
       case 'check_stock':
         FBGraphAPIRequest.SendStockQuote({ sender, ticker: text.split(' ')[0].replace('$', '') });
         break;
       case 'show_my_portfolio':
-      case 'check_stock_price':
       case 'create_portfolio':
       case 'delete_portfolio':
-      case 'show_crypto_prices':
       case 'show_crypto_holdings':
       case 'portfolio_news':
       case 'convert_currency':
-      case 'check_crypto_coin':
         await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available yet, we are still working 👷🏾‍♀️ on it.\nPlease bear with us.`);
         break;
+      case 'show_crypto_prices':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'SHOW_CRYPTOS_PRICES');
+        break;
+      case 'check_crypto_coin':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_PRICE');
+        break;
       case 'market_news':
-        FBGraphAPIRequest.fetchNews(sender);
+        await FBGraphAPIRequest.fetchNews(sender);
         break;
 
       default:
@@ -229,6 +233,12 @@ export default class WitAIHelper {
         break;
       case 'crypto price':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_PRICE');
+        break;
+      case 'ngn parallel rates':
+      case 'ngn black market rates':
+      case 'ngn parallel rate':
+      case 'ngn black market rate':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_P_RATES');
         break;
 
       default:

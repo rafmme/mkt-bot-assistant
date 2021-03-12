@@ -371,4 +371,35 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
 
     return list;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {*} rates
+   * @param {} type
+   */
+  static ParseNGNRatesData(rates, type) {
+    let exchangeRates =
+      type === 'cbn_rate' ? 'CBN EXCHANGE RATES - NGN >> USD  GBP  EUR\n' : 'Quotes: * morning, ** midday, ***evening\nNGN >> USD (BUY/SELL) GBP (BUY/SELL) EUR (BUY/SELL)\n';
+
+    if (type === 'bank_rate') {
+      exchangeRates = 'DATE  LOCATION  BANK  RATE  CURRENCY\n';
+    }
+
+    if (type === 'usd_rate') {
+      const dollarRate = rates[1].trim().split('\n')[1].split('/');
+
+      return {
+        buy: Number.parseFloat(dollarRate[0].trim(), 10),
+        sell: Number.parseFloat(dollarRate[1].trim(), 10),
+      };
+    }
+
+    for (let i = 1; i < rates.length; i += 1) {
+      const el = rates[i];
+      exchangeRates += `\n${el.replace('\n', '\t').trim()}\n`;
+    }
+
+    return exchangeRates;
+  }
 }
