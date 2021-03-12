@@ -227,6 +227,9 @@ export default class WitAIHelper {
       case 'ticker news':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_NEWS');
         break;
+      case 'crypto price':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_PRICE');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
@@ -257,6 +260,9 @@ export default class WitAIHelper {
         break;
       case 'TICKER_OVERVIEW':
         await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+        break;
+      case 'CRYPTO_PRICE':
+        await FBGraphAPIRequest.SendCryptoPrices(sender, ticker);
         break;
 
       default:

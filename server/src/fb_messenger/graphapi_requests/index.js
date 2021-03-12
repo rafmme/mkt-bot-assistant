@@ -232,13 +232,7 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'SHOW_CRYPTOS_PRICES':
-        let cryptoPricesData = await MemCachier.GetHashItem('cryptoPrices');
-
-        if (!cryptoPricesData) {
-          cryptoPricesData = await StockAPI.GetCryptoPrices();
-        }
-
-        this.SendListRequest({ sender, text: `Here's the list of Crytocurrencies with their price.`, list: Util.ParseCryptoPricesData(cryptoPricesData) });
+        this.SendCryptoPrices(sender);
         break;
 
       case 'MENU_CRYPTO':
@@ -314,6 +308,11 @@ export default class FBGraphAPIRequest {
 
       case 'SHOW_FINNHUB_NEWS_SUMMARY':
         this.SendFinnHubNewsSummary(sender, data);
+        break;
+
+      case 'CRYPTO_PRICE':
+        await this.SendTextMessage(sender, `Please enter the Crypto Coin Symbol within the next 5 minutes.\nFor example: $BTC`);
+        await RedisCache.SetItem(sender, 'CRYPTO_PRICE', 60 * 5);
         break;
 
       default:
@@ -405,7 +404,7 @@ export default class FBGraphAPIRequest {
         }
 
         const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews, 'crypto');
-        this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: cryptoNews });
+        this.SendListRequest({ sender, text: `Here's the Crypto Market 📰 news update.`, list: cryptoNews });
         break;
 
       case 'tickerNews':
@@ -582,5 +581,21 @@ export default class FBGraphAPIRequest {
     } else {
       await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
     }
+  }
+
+  /**
+   * @description
+   * @param {} sender
+   * @param {*} coinName
+   */
+  static async SendCryptoPrices(sender, coinName) {
+    let cryptoPricesData = coinName ? await MemCachier.GetHashItem(`${coinName.toLowerCase()}Price`) : await MemCachier.GetHashItem('cryptoPrices');
+    const text = coinName ? `Here's the price of ${coinName}` : `Here's the list of Crytocurrencies with their price.`;
+
+    if (!cryptoPricesData) {
+      cryptoPricesData = coinName ? await StockAPI.GetCryptoPrices(coinName) : await StockAPI.GetCryptoPrices();
+    }
+
+    this.SendListRequest({ sender, text, list: Util.ParseCryptoPricesData(cryptoPricesData) });
   }
 }
