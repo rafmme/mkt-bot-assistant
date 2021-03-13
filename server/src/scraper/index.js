@@ -1,6 +1,8 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-unsafe-finally */
 /* eslint-disable consistent-return */
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
+import MemCachier from '../cache/memcachier';
 
 /**
  * @class
@@ -26,7 +28,7 @@ export default class Scraper {
    */
   static async GetInstance() {
     const scraperObject = new this();
-    scraperObject.browser = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+    scraperObject.browser = await puppeteer.launch();
 
     return scraperObject;
   }
@@ -59,7 +61,56 @@ export default class Scraper {
     } finally {
       if (hasError) {
         hasError = false;
-        return `Sorry, I can't process this request at the moment`;
+        return `Sorry 😔, I can't process this request at the moment.`;
+      }
+    }
+  }
+
+  /**
+   * @static
+   * @description
+   * @returns {[]} news
+   */
+  static async ScrapeNgNews() {
+    let hasError = false;
+
+    try {
+      const news = [];
+      const { HEROKU_APP_URL } = process.env;
+      const { browser } = await this.GetInstance();
+      const page = await browser.newPage();
+
+      await page.goto('https://www.abokifx.com/home');
+      await page.waitForSelector('.news-section');
+
+      const element = await page.$('.news-section');
+      const newsContainerElement = await element.$$('a');
+
+      if (newsContainerElement.length > 0) {
+        for (let i = 0; i < newsContainerElement.length; i += 1) {
+          const el = newsContainerElement[i];
+
+          news.push({
+            title: `${await el.evaluate((node) => node.innerText)}`.slice(0, 80),
+            image: `${HEROKU_APP_URL}/static/screenshots/ngn.jpg`,
+            url: await el.evaluate((node) => node.getAttribute('href')),
+          });
+        }
+      }
+
+      if (news.length > 0) {
+        await MemCachier.SetHashItem('ngNews', news, 3600 * 5);
+      }
+
+      await browser.close();
+      return news;
+    } catch (error) {
+      hasError = true;
+      console.error(error);
+    } finally {
+      if (hasError) {
+        hasError = false;
+        return `Sorry 😔, I can't process this request at the moment.`;
       }
     }
   }

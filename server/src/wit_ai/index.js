@@ -5,6 +5,8 @@ import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
 import RedisCache from '../cache/redis';
 import StockAPI from '../stock_apis';
+import Scraper from '../scraper';
+import Util from '../utils';
 
 /**
  * @class WitAIHelper
@@ -240,6 +242,23 @@ export default class WitAIHelper {
       case 'ngn black market rate':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_P_RATES');
         break;
+      case 'ngn bank rates':
+      case 'ngn bank rate':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_BANK_RATES');
+        break;
+      case 'ngn cbn rates':
+      case 'ngn cbn rate':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_CBN_RATES');
+        break;
+      case '9ja news':
+      case 'naija news':
+      case 'ng news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_NEWS');
+        break;
+      case 'check ng stock':
+      case 'show ng stock':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_STOCK');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
@@ -273,6 +292,18 @@ export default class WitAIHelper {
         break;
       case 'CRYPTO_PRICE':
         await FBGraphAPIRequest.SendCryptoPrices(sender, ticker);
+        break;
+      case 'NGN_STOCK':
+        let ngStock = await RedisCache.GetItem(`${ticker}NG`);
+
+        if (!ngStock) {
+          const url = `https://www.marketwatch.com/investing/stock/${ticker}?countrycode=ng`;
+          const ngStockPrice = await Scraper.GetElementText(url, '.element.element--intraday');
+          const ngStockKeyData = await Scraper.GetElementText(url, '.element.element--list');
+          ngStock = `${ticker} Price\n${ngStockPrice}\n\n${Util.ParseScrapedStockData(ticker, ngStockKeyData)}`;
+          await RedisCache.SetItem(`${ticker}NG`, ngStock, 60 * 10);
+        }
+        await FBGraphAPIRequest.SendLongText({ sender, text: ngStock });
         break;
 
       default:

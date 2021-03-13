@@ -317,14 +317,41 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'NGN_P_RATES':
-        const ratesData = await Scraper.GetElementText('https://www.abokifx.com/home', '.grid-table');
+        await this.SendNGNCurrencyRates(sender);
+        break;
 
-        if (ratesData === `Sorry, I can't process this request at the moment`) {
-          await this.SendTextMessage(sender, ratesData);
-          return;
+      case 'NGN_CBN_RATES':
+        await this.SendNGNCurrencyRates(sender, 'cbn_rate');
+        break;
+
+      case 'NGN_NEWS':
+        let ngNews = await MemCachier.GetHashItem('ngNews');
+
+        if (!ngNews) {
+          ngNews = await Scraper.ScrapeNgNews();
         }
 
-        await this.SendLongText({ sender, text: Util.ParseNGNRatesData(ratesData.split('\n\n')) });
+        await this.SendListRequest({ sender, text: `Here's the Nigeria news update 📰. Enjoy.`, list: Util.ParseNgNews(ngNews) });
+        break;
+
+      case 'NGN_STOCK':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the NG (NSE) Stock within the next 5 minutes.\nFor example: $UPDCREIT`);
+        await RedisCache.SetItem(sender, 'NGN_STOCK', 60 * 5);
+        break;
+
+      case 'NGN_BANK_RATES':
+        await this.SendNGNCurrencyRates(sender, 'bank_rate');
+        break;
+
+      case 'SHOW_NG_NEWS_SUMMARY':
+        let newsContent = await RedisCache.GetItem(data);
+
+        if (!newsContent) {
+          newsContent = await Scraper.GetElementText(data, '.main-inner');
+          await RedisCache.SetItem(data, newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', ''), 3600 * 5);
+        }
+
+        await this.SendLongText({ sender, text: newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', '') });
         break;
 
       default:
@@ -493,8 +520,7 @@ export default class FBGraphAPIRequest {
 
   /**
    * @description
-   * @param {String} sender
-   * @param {*} newsType
+   * @param {{}} object
    */
   static async SendListRequest({ sender, text, list }) {
     await this.SendLargeMessengerList({ sender, text, list });
@@ -609,5 +635,36 @@ export default class FBGraphAPIRequest {
     }
 
     this.SendListRequest({ sender, text, list: Util.ParseCryptoPricesData(cryptoPricesData) });
+  }
+
+  /**
+   * @description
+   * @param {} sender
+   * @param {*} type
+   */
+  static async SendNGNCurrencyRates(sender, type) {
+    const url = 'https://www.abokifx.com/home';
+    let ratesData;
+
+    switch (type) {
+      case 'cbn_rate':
+        ratesData = await Scraper.GetElementText(url, '.rate-table-container.cbn-rate');
+        break;
+
+      case 'bank_rate':
+        ratesData = await Scraper.GetElementText(url, '.bank-atm.conatiner');
+        break;
+
+      default:
+        ratesData = await Scraper.GetElementText(url, '.grid-table');
+        break;
+    }
+
+    if (ratesData === `Sorry, I can't process this request at the moment`) {
+      await this.SendTextMessage(sender, ratesData);
+      return;
+    }
+
+    await this.SendLongText({ sender, text: Util.ParseNGNRatesData(ratesData.split('\n\n'), type) });
   }
 }

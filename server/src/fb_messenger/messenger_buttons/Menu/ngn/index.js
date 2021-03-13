@@ -30,6 +30,14 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
+    title: 'NGN Bank rates',
+    payload: 'NGN_BANK_RATES',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
     title: 'NGN CBN rates',
     payload: 'NGN_CBN_RATES',
   }),
