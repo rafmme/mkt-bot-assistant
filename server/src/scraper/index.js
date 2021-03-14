@@ -28,7 +28,7 @@ export default class Scraper {
    */
   static async GetInstance() {
     const scraperObject = new this();
-    scraperObject.browser = await puppeteer.launch();
+    scraperObject.browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
 
     return scraperObject;
   }
