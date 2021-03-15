@@ -93,7 +93,7 @@ export default class Scraper {
           news.push({
             title: `${await el.evaluate((node) => node.innerText)}`.slice(0, 80),
             image: `${HEROKU_APP_URL}/static/screenshots/ngn.jpg`,
-            url: await el.evaluate((node) => node.getAttribute('href')),
+            url: `https://www.abokifx.com${await el.evaluate((node) => node.getAttribute('href'))}`,
           });
         }
       }
