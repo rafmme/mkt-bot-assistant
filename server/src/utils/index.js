@@ -438,7 +438,7 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
    */
   static ParseScrapedStockData(ticker, data) {
     const splitData = data.split('\n');
-    let keyData = `******* ${ticker} ${splitData[0]} *******\n`;
+    let keyData = `******* ${ticker.toUpperCase()} ${splitData[0]} *******\n`;
 
     for (let i = 0; i < splitData.length; i += 2) {
       if (`${splitData[i + 1]} => ${splitData[i + 2]}` !== 'undefined => undefined') {

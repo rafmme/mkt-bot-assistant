@@ -268,12 +268,16 @@ export default class FBGraphAPIRequest {
       case 'TOP_MOVERS':
         let moversData = await MemCachier.GetHashItem('movers');
 
-        if (!list) {
+        if (!moversData) {
           moversData = await StockAPI.GetMarketMovers();
         }
 
+        if (moversData) {
+          await this.SendTextMessage(sender, `Here's the US Stock Market Top Gainers, Losers and Most Active`);
+        }
+
         for (let i = 0; i < moversData.length; i += 1) {
-          await this.SendListRequest({ sender, text: moversData[i].title, list: Util.ParseTopMoversData(moversData[i].listOfMovers, moversData[i].title) });
+          await this.SendListRequest({ sender, list: Util.ParseTopMoversData(moversData[i].listOfMovers, moversData[i].title) });
         }
         break;
 
@@ -529,13 +533,26 @@ export default class FBGraphAPIRequest {
   /**
    * @description
    * @param {*} object
+   * @param {Number} index
+   */
+  static LongTextTimeoutTask({ sender, text }, index) {
+    const delayTime = index === 2000 ? 2000 : index - 2000;
+
+    setTimeout(async () => {
+      await this.SendTextMessage(sender, text);
+    }, delayTime);
+  }
+
+  /**
+   * @description
+   * @param {*} object
    */
   static async SendLongText({ sender, text }) {
     for (let index = 0; index < text.length; index += 2000) {
       if (index === 0) {
         await this.SendTextMessage(sender, text.slice(0, 2000));
       } else {
-        await this.SendTextMessage(sender, text.slice(index, index + 2001));
+        this.LongTextTimeoutTask({ sender, text: text.slice(index, index + 2000) }, index);
       }
     }
   }

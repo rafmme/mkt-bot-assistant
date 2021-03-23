@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
 import RedisCache from '../cache/redis';
-import StockAPI from '../stock_apis';
 import Scraper from '../scraper';
 import Util from '../utils';
+import stockOps from '../fb_messenger/messenger_buttons/Menu/us_stock';
 
 /**
  * @class WitAIHelper
@@ -105,7 +105,6 @@ export default class WitAIHelper {
       case 'greetings':
         if (trait === 'wit$greetings') {
           await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
-          console.log('iex', await StockAPI.GetNews('OCGN'));
         } else if (trait === 'wit$sentiment') {
           const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);
@@ -113,6 +112,10 @@ export default class WitAIHelper {
         break;
 
       case 'stock_news':
+        if (text.toLowerCase().startsWith('ng') || text.toLowerCase().startsWith('9ja') || text.toLowerCase().startsWith('naija')) {
+          FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_NEWS');
+          return;
+        }
         FBGraphAPIRequest.fetchNews(sender, 'tickerNews', text.split(' ')[0].replace('$', ''));
         break;
       case 'check_stock_price':
@@ -182,7 +185,7 @@ export default class WitAIHelper {
         return;
       }
 
-      await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+      await FBGraphAPIRequest.SendQuickReplies(sender, `What'd you like to see on $${ticker.toUpperCase()}`, stockOps);
       return;
     }
 
@@ -300,7 +303,7 @@ export default class WitAIHelper {
           const url = `https://www.marketwatch.com/investing/stock/${ticker}?countrycode=ng`;
           const ngStockPrice = await Scraper.GetElementText(url, '.element.element--intraday');
           const ngStockKeyData = await Scraper.GetElementText(url, '.element.element--list');
-          ngStock = `${ticker} Price\n${ngStockPrice}\n\n${Util.ParseScrapedStockData(ticker, ngStockKeyData)}`;
+          ngStock = `${ticker.toUpperCase()} Quote\n\n${ngStockPrice}\n\n${Util.ParseScrapedStockData(ticker, ngStockKeyData)}`;
           await RedisCache.SetItem(`${ticker}NG`, ngStock, 60 * 10);
         }
         await FBGraphAPIRequest.SendLongText({ sender, text: ngStock });
