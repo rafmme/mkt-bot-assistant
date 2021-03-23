@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Menu from '../fb_messenger/messenger_buttons/Menu';
 import RedisCache from '../cache/redis';
-import StockAPI from '../stock_apis';
+import Scraper from '../scraper';
+import Util from '../utils';
+import stockOps from '../fb_messenger/messenger_buttons/Menu/us_stock';
 
 /**
  * @class WitAIHelper
@@ -103,7 +105,6 @@ export default class WitAIHelper {
       case 'greetings':
         if (trait === 'wit$greetings') {
           await FBGraphAPIRequest.SendQuickReplies(sender, 'Hi 👋🏾, how can I be of help? 😎', Menu);
-          console.log('iex', await StockAPI.GetNews('OCGN'));
         } else if (trait === 'wit$sentiment') {
           const response = value === 'positive' ? 'Glad I could be of help 🙂.' : 'Hmm.';
           await FBGraphAPIRequest.SendTextMessage(sender, response);
@@ -111,24 +112,32 @@ export default class WitAIHelper {
         break;
 
       case 'stock_news':
+        if (text.toLowerCase().startsWith('ng') || text.toLowerCase().startsWith('9ja') || text.toLowerCase().startsWith('naija')) {
+          FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_NEWS');
+          return;
+        }
         FBGraphAPIRequest.fetchNews(sender, 'tickerNews', text.split(' ')[0].replace('$', ''));
         break;
+      case 'check_stock_price':
       case 'check_stock':
         FBGraphAPIRequest.SendStockQuote({ sender, ticker: text.split(' ')[0].replace('$', '') });
         break;
       case 'show_my_portfolio':
-      case 'check_stock_price':
       case 'create_portfolio':
       case 'delete_portfolio':
-      case 'show_crypto_prices':
       case 'show_crypto_holdings':
       case 'portfolio_news':
       case 'convert_currency':
-      case 'check_crypto_coin':
         await FBGraphAPIRequest.SendTextMessage(sender, `Hi, this feature ${intent} isn't available yet, we are still working 👷🏾‍♀️ on it.\nPlease bear with us.`);
         break;
+      case 'show_crypto_prices':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'SHOW_CRYPTOS_PRICES');
+        break;
+      case 'check_crypto_coin':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_PRICE');
+        break;
       case 'market_news':
-        FBGraphAPIRequest.fetchNews(sender);
+        await FBGraphAPIRequest.fetchNews(sender);
         break;
 
       default:
@@ -176,7 +185,7 @@ export default class WitAIHelper {
         return;
       }
 
-      await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
+      await FBGraphAPIRequest.SendQuickReplies(sender, `What'd you like to see on $${ticker.toUpperCase()}`, stockOps);
       return;
     }
 
@@ -227,6 +236,32 @@ export default class WitAIHelper {
       case 'ticker news':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_NEWS');
         break;
+      case 'crypto price':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'CRYPTO_PRICE');
+        break;
+      case 'ngn parallel rates':
+      case 'ngn black market rates':
+      case 'ngn parallel rate':
+      case 'ngn black market rate':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_P_RATES');
+        break;
+      case 'ngn bank rates':
+      case 'ngn bank rate':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_BANK_RATES');
+        break;
+      case 'ngn cbn rates':
+      case 'ngn cbn rate':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_CBN_RATES');
+        break;
+      case '9ja news':
+      case 'naija news':
+      case 'ng news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_NEWS');
+        break;
+      case 'check ng stock':
+      case 'show ng stock':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_STOCK');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
@@ -257,6 +292,21 @@ export default class WitAIHelper {
         break;
       case 'TICKER_OVERVIEW':
         await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
+        break;
+      case 'CRYPTO_PRICE':
+        await FBGraphAPIRequest.SendCryptoPrices(sender, ticker);
+        break;
+      case 'NGN_STOCK':
+        let ngStock = await RedisCache.GetItem(`${ticker}NG`);
+
+        if (!ngStock) {
+          const url = `https://www.marketwatch.com/investing/stock/${ticker}?countrycode=ng`;
+          const ngStockPrice = await Scraper.GetElementText(url, '.element.element--intraday');
+          const ngStockKeyData = await Scraper.GetElementText(url, '.element.element--list');
+          ngStock = `${ticker.toUpperCase()} Quote\n\n${ngStockPrice}\n\n${Util.ParseScrapedStockData(ticker, ngStockKeyData)}`;
+          await RedisCache.SetItem(`${ticker}NG`, ngStock, 60 * 10);
+        }
+        await FBGraphAPIRequest.SendLongText({ sender, text: ngStock });
         break;
 
       default:

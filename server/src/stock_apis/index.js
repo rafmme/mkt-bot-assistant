@@ -41,14 +41,18 @@ export default class StockAPI {
   /**
    * @static
    * @description
+   * @param {} coinName
    */
-  static async GetCryptoPrices() {
+  static async GetCryptoPrices(coinName) {
     const { COIN_MARKET } = process.env;
+    const symbol = coinName || 'BTC,ETH,ADA,LTC,XMR,DOT,USDT,BNB,DOGE,XRP';
+    const cacheKey = coinName ? `${coinName.toLowerCase()}Price` : 'cryptoPrices';
+
     const response = await new RequestBuilder()
       .withURL('https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest')
       .method('GET')
       .queryParams({
-        symbol: 'BTC,ETH,ADA,LTC,XMR,DOT,USDT,BNB,DOGE,XRP',
+        symbol,
       })
       .headers({
         'X-CMC_PRO_API_KEY': COIN_MARKET,
@@ -58,7 +62,7 @@ export default class StockAPI {
 
     const { data } = response;
 
-    await MemCachier.SetHashItem('cryptoPrices', data, 120);
+    await MemCachier.SetHashItem(cacheKey, data, 120);
     return data;
   }
 

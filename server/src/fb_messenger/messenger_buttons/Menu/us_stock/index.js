@@ -38,8 +38,8 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
-    title: 'Stock Analysis',
-    payload: 'STOCK_ANALYSIS',
+    title: 'Stock Analyst Ratings',
+    payload: 'STOCK_ANALYST_RATINGS',
   }),
 );
 

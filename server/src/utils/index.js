@@ -3,6 +3,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import createFinnHubNewsOptionButtons from '../fb_messenger/messenger_buttons/finnhubNewsButton';
 import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
+import createNgNewsOptionButtons from '../fb_messenger/messenger_buttons/ngNewsButton';
 import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
 
 dotenv.config();
@@ -370,5 +371,81 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
     }
 
     return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} rates
+   * @param {} type
+   */
+  static ParseNGNRatesData(rates, type) {
+    let exchangeRates =
+      type === 'cbn_rate' ? 'CBN EXCHANGE RATES - NGN >> USD  GBP  EUR\n' : 'Quotes: * morning, ** midday, ***evening\nNGN >> USD (BUY/SELL) GBP (BUY/SELL) EUR (BUY/SELL)\n';
+
+    if (type === 'bank_rate') {
+      exchangeRates = 'DATE  LOCATION  BANK  RATE  CURRENCY\n';
+    }
+
+    if (type === 'usd_rate') {
+      const dollarRate = rates[1].trim().split('\n')[1].split('/');
+
+      return {
+        buy: Number.parseFloat(dollarRate[0].trim(), 10),
+        sell: Number.parseFloat(dollarRate[1].trim(), 10),
+      };
+    }
+
+    for (let i = 1; i < rates.length; i += 1) {
+      const el = rates[i];
+      exchangeRates += `\n${el.replace('\n', '\t').trim()}\n`;
+    }
+
+    return exchangeRates;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {[]} data
+   */
+  static ParseNgNews(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { title, image, url } = data[i];
+
+      list.push({
+        title,
+        image_url: image,
+        default_action: {
+          type: 'web_url',
+          url,
+          webview_height_ratio: 'full',
+        },
+        buttons: createNgNewsOptionButtons(url),
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} ticker
+   * @param {String} data
+   */
+  static ParseScrapedStockData(ticker, data) {
+    const splitData = data.split('\n');
+    let keyData = `******* ${ticker.toUpperCase()} ${splitData[0]} *******\n`;
+
+    for (let i = 0; i < splitData.length; i += 2) {
+      if (`${splitData[i + 1]} => ${splitData[i + 2]}` !== 'undefined => undefined') {
+        keyData += `\n${splitData[i + 1]} => ${splitData[i + 2]}\n`;
+      }
+    }
+
+    return keyData;
   }
 }

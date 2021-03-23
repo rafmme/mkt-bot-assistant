@@ -14,6 +14,7 @@ import us from '../messenger_buttons/Menu/us';
 import ngn from '../messenger_buttons/Menu/ngn';
 import newsOps from '../messenger_buttons/Menu/news';
 import stockOps from '../messenger_buttons/Menu/us_stock';
+import Scraper from '../../scraper';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -232,13 +233,7 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'SHOW_CRYPTOS_PRICES':
-        let cryptoPricesData = await MemCachier.GetHashItem('cryptoPrices');
-
-        if (!cryptoPricesData) {
-          cryptoPricesData = await StockAPI.GetCryptoPrices();
-        }
-
-        this.SendListRequest({ sender, text: `Here's the list of Crytocurrencies with their price.`, list: Util.ParseCryptoPricesData(cryptoPricesData) });
+        this.SendCryptoPrices(sender);
         break;
 
       case 'MENU_CRYPTO':
@@ -273,12 +268,16 @@ export default class FBGraphAPIRequest {
       case 'TOP_MOVERS':
         let moversData = await MemCachier.GetHashItem('movers');
 
-        if (!list) {
+        if (!moversData) {
           moversData = await StockAPI.GetMarketMovers();
         }
 
+        if (moversData) {
+          await this.SendTextMessage(sender, `Here's the US Stock Market Top Gainers, Losers and Most Active`);
+        }
+
         for (let i = 0; i < moversData.length; i += 1) {
-          await this.SendListRequest({ sender, text: moversData[i].title, list: Util.ParseTopMoversData(moversData[i].listOfMovers, moversData[i].title) });
+          await this.SendListRequest({ sender, list: Util.ParseTopMoversData(moversData[i].listOfMovers, moversData[i].title) });
         }
         break;
 
@@ -314,6 +313,49 @@ export default class FBGraphAPIRequest {
 
       case 'SHOW_FINNHUB_NEWS_SUMMARY':
         this.SendFinnHubNewsSummary(sender, data);
+        break;
+
+      case 'CRYPTO_PRICE':
+        await this.SendTextMessage(sender, `Please enter the Crypto Coin Symbol within the next 5 minutes.\nFor example: $BTC`);
+        await RedisCache.SetItem(sender, 'CRYPTO_PRICE', 60 * 5);
+        break;
+
+      case 'NGN_P_RATES':
+        await this.SendNGNCurrencyRates(sender);
+        break;
+
+      case 'NGN_CBN_RATES':
+        await this.SendNGNCurrencyRates(sender, 'cbn_rate');
+        break;
+
+      case 'NGN_NEWS':
+        let ngNews = await MemCachier.GetHashItem('ngNews');
+
+        if (!ngNews) {
+          ngNews = await Scraper.ScrapeNgNews();
+        }
+
+        await this.SendListRequest({ sender, text: `Here's the Nigeria news update 📰. Enjoy.`, list: Util.ParseNgNews(ngNews) });
+        break;
+
+      case 'NGN_STOCK':
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the NG (NSE) Stock within the next 5 minutes.\nFor example: $UPDCREIT`);
+        await RedisCache.SetItem(sender, 'NGN_STOCK', 60 * 5);
+        break;
+
+      case 'NGN_BANK_RATES':
+        await this.SendNGNCurrencyRates(sender, 'bank_rate');
+        break;
+
+      case 'SHOW_NG_NEWS_SUMMARY':
+        let newsContent = await RedisCache.GetItem(data);
+
+        if (!newsContent) {
+          newsContent = await Scraper.GetElementText(data, '.main-inner');
+          await RedisCache.SetItem(data, newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', ''), 3600 * 5);
+        }
+
+        await this.SendLongText({ sender, text: newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', '') });
         break;
 
       default:
@@ -405,7 +447,7 @@ export default class FBGraphAPIRequest {
         }
 
         const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews, 'crypto');
-        this.SendListRequest({ sender, text: `Here's the Forex Market 📰 news update.`, list: cryptoNews });
+        this.SendListRequest({ sender, text: `Here's the Crypto Market 📰 news update.`, list: cryptoNews });
         break;
 
       case 'tickerNews':
@@ -482,11 +524,23 @@ export default class FBGraphAPIRequest {
 
   /**
    * @description
-   * @param {String} sender
-   * @param {*} newsType
+   * @param {{}} object
    */
   static async SendListRequest({ sender, text, list }) {
     await this.SendLargeMessengerList({ sender, text, list });
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   * @param {Number} index
+   */
+  static LongTextTimeoutTask({ sender, text }, index) {
+    const delayTime = index === 2000 ? 2000 : index - 2000;
+
+    setTimeout(async () => {
+      await this.SendTextMessage(sender, text);
+    }, delayTime);
   }
 
   /**
@@ -498,7 +552,7 @@ export default class FBGraphAPIRequest {
       if (index === 0) {
         await this.SendTextMessage(sender, text.slice(0, 2000));
       } else {
-        await this.SendTextMessage(sender, text.slice(index, index + 2001));
+        this.LongTextTimeoutTask({ sender, text: text.slice(index, index + 2000) }, index);
       }
     }
   }
@@ -582,5 +636,52 @@ export default class FBGraphAPIRequest {
     } else {
       await this.SendTextMessage(sender, `Sorry 😔, I was unable to fetch the news item.`);
     }
+  }
+
+  /**
+   * @description
+   * @param {} sender
+   * @param {*} coinName
+   */
+  static async SendCryptoPrices(sender, coinName) {
+    let cryptoPricesData = coinName ? await MemCachier.GetHashItem(`${coinName.toLowerCase()}Price`) : await MemCachier.GetHashItem('cryptoPrices');
+    const text = coinName ? `Here's the price of ${coinName}` : `Here's the list of Crytocurrencies with their price.`;
+
+    if (!cryptoPricesData) {
+      cryptoPricesData = coinName ? await StockAPI.GetCryptoPrices(coinName) : await StockAPI.GetCryptoPrices();
+    }
+
+    this.SendListRequest({ sender, text, list: Util.ParseCryptoPricesData(cryptoPricesData) });
+  }
+
+  /**
+   * @description
+   * @param {} sender
+   * @param {*} type
+   */
+  static async SendNGNCurrencyRates(sender, type) {
+    const url = 'https://www.abokifx.com/home';
+    let ratesData;
+
+    switch (type) {
+      case 'cbn_rate':
+        ratesData = await Scraper.GetElementText(url, '.rate-table-container.cbn-rate');
+        break;
+
+      case 'bank_rate':
+        ratesData = await Scraper.GetElementText(url, '.bank-atm.conatiner');
+        break;
+
+      default:
+        ratesData = await Scraper.GetElementText(url, '.grid-table');
+        break;
+    }
+
+    if (ratesData === `Sorry, I can't process this request at the moment`) {
+      await this.SendTextMessage(sender, ratesData);
+      return;
+    }
+
+    await this.SendLongText({ sender, text: Util.ParseNGNRatesData(ratesData.split('\n\n'), type) });
   }
 }

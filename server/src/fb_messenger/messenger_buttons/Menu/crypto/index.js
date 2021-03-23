@@ -14,7 +14,7 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
-    title: 'CryptoCurrency Price list',
+    title: 'Cryptos Price list',
     payload: 'SHOW_CRYPTOS_PRICES',
   }),
 );
