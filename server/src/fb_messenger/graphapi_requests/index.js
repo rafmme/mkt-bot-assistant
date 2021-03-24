@@ -358,6 +358,19 @@ export default class FBGraphAPIRequest {
         await this.SendLongText({ sender, text: newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', '') });
         break;
 
+      case 'MARKET_FUTURES':
+      case 'MARKET_INDICES':
+        let indices = await RedisCache.GetItem('indices');
+
+        if (!indices) {
+          const indicesData = await Scraper.GetElementText('https://finance.yahoo.com', '.YDC-Lead-Stack');
+          indices = Util.ParseIndicesData(indicesData);
+          await RedisCache.SetItem('indices', indices, 60 * 5);
+        }
+
+        await this.SendTextMessage(sender, indices);
+        break;
+
       default:
         break;
     }

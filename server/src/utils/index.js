@@ -213,9 +213,9 @@ export default class Util {
       marketCap,
     )}\nPrevious Close: $ ${previousClose}\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\nAverage Total Volume: ${this.FormatLargeNumbers(
       avgTotalVolume,
-    )}\nP/E Ratio: ${peRatio}\nPrice: $ ${latestPrice}\nPrice Change: $ ${change}\nPercent Change: ${changePercent} %\n52 Week High: $ ${week52High}\n52 Week Low: $ ${week52Low}\nYTD: ${this.FormatLargeNumbers(
-      ytdChange,
-    )}\nTime: ${latestTime}\n\n ** 15 minutes delayed quote **`;
+    )}\nP/E Ratio: ${peRatio}\nPrice: $ ${latestPrice}\nPrice Change: $ ${change}\nPercent Change: ${
+      changePercent * 100
+    } %\n52 Week High: $ ${week52High}\n52 Week Low: $ ${week52Low}\nYTD: ${this.FormatLargeNumbers(ytdChange)}\nTime: ${latestTime}\n\n ** 15 minutes delayed quote **`;
     return text;
   }
 
@@ -318,9 +318,9 @@ export default class Util {
 
       second: `Exchange: ${Exchange}\nCurrency: ${Currency}\nCountry: ${Country}\nSector: ${Sector}\nIndustry: ${Industry}\nAddress: ${Address}\nFullTimeEmployees: ${FullTimeEmployees}\nFiscalYearEnd: ${FiscalYearEnd}\nLatestQuarter: ${LatestQuarter}\nMarketCapitalization: ${this.FormatLargeNumbers(
         MarketCapitalization,
-      )}\nEBITDA: ${this.FormatLargeNumbers(
-        EBITDA,
-      )}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${DividendYield}\nEPS: ${EPS}`,
+      )}\nEBITDA: ${this.FormatLargeNumbers(EBITDA)}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${
+        DividendYield * 100
+      }\nEPS: ${EPS}`,
 
       third: `RevenuePerShareTTM: ${RevenuePerShareTTM}\nProfitMargin: ${ProfitMargin}\nOperatingMarginTTM: ${OperatingMarginTTM}\nReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\nReturnOnEquityTTM: ${ReturnOnEquityTTM}\nRevenueTTM: ${this.FormatLargeNumbers(
         RevenueTTM,
@@ -336,7 +336,7 @@ SharesOutstanding: ${this.FormatLargeNumbers(SharesOutstanding)}\nSharesFloat: $
       )}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
         SharesShortPriorMonth,
       )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\n
-ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${ForwardAnnualDividendYield}\nPayoutRatio: ${PayoutRatio}\n
+ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${ForwardAnnualDividendYield * 100}\nPayoutRatio: ${PayoutRatio}\n
 DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
 
       fifth: `For more visit https://www.earningsfly.com/stocks/${ticker}?source=t2`,
@@ -385,6 +385,10 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
 
     if (type === 'bank_rate') {
       exchangeRates = 'DATE  LOCATION  BANK  RATE  CURRENCY\n';
+    }
+
+    if (!rates) {
+      return `Sorry 😔, I'm unable to complete this request.`;
     }
 
     if (type === 'usd_rate') {
@@ -447,5 +451,27 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
     }
 
     return keyData;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} data
+   */
+  static ParseIndicesData(data) {
+    if (!data) {
+      return `Sorry 😔, I'm unable to complete this request.`;
+    }
+
+    let text = '*** INDICES ***\n';
+    const splitData = data.split('\n');
+
+    for (let i = 0; i < splitData.length; i += 1) {
+      if (i === 0 || i % 3 === 0) {
+        text += `${splitData[i]} => ${splitData[i + 1]} ${splitData[i + 2]}\n`;
+      }
+    }
+
+    return text;
   }
 }
