@@ -371,6 +371,21 @@ export default class FBGraphAPIRequest {
         await this.SendTextMessage(sender, indices);
         break;
 
+      case 'SEARCH_COMPANY':
+        await this.SendTextMessage(sender, `Please enter the search keywords within the next 5 minutes.\nFor example: fisker`);
+        await RedisCache.SetItem(sender, 'SEARCH_COMPANY', 60 * 5);
+        break;
+
+      case 'HOLIDAY':
+        let holidays = await MemCachier.GetHashItem('holidays');
+
+        if (!holidays) {
+          holidays = await Scraper.ScrapeMarketHolidays();
+        }
+        console.log('h', holidays);
+        await this.SendLongText({ sender, text: Util.GetUpcomingHolidays(holidays) });
+        break;
+
       default:
         break;
     }
@@ -565,7 +580,7 @@ export default class FBGraphAPIRequest {
       if (index === 0) {
         await this.SendTextMessage(sender, text.slice(0, 2000));
       } else {
-        this.LongTextTimeoutTask({ sender, text: text.slice(index, index + 2000) }, index);
+        await this.SendTextMessage(sender, text.slice(index, index + 2000));
       }
     }
   }

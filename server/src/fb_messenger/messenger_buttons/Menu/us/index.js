@@ -48,6 +48,14 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
+    title: 'Search for Company',
+    payload: 'SEARCH_COMPANY',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
     title: 'Earnings for Today',
     payload: 'EARNINGS_TODAY',
   }),

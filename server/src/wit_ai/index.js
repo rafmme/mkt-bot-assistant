@@ -7,6 +7,8 @@ import RedisCache from '../cache/redis';
 import Scraper from '../scraper';
 import Util from '../utils';
 import stockOps from '../fb_messenger/messenger_buttons/Menu/us_stock';
+import MemCachier from '../cache/memcachier';
+import StockAPI from '../stock_apis';
 
 /**
  * @class WitAIHelper
@@ -307,6 +309,21 @@ export default class WitAIHelper {
           await RedisCache.SetItem(`${ticker}NG`, ngStock, 60 * 10);
         }
         await FBGraphAPIRequest.SendLongText({ sender, text: ngStock });
+        break;
+      case 'SEARCH_COMPANY':
+        let matches = await MemCachier.GetHashItem(ticker);
+
+        if (!matches) {
+          matches = await StockAPI.SearchForCompanies(ticker);
+        }
+
+        if (matches.length === 0 || !matches) {
+          await FBGraphAPIRequest.SendTextMessage(sender, `Sorry 😔, no match was found for ${ticker}`);
+          return;
+        }
+
+        await FBGraphAPIRequest.SendListRequest({ sender, text: `Here's the search result for ${ticker}`, list: Util.ParseCompaniesSearchResultData(matches) });
+
         break;
 
       default:

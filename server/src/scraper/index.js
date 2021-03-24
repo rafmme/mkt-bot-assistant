@@ -3,6 +3,7 @@
 /* eslint-disable consistent-return */
 import puppeteer from 'puppeteer';
 import MemCachier from '../cache/memcachier';
+import Util from '../utils';
 
 /**
  * @class
@@ -113,5 +114,17 @@ export default class Scraper {
         return `Sorry 😔, I can't process this request at the moment.`;
       }
     }
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static async ScrapeMarketHolidays() {
+    const data = await this.GetElementText('https://www.nyse.com/markets/hours-calendars', '.table.table-layout-fixed');
+    const holidays = Util.ParseMarketHolidaysData(data);
+    await MemCachier.SetHashItem('holidays', holidays, 86400 * 282);
+
+    return holidays;
   }
 }

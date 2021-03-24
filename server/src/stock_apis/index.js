@@ -235,4 +235,31 @@ export default class StockAPI {
     await MemCachier.SetHashItem(cacheKey, response, 3600 * 12);
     return response;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {String} keywords
+   */
+  static async SearchForCompanies(keywords) {
+    const { AV_KEY } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://www.alphavantage.co/query')
+      .method('GET')
+      .queryParams({
+        function: 'SYMBOL_SEARCH',
+        apikey: AV_KEY,
+        keywords,
+      })
+      .build()
+      .send();
+
+    const { bestMatches } = response;
+    const matches = bestMatches.filter((match) => {
+      return match['4. region'] === 'United States' && match['8. currency'] === 'USD';
+    });
+
+    await MemCachier.SetHashItem(`${keywords}`, matches, 86400);
+    return matches;
+  }
 }

@@ -320,7 +320,7 @@ export default class Util {
         MarketCapitalization,
       )}\nEBITDA: ${this.FormatLargeNumbers(EBITDA)}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${
         DividendYield * 100
-      }\nEPS: ${EPS}`,
+      }%\nEPS: ${EPS}`,
 
       third: `RevenuePerShareTTM: ${RevenuePerShareTTM}\nProfitMargin: ${ProfitMargin}\nOperatingMarginTTM: ${OperatingMarginTTM}\nReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\nReturnOnEquityTTM: ${ReturnOnEquityTTM}\nRevenueTTM: ${this.FormatLargeNumbers(
         RevenueTTM,
@@ -330,14 +330,13 @@ export default class Util {
         data['52WeekHigh']
       }\n52WeekLow: ${data['52WeekLow']}`,
 
-      fourth: `50DayMovingAverage: ${data['50DayMovingAverage']}\n200DayMovingAverage: ${data['200DayMovingAverage']}\n
-SharesOutstanding: ${this.FormatLargeNumbers(SharesOutstanding)}\nSharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\nSharesShort: ${this.FormatLargeNumbers(
-        SharesShort,
-      )}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
+      fourth: `50DayMovingAverage: ${data['50DayMovingAverage']}\n200DayMovingAverage: ${data['200DayMovingAverage']}\nSharesOutstanding: ${this.FormatLargeNumbers(
+        SharesOutstanding,
+      )}\nSharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\nSharesShort: ${this.FormatLargeNumbers(SharesShort)}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
         SharesShortPriorMonth,
-      )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\n
-ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${ForwardAnnualDividendYield * 100}\nPayoutRatio: ${PayoutRatio}\n
-DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
+      )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\nForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${
+        ForwardAnnualDividendYield * 100
+      }%\nPayoutRatio: ${PayoutRatio}\nDividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
 
       fifth: `For more visit https://www.earningsfly.com/stocks/${ticker}?source=t2`,
     };
@@ -473,5 +472,78 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
     }
 
     return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Object} data
+   */
+  static GetUpcomingHolidays(data) {
+    const currentDate = new Date();
+    const currentYearHolidays = data[`${currentDate.getFullYear()}`];
+    let upcomingHolidays = `*** UPCOMING MARKET HOLIDAYS FOR YEAR ${currentDate.getFullYear()} ***`;
+
+    for (let i = 0; i < currentYearHolidays.length; i += 1) {
+      if (currentDate <= new Date(currentYearHolidays[i].date)) {
+        upcomingHolidays += `${currentYearHolidays[i].date} => ${currentYearHolidays[i].holiday}`;
+      }
+    }
+
+    return upcomingHolidays;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} data
+   */
+  static ParseMarketHolidaysData(data) {
+    const holiday = {};
+    const header = data[0].split('\t');
+
+    for (let i = 1; i < data.length; i += 1) {
+      const el = data[i].split('\t');
+      for (let j = 1; j < el.length; j += 1) {
+        if (el[j].length >= 2) {
+          const date = new Date(`${el[j].trim()} ${header[j]}`);
+
+          if (!holiday[`${date.getFullYear()}`]) {
+            holiday[`${date.getFullYear()}`] = [
+              {
+                holiday: el[0],
+                date: date.toDateString(),
+              },
+            ];
+          } else {
+            holiday[`${date.getFullYear()}`].push({
+              holiday: el[0],
+              date: date.toDateString(),
+            });
+          }
+        }
+      }
+    }
+
+    return holiday;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {[]} data
+   */
+  static ParseCompaniesSearchResultData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      list.push({
+        title: `${data[i]['1. symbol']}`,
+        subtitle: `${data[i]['2. name']}\nType: ${data[i]['3. type']}`,
+        buttons: createTickerOptionButtons(`${data[i]['1. symbol']}`),
+      });
+    }
+
+    return list;
   }
 }
