@@ -212,6 +212,11 @@ export default class StockAPI {
         cacheKey = newsType;
         break;
 
+      case 'mergerNews':
+        queryObject.category = 'merger';
+        cacheKey = newsType;
+        break;
+
       case 'tickerNews':
         url = `https://cloud.iexapis.com/stable/stock/${symbol.toLowerCase()}/batch`;
         queryObject = {

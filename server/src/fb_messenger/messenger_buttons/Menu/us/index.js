@@ -24,6 +24,14 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
+    title: 'Merger News',
+    payload: 'MERGER_NEWS',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
     title: currentTimeNumber >= 400 && currentTimeNumber < 930 ? 'Show Futures' : 'Show Indices',
     payload: currentTimeNumber >= 400 && currentTimeNumber < 930 ? 'MARKET_FUTURES' : 'MARKET_INDICES',
   }),

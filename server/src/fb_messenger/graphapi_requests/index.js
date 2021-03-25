@@ -296,6 +296,10 @@ export default class FBGraphAPIRequest {
         this.fetchNews(sender, 'forexNews');
         break;
 
+      case 'MERGER_NEWS':
+        this.fetchNews(sender, 'mergerNews');
+        break;
+
       case 'TICKER_NEWS':
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_NEWS', 60 * 5);
@@ -476,6 +480,17 @@ export default class FBGraphAPIRequest {
 
         const cryptoNews = Util.ParseFinnHubNewsData(finnhubNews, 'crypto');
         this.SendListRequest({ sender, text: `Here's the Crypto Market 📰 news update.`, list: cryptoNews });
+        break;
+
+      case 'mergerNews':
+        finnhubNews = await MemCachier.GetHashItem(newsType);
+
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType);
+        }
+
+        const mergerNews = Util.ParseFinnHubNewsData(finnhubNews, 'merger');
+        this.SendListRequest({ sender, text: `Here's the US Stock Market Merger 📰 news update.`, list: mergerNews });
         break;
 
       case 'tickerNews':

@@ -264,6 +264,9 @@ export default class WitAIHelper {
       case 'show ng stock':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_STOCK');
         break;
+      case 'search':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'SEARCH_COMPANY');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
