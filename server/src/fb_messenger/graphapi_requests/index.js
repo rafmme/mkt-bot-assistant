@@ -367,12 +367,11 @@ export default class FBGraphAPIRequest {
         let indices = await RedisCache.GetItem('indices');
 
         if (!indices) {
-          const indicesData = await Scraper.GetElementText('https://finance.yahoo.com', '.YDC-Lead-Stack');
-          indices = Util.ParseIndicesData(indicesData);
+          indices = await Scraper.GetElementText('https://finance.yahoo.com', '.YDC-Lead-Stack');
           await RedisCache.SetItem('indices', indices, 60 * 5);
         }
 
-        await this.SendTextMessage(sender, indices);
+        await this.SendTextMessage(sender, Util.ParseIndicesData(indices));
         break;
 
       case 'SEARCH_COMPANY':
@@ -381,13 +380,14 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'HOLIDAY':
-        let holidays = await MemCachier.GetHashItem('holidays');
+        const holidays = await MemCachier.GetHashItem('holidays');
 
-        if (!holidays) {
-          holidays = await Scraper.ScrapeMarketHolidays();
+        if (holidays) {
+          await this.SendLongText({ sender, text: Util.GetUpcomingHolidays(holidays) });
+          return;
         }
-        console.log('h', holidays);
-        await this.SendLongText({ sender, text: Util.GetUpcomingHolidays(holidays) });
+
+        await this.SendTextMessage(sender, `Sorry 😔, I'm unable to complete this request.`);
         break;
 
       default:

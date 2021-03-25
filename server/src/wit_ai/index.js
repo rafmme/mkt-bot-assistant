@@ -267,6 +267,12 @@ export default class WitAIHelper {
       case 'search':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'SEARCH_COMPANY');
         break;
+      case 'holiday':
+      case 'holidays':
+      case 'upcoming holidays':
+      case 'upcoming holiday':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'HOLIDAY');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;

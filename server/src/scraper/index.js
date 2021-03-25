@@ -49,7 +49,8 @@ export default class Scraper {
       const page = await browser.newPage();
 
       await page.goto(url);
-      await page.waitForSelector(className);
+      await page.setViewport({ width: 2560, height: 1600 });
+      // await page.waitForSelector(className);
 
       const element = await page.$(className);
       const text = await element.evaluate((node) => node.innerText);
@@ -114,17 +115,5 @@ export default class Scraper {
         return `Sorry 😔, I can't process this request at the moment.`;
       }
     }
-  }
-
-  /**
-   * @static
-   * @description
-   */
-  static async ScrapeMarketHolidays() {
-    const data = await this.GetElementText('https://www.nyse.com/markets/hours-calendars', '.table.table-layout-fixed');
-    const holidays = Util.ParseMarketHolidaysData(data);
-    await MemCachier.SetHashItem('holidays', holidays, 86400 * 282);
-
-    return holidays;
   }
 }

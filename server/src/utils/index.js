@@ -482,50 +482,21 @@ export default class Util {
   static GetUpcomingHolidays(data) {
     const currentDate = new Date();
     const currentYearHolidays = data[`${currentDate.getFullYear()}`];
-    let upcomingHolidays = `*** UPCOMING MARKET HOLIDAYS FOR YEAR ${currentDate.getFullYear()} ***`;
+    let upcomingHolidays = `*** UPCOMING MARKET HOLIDAYS FOR YEAR ${currentDate.getFullYear()} ***\n\n`;
 
     for (let i = 0; i < currentYearHolidays.length; i += 1) {
-      if (currentDate <= new Date(currentYearHolidays[i].date)) {
-        upcomingHolidays += `${currentYearHolidays[i].date} => ${currentYearHolidays[i].holiday}`;
-      }
-    }
+      const date = new Date(currentYearHolidays[i].date);
 
-    return upcomingHolidays;
-  }
-
-  /**
-   * @static
-   * @description
-   * @param {String} data
-   */
-  static ParseMarketHolidaysData(data) {
-    const holiday = {};
-    const header = data[0].split('\t');
-
-    for (let i = 1; i < data.length; i += 1) {
-      const el = data[i].split('\t');
-      for (let j = 1; j < el.length; j += 1) {
-        if (el[j].length >= 2) {
-          const date = new Date(`${el[j].trim()} ${header[j]}`);
-
-          if (!holiday[`${date.getFullYear()}`]) {
-            holiday[`${date.getFullYear()}`] = [
-              {
-                holiday: el[0],
-                date: date.toDateString(),
-              },
-            ];
-          } else {
-            holiday[`${date.getFullYear()}`].push({
-              holiday: el[0],
-              date: date.toDateString(),
-            });
-          }
+      if (currentDate <= date) {
+        if (currentDate.getMonth() === date.getMonth()) {
+          upcomingHolidays += `** ⌛️ ${currentYearHolidays[i].date} => ${currentYearHolidays[i].holiday}\n\n`;
+        } else {
+          upcomingHolidays += `${currentYearHolidays[i].date} => ${currentYearHolidays[i].holiday}\n\n`;
         }
       }
     }
 
-    return holiday;
+    return upcomingHolidays;
   }
 
   /**
