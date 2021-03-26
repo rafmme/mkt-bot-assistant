@@ -456,28 +456,6 @@ export default class Util {
   /**
    * @static
    * @description
-   * @param {String} data
-   */
-  static ParseIndicesData(data) {
-    if (!data) {
-      return `Sorry 😔, I'm unable to complete this request.`;
-    }
-
-    let text = '*** INDICES ***\n';
-    const splitData = data.split('\n');
-
-    for (let i = 0; i < splitData.length; i += 1) {
-      if (i === 0 || i % 3 === 0) {
-        text += `${splitData[i]} => ${splitData[i + 1]} ${splitData[i + 2]}\n`;
-      }
-    }
-
-    return text;
-  }
-
-  /**
-   * @static
-   * @description
    * @param {Object} data
    */
   static GetUpcomingHolidays(data) {
@@ -555,7 +533,9 @@ export default class Util {
 
         for (let i = 0; i < history.length; i += 1) {
           const { epochGradeDate, firm, toGrade, fromGrade, action } = history[i];
-          text += `Firm: ${firm}\nFrom: ${fromGrade}\nTo: ${toGrade}\nAction: ${action}\nGrade Date: ${new Date(epochGradeDate).toDateString()}\n\n`;
+          if (new Date().getFullYear() - new Date(epochGradeDate).getFullYear() <= 2) {
+            text += `Firm: ${firm}\nFrom: ${fromGrade}\nTo: ${toGrade}\nAction: ${action}\nGrade Date: ${new Date(epochGradeDate).toDateString()}\n\n`;
+          }
         }
         break;
 
@@ -565,9 +545,9 @@ export default class Util {
         }
 
         const { recommendationKey, recommendationMean, numberOfAnalystOpinions } = financialData;
-        text = `** ${symbol.toUpperCase()} Recommendation **\n\nRecommendation: ${recommendationKey}\nRecommendation Mean: ${recommendationMean}\nNumber of Analyst: ${
-          numberOfAnalystOpinions.fmt
-        }`;
+        text = `** ${symbol.toUpperCase()} Recommendation **\n\nRecommendation: ${recommendationKey.toUpperCase()}\nRecommendation Mean: ${
+          recommendationMean.fmt
+        }\nNumber of Analyst: ${numberOfAnalystOpinions.fmt}`;
         break;
 
       case 'earnings':
@@ -581,7 +561,7 @@ export default class Util {
         for (let i = 0; i < eHistory.length; i += 1) {
           const { epsActual, epsEstimate, epsDifference, surprisePercent, quarter, period } = eHistory[i];
           if (Object.keys(quarter).length >= 1) {
-            text += `Quarter: ${quarter.fmt}\nPeriod: ${period.replace('-', '')}\nEPS Actual: ${epsActual.fmt}\nEPS Estimate: ${epsEstimate}\nEPS Difference: ${
+            text += `Quarter: ${quarter.fmt}\nPeriod: ${period.replace('-', '')}\nEPS Actual: ${epsActual.fmt}\nEPS Estimate: ${epsEstimate.fmt}\nEPS Difference: ${
               epsDifference.fmt
             }\nSurprise Percentage: ${surprisePercent.fmt}\n\n`;
           }

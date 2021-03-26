@@ -434,11 +434,11 @@ export default class FBGraphAPIRequest {
         let indices = await RedisCache.GetItem('indices');
 
         if (!indices) {
-          indices = await Scraper.GetElementText('https://finance.yahoo.com', '.YDC-Lead-Stack');
+          indices = await Scraper.GetElementText('https://www.marketwatch.com/investing/stock/aapl', '.markets__table');
           await RedisCache.SetItem('indices', indices, 60 * 5);
         }
 
-        await this.SendTextMessage(sender, Util.ParseIndicesData(indices));
+        await this.SendLongText({ sender, text: indices });
         break;
 
       case 'SEARCH_COMPANY':
@@ -638,19 +638,6 @@ export default class FBGraphAPIRequest {
    */
   static async SendListRequest({ sender, text, list }) {
     await this.SendLargeMessengerList({ sender, text, list });
-  }
-
-  /**
-   * @description
-   * @param {*} object
-   * @param {Number} index
-   */
-  static LongTextTimeoutTask({ sender, text }, index) {
-    const delayTime = index === 2000 ? 2000 : index - 2000;
-
-    setTimeout(async () => {
-      await this.SendTextMessage(sender, text);
-    }, delayTime);
   }
 
   /**
