@@ -267,4 +267,30 @@ export default class StockAPI {
     await MemCachier.SetHashItem(`${keywords}`, matches, 86400);
     return matches;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {String} ticker
+   */
+  static async GetStockAnalysisData(ticker) {
+    const { X_RAPIDAPI_KEY, X_RAPIDAPI_HOST } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-analysis')
+      .method('GET')
+      .queryParams({
+        symbol: `${ticker.toUpperCase()}`,
+        region: 'US',
+      })
+      .headers({
+        'x-rapidapi-key': X_RAPIDAPI_KEY,
+        'x-rapidapi-host': X_RAPIDAPI_HOST,
+        useQueryString: true,
+      })
+      .build()
+      .send();
+
+    await MemCachier.SetHashItem(`${ticker.toLowerCase()}`, response, 3600 * 168);
+    return response;
+  }
 }

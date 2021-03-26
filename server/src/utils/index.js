@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable consistent-return */
 import axios from 'axios';
 import dotenv from 'dotenv';
@@ -516,5 +517,82 @@ export default class Util {
     }
 
     return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {String} symbol
+   * @param {String} type
+   */
+  static CreateStockAnalysisText(data, symbol, type) {
+    const { recommendationTrend, upgradeDowngradeHistory, financialData, earningsHistory } = data;
+    let text = '';
+
+    switch (type) {
+      case 'ratings':
+        if (!recommendationTrend) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { trend } = recommendationTrend;
+        text = `** ${symbol.toUpperCase()} Analyst Ratings **\n\n`;
+
+        for (let i = 0; i < trend.length; i += 1) {
+          const { period, strongBuy, buy, hold, sell, strongSell } = trend[i];
+          text += `Period: ${period.replace('-', '')}\nBuy: ${buy}\nStrong Buy: ${strongBuy}\nHold: ${hold}\nSell: ${sell}\nStrong Sell: ${strongSell}\n\n`;
+        }
+        break;
+
+      case 'upgrades':
+        if (!upgradeDowngradeHistory) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { history } = upgradeDowngradeHistory;
+        text = `** ${symbol.toUpperCase()} Upgrades/Downgrades **\n\n`;
+
+        for (let i = 0; i < history.length; i += 1) {
+          const { epochGradeDate, firm, toGrade, fromGrade, action } = history[i];
+          text += `Firm: ${firm}\nFrom: ${fromGrade}\nTo: ${toGrade}\nAction: ${action}\nGrade Date: ${new Date(epochGradeDate).toDateString()}\n\n`;
+        }
+        break;
+
+      case 'recommendation':
+        if (!financialData) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { recommendationKey, recommendationMean, numberOfAnalystOpinions } = financialData;
+        text = `** ${symbol.toUpperCase()} Recommendation **\n\nRecommendation: ${recommendationKey}\nRecommendation Mean: ${recommendationMean}\nNumber of Analyst: ${
+          numberOfAnalystOpinions.fmt
+        }`;
+        break;
+
+      case 'earnings':
+        if (!earningsHistory) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { history: eHistory } = earningsHistory;
+        text = `** ${symbol.toUpperCase()} Earnings History **\n\n`;
+
+        for (let i = 0; i < eHistory.length; i += 1) {
+          const { epsActual, epsEstimate, epsDifference, surprisePercent, quarter, period } = eHistory[i];
+          if (Object.keys(quarter).length >= 1) {
+            text += `Quarter: ${quarter.fmt}\nPeriod: ${period.replace('-', '')}\nEPS Actual: ${epsActual.fmt}\nEPS Estimate: ${epsEstimate}\nEPS Difference: ${
+              epsDifference.fmt
+            }\nSurprise Percentage: ${surprisePercent.fmt}\n\n`;
+          }
+        }
+        break;
+
+      default:
+        text = `Sorry 😔, no data was found for ${symbol}`;
+        break;
+    }
+
+    return text;
   }
 }

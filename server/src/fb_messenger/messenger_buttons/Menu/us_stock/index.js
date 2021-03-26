@@ -67,18 +67,19 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Insider Roster',
-      payload: !ticker ? 'STOCK_INSIDER' : `STOCK_INSIDER|${ticker}`,
+      title: 'Stock Earnings History',
+      payload: !ticker ? 'STOCK_EARNINGS_HISTORY' : `STOCK_EARNINGS_HISTORY|${ticker}`,
     }),
   );
 
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Set Stock Price Alert',
-      payload: !ticker ? 'STOCK_PRICE_ALERT' : `STOCK_PRICE_ALERT|${ticker}`,
+      title: 'Stock Insider Roster',
+      payload: !ticker ? 'STOCK_INSIDER' : `STOCK_INSIDER|${ticker}`,
     }),
   );
+
   return listOfButtons.getButtons();
 };
 

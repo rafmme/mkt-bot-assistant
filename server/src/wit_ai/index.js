@@ -326,6 +326,18 @@ export default class WitAIHelper {
       case 'TICKER_OVERVIEW':
         await FBGraphAPIRequest.SendStockOverview({ sender, ticker });
         break;
+      case 'STOCK_ANALYST_RATINGS':
+        await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'ratings' });
+        break;
+      case 'STOCK_RECOMMENDATION':
+        await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'recommendation' });
+        break;
+      case 'STOCK_UPGRADE':
+        await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'upgrades' });
+        break;
+      case 'STOCK_EARNINGS_HISTORY':
+        await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'earnings' });
+        break;
       case 'CRYPTO_PRICE':
         await FBGraphAPIRequest.SendCryptoPrices(sender, ticker);
         break;
