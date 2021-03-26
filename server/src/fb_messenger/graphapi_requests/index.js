@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable camelcase */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-await-in-loop */
@@ -9,12 +10,13 @@ import Util from '../../utils';
 import MemCachier from '../../cache/memcachier';
 import RedisCache from '../../cache/redis';
 import Menu from '../messenger_buttons/Menu';
-import crypto from '../messenger_buttons/Menu/crypto';
 import us from '../messenger_buttons/Menu/us';
 import ngn from '../messenger_buttons/Menu/ngn';
 import newsOps from '../messenger_buttons/Menu/news';
-import stockOps from '../messenger_buttons/Menu/us_stock';
 import Scraper from '../../scraper';
+import createStockOptionButtons from '../messenger_buttons/Menu/us_stock';
+import WitAIHelper from '../../wit_ai';
+import createCryptoOptionButtons from '../messenger_buttons/Menu/crypto';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -237,7 +239,7 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'MENU_CRYPTO':
-        this.SendQuickReplies(sender, `What'd you like to do regarding Cryptos?`, crypto);
+        this.SendQuickReplies(sender, `What'd you like to do regarding Cryptos?`, createCryptoOptionButtons());
         break;
 
       case 'MENU_US_MARKET':
@@ -253,7 +255,12 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'STOCK_OPS':
-        this.SendQuickReplies(sender, `What'd you like to do regarding a US Stock?`, stockOps);
+        if (data) {
+          await this.SendQuickReplies(sender, `What'd you like to see on $${data.toUpperCase()}`, createStockOptionButtons(data));
+          return;
+        }
+
+        this.SendQuickReplies(sender, `What'd you like to do regarding a US Stock?`, createStockOptionButtons());
         break;
 
       case 'TRENDING_TICKERS':
@@ -301,16 +308,31 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'TICKER_NEWS':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'TICKER_NEWS', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_NEWS', 60 * 5);
         break;
 
       case 'TICKER_QUOTE':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'TICKER_QUOTE', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_QUOTE', 60 * 5);
         break;
 
       case 'TICKER_OVERVIEW':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'TICKER_OVERVIEW', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_OVERVIEW', 60 * 5);
         break;
@@ -320,6 +342,11 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'CRYPTO_PRICE':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'CRYPTO_PRICE', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Crypto Coin Symbol within the next 5 minutes.\nFor example: $BTC`);
         await RedisCache.SetItem(sender, 'CRYPTO_PRICE', 60 * 5);
         break;

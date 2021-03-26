@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable no-case-declarations */
 import { Wit, log } from 'node-wit';
 import dotenv from 'dotenv';
@@ -6,9 +7,10 @@ import Menu from '../fb_messenger/messenger_buttons/Menu';
 import RedisCache from '../cache/redis';
 import Scraper from '../scraper';
 import Util from '../utils';
-import stockOps from '../fb_messenger/messenger_buttons/Menu/us_stock';
 import MemCachier from '../cache/memcachier';
 import StockAPI from '../stock_apis';
+import createStockOptionButtons from '../fb_messenger/messenger_buttons/Menu/us_stock';
+import createCryptoOptionButtons from '../fb_messenger/messenger_buttons/Menu/crypto';
 
 /**
  * @class WitAIHelper
@@ -118,6 +120,12 @@ export default class WitAIHelper {
           FBGraphAPIRequest.HandlePostbackPayload(sender, 'NGN_NEWS');
           return;
         }
+
+        if (text.toLowerCase().startsWith('merger')) {
+          FBGraphAPIRequest.HandlePostbackPayload(sender, 'MERGER_NEWS');
+          return;
+        }
+
         FBGraphAPIRequest.fetchNews(sender, 'tickerNews', text.split(' ')[0].replace('$', ''));
         break;
       case 'check_stock_price':
@@ -163,6 +171,13 @@ export default class WitAIHelper {
       return;
     }
 
+    if (word.startsWith('^')) {
+      const input = word.replace('^', '').split(' ');
+      const cryptoSymbol = input[0];
+
+      await FBGraphAPIRequest.SendQuickReplies(sender, `What'd you like to see on ${cryptoSymbol.toUpperCase()}`, createCryptoOptionButtons(cryptoSymbol.toLowerCase()));
+    }
+
     if (word.startsWith('$')) {
       const input = word.replace('$', '').split(' ');
       const ticker = input[0];
@@ -187,7 +202,7 @@ export default class WitAIHelper {
         return;
       }
 
-      await FBGraphAPIRequest.SendQuickReplies(sender, `What'd you like to see on $${ticker.toUpperCase()}`, stockOps);
+      await FBGraphAPIRequest.SendQuickReplies(sender, `What'd you like to see on $${ticker.toUpperCase()}`, createStockOptionButtons(ticker));
       return;
     }
 
@@ -214,6 +229,10 @@ export default class WitAIHelper {
       case '👍🏾':
       case '👍🏻':
       case '👍🏼':
+      case '😘':
+      case '❤️':
+      case '🥰':
+      case '😍':
         await FBGraphAPIRequest.SendTextMessage(sender, `Glad I could be of help 🙂.\nIf you don't mind, Buy me a coffee 😉`);
         break;
 
@@ -234,6 +253,9 @@ export default class WitAIHelper {
         break;
       case 'forex news':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'FOREX_NEWS');
+        break;
+      case 'merger news':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'MERGER_NEWS');
         break;
       case 'ticker news':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_NEWS');

@@ -1,30 +1,50 @@
 import ButtonList from '../../Button/buttonList';
 import MessengerButtonFactory from '../../ButtonFactory';
 
-const listOfButtons = new ButtonList();
+/**
+ * @description
+ * @param {*} cryptoSymbol
+ */
+const createCryptoOptionButtons = (cryptoSymbol) => {
+  const listOfButtons = new ButtonList();
 
-listOfButtons.addButton(
-  MessengerButtonFactory.CreateButton({
-    type: 'quick_reply',
-    title: 'Crypto News',
-    payload: 'CRYPTO_NEWS',
-  }),
-);
+  if (cryptoSymbol) {
+    listOfButtons.addButton(
+      MessengerButtonFactory.CreateButton({
+        type: 'quick_reply',
+        title: 'Check Crypto Coin Price',
+        payload: `CRYPTO_PRICE|${cryptoSymbol}`,
+      }),
+    );
 
-listOfButtons.addButton(
-  MessengerButtonFactory.CreateButton({
-    type: 'quick_reply',
-    title: 'Cryptos Price list',
-    payload: 'SHOW_CRYPTOS_PRICES',
-  }),
-);
+    return listOfButtons.getButtons();
+  }
 
-listOfButtons.addButton(
-  MessengerButtonFactory.CreateButton({
-    type: 'quick_reply',
-    title: 'Check Crypto Coin Price',
-    payload: 'CRYPTO_PRICE',
-  }),
-);
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
+      title: 'Crypto News',
+      payload: 'CRYPTO_NEWS',
+    }),
+  );
 
-export default listOfButtons.getButtons();
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
+      title: 'Cryptos Price list',
+      payload: 'SHOW_CRYPTOS_PRICES',
+    }),
+  );
+
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
+      title: 'Check Crypto Coin Price',
+      payload: 'CRYPTO_PRICE',
+    }),
+  );
+
+  return listOfButtons.getButtons();
+};
+
+export default createCryptoOptionButtons;

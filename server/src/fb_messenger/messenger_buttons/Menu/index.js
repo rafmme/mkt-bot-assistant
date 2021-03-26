@@ -14,16 +14,16 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
-    title: 'Check Nigeria Market',
-    payload: 'MENU_NGN_UPDATES',
+    title: 'Check US Market',
+    payload: 'MENU_US_MARKET',
   }),
 );
 
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
-    title: 'Check US Market',
-    payload: 'MENU_US_MARKET',
+    title: 'Check Nigeria Market',
+    payload: 'MENU_NGN_UPDATES',
   }),
 );
 
