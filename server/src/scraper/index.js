@@ -3,6 +3,7 @@
 /* eslint-disable consistent-return */
 import puppeteer from 'puppeteer';
 import MemCachier from '../cache/memcachier';
+import Util from '../utils';
 
 /**
  * @class
@@ -48,7 +49,8 @@ export default class Scraper {
       const page = await browser.newPage();
 
       await page.goto(url);
-      await page.waitForSelector(className);
+      await page.setViewport({ width: 2560, height: 1600 });
+      // await page.waitForSelector(className);
 
       const element = await page.$(className);
       const text = await element.evaluate((node) => node.innerText);

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable camelcase */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-await-in-loop */
@@ -9,12 +10,13 @@ import Util from '../../utils';
 import MemCachier from '../../cache/memcachier';
 import RedisCache from '../../cache/redis';
 import Menu from '../messenger_buttons/Menu';
-import crypto from '../messenger_buttons/Menu/crypto';
 import us from '../messenger_buttons/Menu/us';
 import ngn from '../messenger_buttons/Menu/ngn';
 import newsOps from '../messenger_buttons/Menu/news';
-import stockOps from '../messenger_buttons/Menu/us_stock';
 import Scraper from '../../scraper';
+import createStockOptionButtons from '../messenger_buttons/Menu/us_stock';
+import WitAIHelper from '../../wit_ai';
+import crypto from '../messenger_buttons/Menu/crypto';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -253,7 +255,12 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'STOCK_OPS':
-        this.SendQuickReplies(sender, `What'd you like to do regarding a US Stock?`, stockOps);
+        if (data) {
+          await this.SendQuickReplies(sender, `What'd you like to see on $${data.toUpperCase()}`, createStockOptionButtons(data));
+          return;
+        }
+
+        this.SendQuickReplies(sender, `What'd you like to do regarding a US Stock?`, createStockOptionButtons());
         break;
 
       case 'TRENDING_TICKERS':
@@ -296,19 +303,78 @@ export default class FBGraphAPIRequest {
         this.fetchNews(sender, 'forexNews');
         break;
 
+      case 'MERGER_NEWS':
+        this.fetchNews(sender, 'mergerNews');
+        break;
+
       case 'TICKER_NEWS':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'TICKER_NEWS', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_NEWS', 60 * 5);
         break;
 
       case 'TICKER_QUOTE':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'TICKER_QUOTE', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_QUOTE', 60 * 5);
         break;
 
       case 'TICKER_OVERVIEW':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'TICKER_OVERVIEW', data);
+          return;
+        }
+
         await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
         await RedisCache.SetItem(sender, 'TICKER_OVERVIEW', 60 * 5);
+        break;
+
+      case 'STOCK_ANALYST_RATINGS':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'STOCK_ANALYST_RATINGS', data);
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_ANALYST_RATINGS', 60 * 5);
+        break;
+
+      case 'STOCK_EARNINGS_HISTORY':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'STOCK_EARNINGS_HISTORY', data);
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_EARNINGS_HISTORY', 60 * 5);
+        break;
+
+      case 'STOCK_UPGRADE':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'STOCK_UPGRADE', data);
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_UPGRADE', 60 * 5);
+        break;
+
+      case 'STOCK_RECOMMENDATION':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'STOCK_RECOMMENDATION', data);
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_RECOMMENDATION', 60 * 5);
         break;
 
       case 'SHOW_FINNHUB_NEWS_SUMMARY':
@@ -356,6 +422,34 @@ export default class FBGraphAPIRequest {
         }
 
         await this.SendLongText({ sender, text: newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', '') });
+        break;
+
+      case 'MARKET_FUTURES':
+      case 'MARKET_INDICES':
+        let indices = await RedisCache.GetItem('indices');
+
+        if (!indices) {
+          indices = await Scraper.GetElementText('https://www.marketwatch.com/investing/stock/aapl', '.markets__table');
+          await RedisCache.SetItem('indices', indices, 60 * 5);
+        }
+
+        await this.SendLongText({ sender, text: indices });
+        break;
+
+      case 'SEARCH_COMPANY':
+        await this.SendTextMessage(sender, `Please enter the search keywords within the next 5 minutes.\nFor example: fisker`);
+        await RedisCache.SetItem(sender, 'SEARCH_COMPANY', 60 * 5);
+        break;
+
+      case 'HOLIDAY':
+        const holidays = await MemCachier.GetHashItem('holidays');
+
+        if (holidays) {
+          await this.SendLongText({ sender, text: Util.GetUpcomingHolidays(holidays) });
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Sorry 😔, I'm unable to complete this request.`);
         break;
 
       default:
@@ -450,6 +544,17 @@ export default class FBGraphAPIRequest {
         this.SendListRequest({ sender, text: `Here's the Crypto Market 📰 news update.`, list: cryptoNews });
         break;
 
+      case 'mergerNews':
+        finnhubNews = await MemCachier.GetHashItem(newsType);
+
+        if (!finnhubNews) {
+          finnhubNews = await StockAPI.GetOtherNews(newsType);
+        }
+
+        const mergerNews = Util.ParseFinnHubNewsData(finnhubNews, 'merger');
+        this.SendListRequest({ sender, text: `Here's the US Stock Market Merger 📰 news update.`, list: mergerNews });
+        break;
+
       case 'tickerNews':
         finnhubNews = await MemCachier.GetHashItem(`${ticker.toLowerCase()}News`);
 
@@ -533,26 +638,13 @@ export default class FBGraphAPIRequest {
   /**
    * @description
    * @param {*} object
-   * @param {Number} index
-   */
-  static LongTextTimeoutTask({ sender, text }, index) {
-    const delayTime = index === 2000 ? 2000 : index - 2000;
-
-    setTimeout(async () => {
-      await this.SendTextMessage(sender, text);
-    }, delayTime);
-  }
-
-  /**
-   * @description
-   * @param {*} object
    */
   static async SendLongText({ sender, text }) {
     for (let index = 0; index < text.length; index += 2000) {
       if (index === 0) {
         await this.SendTextMessage(sender, text.slice(0, 2000));
       } else {
-        this.LongTextTimeoutTask({ sender, text: text.slice(index, index + 2000) }, index);
+        await this.SendTextMessage(sender, text.slice(index, index + 2000));
       }
     }
   }
@@ -645,7 +737,7 @@ export default class FBGraphAPIRequest {
    */
   static async SendCryptoPrices(sender, coinName) {
     let cryptoPricesData = coinName ? await MemCachier.GetHashItem(`${coinName.toLowerCase()}Price`) : await MemCachier.GetHashItem('cryptoPrices');
-    const text = coinName ? `Here's the price of ${coinName}` : `Here's the list of Crytocurrencies with their price.`;
+    const text = coinName ? `Here's the price of ${coinName.toUpperCase()}` : `Here's the list of Crytocurrencies with their price.`;
 
     if (!cryptoPricesData) {
       cryptoPricesData = coinName ? await StockAPI.GetCryptoPrices(coinName) : await StockAPI.GetCryptoPrices();
@@ -683,5 +775,41 @@ export default class FBGraphAPIRequest {
     }
 
     await this.SendLongText({ sender, text: Util.ParseNGNRatesData(ratesData.split('\n\n'), type) });
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendStockAnalysis({ sender, ticker, type }) {
+    let text = '';
+    let analysisData = await MemCachier.GetHashItem(`${ticker.toLowerCase()}`);
+
+    if (!analysisData) {
+      analysisData = await StockAPI.GetStockAnalysisData(ticker);
+    }
+
+    switch (type) {
+      case 'ratings':
+        text = Util.CreateStockAnalysisText(analysisData, ticker, 'ratings');
+        break;
+
+      case 'recommendation':
+        text = Util.CreateStockAnalysisText(analysisData, ticker, 'recommendation');
+        break;
+
+      case 'upgrades':
+        text = Util.CreateStockAnalysisText(analysisData, ticker, 'upgrades');
+        break;
+
+      case 'earnings':
+        text = Util.CreateStockAnalysisText(analysisData, ticker, 'earnings');
+        break;
+
+      default:
+        break;
+    }
+
+    await this.SendLongText({ sender, text });
   }
 }

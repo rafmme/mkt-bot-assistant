@@ -11,16 +11,8 @@ const createTickerOptionButtons = (symbol) => {
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'postback',
-      title: `View ${symbol} Quote`,
-      payload: `CHECK_STOCK|${symbol}`,
-    }),
-  );
-
-  buttons.addButton(
-    MessengerButtonFactory.CreateButton({
-      type: 'postback',
-      title: `View ${symbol} Overview`,
-      payload: `STOCK_OVERVIEW|${symbol}`,
+      title: `View ${symbol}`,
+      payload: `STOCK_OPS|${symbol}`,
     }),
   );
 

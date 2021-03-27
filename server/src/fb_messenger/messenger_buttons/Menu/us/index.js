@@ -1,6 +1,8 @@
 import ButtonList from '../../Button/buttonList';
 import MessengerButtonFactory from '../../ButtonFactory';
 
+const timeString = new Date().toTimeString().split(' ')[0].split(':');
+const currentTimeNumber = Number.parseInt(`${timeString[0]}${timeString[1]}`, 10);
 const listOfButtons = new ButtonList();
 
 listOfButtons.addButton(
@@ -22,8 +24,16 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
-    title: 'Show Indices',
-    payload: 'MARKET_INDICES',
+    title: 'Merger News',
+    payload: 'MERGER_NEWS',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
+    title: currentTimeNumber >= 400 && currentTimeNumber < 930 ? 'Show Futures' : 'Show Indices',
+    payload: currentTimeNumber >= 400 && currentTimeNumber < 930 ? 'MARKET_FUTURES' : 'MARKET_INDICES',
   }),
 );
 
@@ -40,6 +50,14 @@ listOfButtons.addButton(
     type: 'quick_reply',
     title: 'Trending Tickers',
     payload: 'TRENDING_TICKERS',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
+    title: 'Search for Company',
+    payload: 'SEARCH_COMPANY',
   }),
 );
 

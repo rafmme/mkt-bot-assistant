@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable consistent-return */
 import axios from 'axios';
 import dotenv from 'dotenv';
@@ -213,9 +214,9 @@ export default class Util {
       marketCap,
     )}\nPrevious Close: $ ${previousClose}\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\nAverage Total Volume: ${this.FormatLargeNumbers(
       avgTotalVolume,
-    )}\nP/E Ratio: ${peRatio}\nPrice: $ ${latestPrice}\nPrice Change: $ ${change}\nPercent Change: ${changePercent} %\n52 Week High: $ ${week52High}\n52 Week Low: $ ${week52Low}\nYTD: ${this.FormatLargeNumbers(
-      ytdChange,
-    )}\nTime: ${latestTime}\n\n ** 15 minutes delayed quote **`;
+    )}\nP/E Ratio: ${peRatio}\nPrice: $ ${latestPrice}\nPrice Change: $ ${change}\nPercent Change: ${
+      changePercent * 100
+    } %\n52 Week High: $ ${week52High}\n52 Week Low: $ ${week52Low}\nYTD: ${this.FormatLargeNumbers(ytdChange)}\nTime: ${latestTime}\n\n ** 15 minutes delayed quote **`;
     return text;
   }
 
@@ -233,9 +234,7 @@ export default class Util {
 
       list.push({
         title: `${symbol}`,
-        subtitle: `Exchange: ${fullExchangeName}\n
-        ${text.split('-')[0].trim()}
-        `,
+        subtitle: `${text.split('-')[0].trim().toUpperCase()}\nExchange: ${fullExchangeName}`,
         buttons: createTickerOptionButtons(symbol),
       });
     }
@@ -318,9 +317,9 @@ export default class Util {
 
       second: `Exchange: ${Exchange}\nCurrency: ${Currency}\nCountry: ${Country}\nSector: ${Sector}\nIndustry: ${Industry}\nAddress: ${Address}\nFullTimeEmployees: ${FullTimeEmployees}\nFiscalYearEnd: ${FiscalYearEnd}\nLatestQuarter: ${LatestQuarter}\nMarketCapitalization: ${this.FormatLargeNumbers(
         MarketCapitalization,
-      )}\nEBITDA: ${this.FormatLargeNumbers(
-        EBITDA,
-      )}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${DividendYield}\nEPS: ${EPS}`,
+      )}\nEBITDA: ${this.FormatLargeNumbers(EBITDA)}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${
+        DividendYield * 100
+      }%\nEPS: ${EPS}`,
 
       third: `RevenuePerShareTTM: ${RevenuePerShareTTM}\nProfitMargin: ${ProfitMargin}\nOperatingMarginTTM: ${OperatingMarginTTM}\nReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\nReturnOnEquityTTM: ${ReturnOnEquityTTM}\nRevenueTTM: ${this.FormatLargeNumbers(
         RevenueTTM,
@@ -330,14 +329,13 @@ export default class Util {
         data['52WeekHigh']
       }\n52WeekLow: ${data['52WeekLow']}`,
 
-      fourth: `50DayMovingAverage: ${data['50DayMovingAverage']}\n200DayMovingAverage: ${data['200DayMovingAverage']}\n
-SharesOutstanding: ${this.FormatLargeNumbers(SharesOutstanding)}\nSharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\nSharesShort: ${this.FormatLargeNumbers(
-        SharesShort,
-      )}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
+      fourth: `50DayMovingAverage: ${data['50DayMovingAverage']}\n200DayMovingAverage: ${data['200DayMovingAverage']}\nSharesOutstanding: ${this.FormatLargeNumbers(
+        SharesOutstanding,
+      )}\nSharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\nSharesShort: ${this.FormatLargeNumbers(SharesShort)}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
         SharesShortPriorMonth,
-      )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\n
-ForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${ForwardAnnualDividendYield}\nPayoutRatio: ${PayoutRatio}\n
-DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
+      )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\nForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${
+        ForwardAnnualDividendYield * 100
+      }%\nPayoutRatio: ${PayoutRatio}\nDividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
 
       fifth: `For more visit https://www.earningsfly.com/stocks/${ticker}?source=t2`,
     };
@@ -385,6 +383,10 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
 
     if (type === 'bank_rate') {
       exchangeRates = 'DATE  LOCATION  BANK  RATE  CURRENCY\n';
+    }
+
+    if (!rates) {
+      return `Sorry 😔, I'm unable to complete this request.`;
     }
 
     if (type === 'usd_rate') {
@@ -447,5 +449,127 @@ DividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFacto
     }
 
     return keyData;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Object} data
+   */
+  static GetUpcomingHolidays(data) {
+    const currentDate = new Date();
+    const currentYearHolidays = data[`${currentDate.getFullYear()}`];
+    let upcomingHolidays = `*** UPCOMING MARKET HOLIDAYS FOR YEAR ${currentDate.getFullYear()} ***\n\n`;
+
+    for (let i = 0; i < currentYearHolidays.length; i += 1) {
+      const date = new Date(currentYearHolidays[i].date);
+
+      if (currentDate <= date) {
+        if (currentDate.getMonth() === date.getMonth()) {
+          upcomingHolidays += `** ⌛️ ${currentYearHolidays[i].date} => ${currentYearHolidays[i].holiday}\n\n`;
+        } else {
+          upcomingHolidays += `${currentYearHolidays[i].date} => ${currentYearHolidays[i].holiday}\n\n`;
+        }
+      }
+    }
+
+    return upcomingHolidays;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {[]} data
+   */
+  static ParseCompaniesSearchResultData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      list.push({
+        title: `${data[i]['1. symbol']}`,
+        subtitle: `${data[i]['2. name']}\nType: ${data[i]['3. type']}`,
+        buttons: createTickerOptionButtons(`${data[i]['1. symbol']}`),
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {String} symbol
+   * @param {String} type
+   */
+  static CreateStockAnalysisText(data, symbol, type) {
+    const { recommendationTrend, upgradeDowngradeHistory, financialData, earningsHistory, price } = data;
+    let text = '';
+
+    switch (type) {
+      case 'ratings':
+        if (!recommendationTrend) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { trend } = recommendationTrend;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Analyst Ratings **\n\n`;
+
+        for (let i = 0; i < trend.length; i += 1) {
+          const { period, strongBuy, buy, hold, sell, strongSell } = trend[i];
+          text += `Period: ${period.replace('-', '')}\nBuy: ${buy}\nStrong Buy: ${strongBuy}\nHold: ${hold}\nSell: ${sell}\nStrong Sell: ${strongSell}\n\n`;
+        }
+        break;
+
+      case 'upgrades':
+        if (!upgradeDowngradeHistory) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { history } = upgradeDowngradeHistory;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Upgrades/Downgrades **\n\n`;
+
+        for (let i = 0; i < 10; i += 1) {
+          if (history[i]) {
+            const { firm, toGrade, fromGrade, action } = history[i];
+            text += `Firm: ${firm}\nFrom: ${fromGrade}\nTo: ${toGrade}\nAction: ${action}\n\n`;
+          }
+        }
+        break;
+
+      case 'recommendation':
+        if (!financialData) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { recommendationKey, recommendationMean, numberOfAnalystOpinions } = financialData;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Recommendation **\n\nRecommendation: ${recommendationKey.toUpperCase()}\nRecommendation Mean: ${
+          recommendationMean.fmt
+        }\nNumber of Analyst: ${numberOfAnalystOpinions.fmt}`;
+        break;
+
+      case 'earnings':
+        if (!earningsHistory) {
+          return `Sorry 😔, no data was found for ${symbol}`;
+        }
+
+        const { history: eHistory } = earningsHistory;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Earnings History **\n\n`;
+        eHistory.reverse();
+
+        for (let i = 0; i < eHistory.length; i += 1) {
+          const { epsActual, epsEstimate, epsDifference, surprisePercent, quarter } = eHistory[i];
+          if (Object.keys(quarter).length >= 1) {
+            text += `Quarter: ${quarter.fmt}\nEPS Actual: ${epsActual.fmt}\nEPS Estimate: ${epsEstimate.fmt}\nEPS Difference: ${epsDifference.fmt}\nSurprise Percentage: ${surprisePercent.fmt}\n\n`;
+          }
+        }
+        break;
+
+      default:
+        text = `Sorry 😔, no data was found for ${symbol}`;
+        break;
+    }
+
+    return text;
   }
 }

@@ -14,6 +14,14 @@ listOfButtons.addButton(
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
+    title: 'Merger News',
+    payload: 'MERGER_NEWS',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
     title: 'Nigeria News',
     payload: 'NGN_NEWS',
   }),
