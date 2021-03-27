@@ -16,7 +16,7 @@ import newsOps from '../messenger_buttons/Menu/news';
 import Scraper from '../../scraper';
 import createStockOptionButtons from '../messenger_buttons/Menu/us_stock';
 import WitAIHelper from '../../wit_ai';
-import createCryptoOptionButtons from '../messenger_buttons/Menu/crypto';
+import crypto from '../messenger_buttons/Menu/crypto';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -239,7 +239,7 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'MENU_CRYPTO':
-        this.SendQuickReplies(sender, `What'd you like to do regarding Cryptos?`, createCryptoOptionButtons());
+        this.SendQuickReplies(sender, `What'd you like to do regarding Cryptos?`, crypto);
         break;
 
       case 'MENU_US_MARKET':
@@ -382,11 +382,6 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'CRYPTO_PRICE':
-        if (data) {
-          await WitAIHelper.QRButtonResponseHandler(sender, 'CRYPTO_PRICE', data);
-          return;
-        }
-
         await this.SendTextMessage(sender, `Please enter the Crypto Coin Symbol within the next 5 minutes.\nFor example: $BTC`);
         await RedisCache.SetItem(sender, 'CRYPTO_PRICE', 60 * 5);
         break;
@@ -742,7 +737,7 @@ export default class FBGraphAPIRequest {
    */
   static async SendCryptoPrices(sender, coinName) {
     let cryptoPricesData = coinName ? await MemCachier.GetHashItem(`${coinName.toLowerCase()}Price`) : await MemCachier.GetHashItem('cryptoPrices');
-    const text = coinName ? `Here's the price of ${coinName}` : `Here's the list of Crytocurrencies with their price.`;
+    const text = coinName ? `Here's the price of ${coinName.toUpperCase()}` : `Here's the list of Crytocurrencies with their price.`;
 
     if (!cryptoPricesData) {
       cryptoPricesData = coinName ? await StockAPI.GetCryptoPrices(coinName) : await StockAPI.GetCryptoPrices();

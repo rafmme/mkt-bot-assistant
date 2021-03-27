@@ -234,9 +234,7 @@ export default class Util {
 
       list.push({
         title: `${symbol}`,
-        subtitle: `Exchange: ${fullExchangeName}\n
-        ${text.split('-')[0].trim()}
-        `,
+        subtitle: `${text.split('-')[0].trim().toUpperCase()}\nExchange: ${fullExchangeName}`,
         buttons: createTickerOptionButtons(symbol),
       });
     }
@@ -505,7 +503,7 @@ export default class Util {
    * @param {String} type
    */
   static CreateStockAnalysisText(data, symbol, type) {
-    const { recommendationTrend, upgradeDowngradeHistory, financialData, earningsHistory } = data;
+    const { recommendationTrend, upgradeDowngradeHistory, financialData, earningsHistory, price } = data;
     let text = '';
 
     switch (type) {
@@ -515,7 +513,7 @@ export default class Util {
         }
 
         const { trend } = recommendationTrend;
-        text = `** ${symbol.toUpperCase()} Analyst Ratings **\n\n`;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Analyst Ratings **\n\n`;
 
         for (let i = 0; i < trend.length; i += 1) {
           const { period, strongBuy, buy, hold, sell, strongSell } = trend[i];
@@ -529,12 +527,12 @@ export default class Util {
         }
 
         const { history } = upgradeDowngradeHistory;
-        text = `** ${symbol.toUpperCase()} Upgrades/Downgrades **\n\n`;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Upgrades/Downgrades **\n\n`;
 
-        for (let i = 0; i < history.length; i += 1) {
-          const { epochGradeDate, firm, toGrade, fromGrade, action } = history[i];
-          if (new Date().getFullYear() - new Date(epochGradeDate).getFullYear() <= 2) {
-            text += `Firm: ${firm}\nFrom: ${fromGrade}\nTo: ${toGrade}\nAction: ${action}\nGrade Date: ${new Date(epochGradeDate).toDateString()}\n\n`;
+        for (let i = 0; i < 10; i += 1) {
+          if (history[i]) {
+            const { firm, toGrade, fromGrade, action } = history[i];
+            text += `Firm: ${firm}\nFrom: ${fromGrade}\nTo: ${toGrade}\nAction: ${action}\n\n`;
           }
         }
         break;
@@ -545,7 +543,7 @@ export default class Util {
         }
 
         const { recommendationKey, recommendationMean, numberOfAnalystOpinions } = financialData;
-        text = `** ${symbol.toUpperCase()} Recommendation **\n\nRecommendation: ${recommendationKey.toUpperCase()}\nRecommendation Mean: ${
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Recommendation **\n\nRecommendation: ${recommendationKey.toUpperCase()}\nRecommendation Mean: ${
           recommendationMean.fmt
         }\nNumber of Analyst: ${numberOfAnalystOpinions.fmt}`;
         break;
@@ -556,14 +554,13 @@ export default class Util {
         }
 
         const { history: eHistory } = earningsHistory;
-        text = `** ${symbol.toUpperCase()} Earnings History **\n\n`;
+        text = `** ${price.shortName} [${symbol.toUpperCase()}] Earnings History **\n\n`;
+        eHistory.reverse();
 
         for (let i = 0; i < eHistory.length; i += 1) {
-          const { epsActual, epsEstimate, epsDifference, surprisePercent, quarter, period } = eHistory[i];
+          const { epsActual, epsEstimate, epsDifference, surprisePercent, quarter } = eHistory[i];
           if (Object.keys(quarter).length >= 1) {
-            text += `Quarter: ${quarter.fmt}\nPeriod: ${period.replace('-', '')}\nEPS Actual: ${epsActual.fmt}\nEPS Estimate: ${epsEstimate.fmt}\nEPS Difference: ${
-              epsDifference.fmt
-            }\nSurprise Percentage: ${surprisePercent.fmt}\n\n`;
+            text += `Quarter: ${quarter.fmt}\nEPS Actual: ${epsActual.fmt}\nEPS Estimate: ${epsEstimate.fmt}\nEPS Difference: ${epsDifference.fmt}\nSurprise Percentage: ${surprisePercent.fmt}\n\n`;
           }
         }
         break;

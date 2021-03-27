@@ -10,7 +10,6 @@ import Util from '../utils';
 import MemCachier from '../cache/memcachier';
 import StockAPI from '../stock_apis';
 import createStockOptionButtons from '../fb_messenger/messenger_buttons/Menu/us_stock';
-import createCryptoOptionButtons from '../fb_messenger/messenger_buttons/Menu/crypto';
 
 /**
  * @class WitAIHelper
@@ -175,7 +174,8 @@ export default class WitAIHelper {
       const input = word.replace('^', '').split(' ');
       const cryptoSymbol = input[0];
 
-      await FBGraphAPIRequest.SendQuickReplies(sender, `What'd you like to see on ${cryptoSymbol.toUpperCase()}`, createCryptoOptionButtons(cryptoSymbol.toLowerCase()));
+      await this.QRButtonResponseHandler(sender, 'CRYPTO_PRICE', cryptoSymbol);
+      return;
     }
 
     if (word.startsWith('$')) {
@@ -193,6 +193,21 @@ export default class WitAIHelper {
           case 'balance':
             break;
           case 'earnings':
+            break;
+          case 'recommendation':
+          case 'recommendations':
+            await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'recommendation' });
+            break;
+          case 'ratings':
+          case 'rating':
+            await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'ratings' });
+            break;
+          case 'upgrades':
+          case 'upgrade':
+            await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'upgrades' });
+            break;
+          case 'ehistory':
+            await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'earnings' });
             break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
@@ -313,7 +328,7 @@ export default class WitAIHelper {
     await RedisCache.SetItem(sender, '', 1);
     await RedisCache.DeleteItem(sender);
 
-    const ticker = text.toLowerCase().replace('$', '');
+    const ticker = text.toLowerCase().replace('$', '').replace('^', '');
 
     switch (action) {
       case 'TICKER_NEWS':
