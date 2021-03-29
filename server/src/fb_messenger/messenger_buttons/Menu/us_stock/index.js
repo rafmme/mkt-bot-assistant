@@ -75,8 +75,8 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: !ticker ? 'Stock Insider Roster' : `${ticker.toUpperCase()} Insider Roster`,
-      payload: !ticker ? 'STOCK_INSIDER' : `STOCK_INSIDER|${ticker}`,
+      title: !ticker ? 'Stock TA Indicator' : `${ticker.toUpperCase()} TA Indicator`,
+      payload: !ticker ? 'STOCK_TAI' : `STOCK_TAI|${ticker}`,
     }),
   );
 

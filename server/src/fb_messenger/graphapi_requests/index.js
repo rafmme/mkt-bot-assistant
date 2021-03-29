@@ -812,4 +812,18 @@ export default class FBGraphAPIRequest {
 
     await this.SendLongText({ sender, text });
   }
+
+  /**
+   * @description
+   * @param {String} sender
+   */
+  static async SendEconomicCalendar(sender) {
+    let data = await MemCachier.GetHashItem('ec_calendar');
+
+    if (!data) {
+      data = await StockAPI.GetEconomicCalendar();
+    }
+
+    await this.SendLongText({ sender, text: Util.CreateEconomicCalendarText(data) });
+  }
 }

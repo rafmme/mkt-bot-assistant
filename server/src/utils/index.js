@@ -578,4 +578,24 @@ export default class Util {
 
     return text;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   */
+  static CreateEconomicCalendarText(data) {
+    let text = '* US Economic Calendar 🗓 *\n';
+
+    if (!data || data.length < 1) {
+      return 'Sorry 😔, no data was found.';
+    }
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { event, impact, time } = data[i];
+      text += `Event: ${event}\nImpact: ${impact.toUpperCase()}\nDate: ${time}\n\n`;
+    }
+
+    return text;
+  }
 }

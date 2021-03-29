@@ -47,8 +47,58 @@ export default class Cron {
   /**
    * @static
    * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static SendUpcomingEarnings(schedule, timezone = TZ) {
+    const users = [TEST_USER1, TEST_USER2];
+
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          console.log('impl');
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static GetEarningsForTheWeek(schedule, timezone = TZ) {
+    const users = [TEST_USER1, TEST_USER2];
+
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          console.log('impl');
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
+    this.SendUpcomingEarnings('0 9 * * Sunday').start();
+    this.GetEarningsForTheWeek('0 0 * * Sunday').start();
   }
 }
