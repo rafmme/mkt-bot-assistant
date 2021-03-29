@@ -384,7 +384,7 @@ export default class Util {
   static ParseNGNRatesData(rates, type) {
     let exchangeRates =
       type === 'cbn_rate'
-        ? 'CBN EXCHANGE RATES - NGN-USD\nNGN-GBP\nNGN-EUR\n'
+        ? 'CBN EXCHANGE RATES\nNGN-USD\nNGN-GBP\nNGN-EUR\n'
         : 'Quotes: * morning, ** midday, *** evening\nNGN-USD (BUY/SELL)\nNGN-GBP (BUY/SELL)\nNGN-EUR (BUY/SELL)\n';
 
     if (type === 'bank_rate') {
@@ -626,8 +626,6 @@ export default class Util {
    * @param {String} resolution
    */
   static CreateTechnicalIndicatorText(data, symbol, resolution) {
-    console.log(symbol);
-
     if (!data || Object.keys(data).length < 1) {
       return 'Sorry 😔, no data was found.';
     }
@@ -639,7 +637,10 @@ export default class Util {
       },
       trend: { adx, trending },
     } = data;
-    const text = `* ${symbol.toUpperCase()} Technical Indicator [Resolution: ${resolution}] *\n\n👉🏽 Technical Analysis Count\n  Buy: ${buy}\n  Neutral: ${neutral}\n  Sell: ${sell}\n\n👉🏽 Signal => ${signal.toUpperCase()}\n\n👉🏽 Trend\n  adx: ${adx}\n  Trending: ${trending}`;
+
+    const signalText = signal ? signal.toUpperCase() : '-';
+    const text = `* ${symbol.toUpperCase()} Technical Indicator [Resolution: ${resolution}] *\n\n👉🏽 Technical Analysis Count\n  Buy: ${buy}\n  Neutral: ${neutral}\n  Sell: ${sell}\n\n👉🏽 Signal => ${signalText}\n\n👉🏽 Trend\n  adx: ${adx}\n  Trending: ${trending}`;
+
     return text;
   }
 
