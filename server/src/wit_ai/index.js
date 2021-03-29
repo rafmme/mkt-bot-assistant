@@ -171,8 +171,8 @@ export default class WitAIHelper {
       return;
     }
 
-    if (word.startsWith('^')) {
-      const input = word.replace('^', '').split(' ');
+    if (word.startsWith('¢')) {
+      const input = word.replace('¢', '').split(' ');
       const cryptoSymbol = input[0];
 
       await this.QRButtonResponseHandler(sender, 'CRYPTO_PRICE', cryptoSymbol);
@@ -387,7 +387,7 @@ export default class WitAIHelper {
     await RedisCache.SetItem(sender, '', 1);
     await RedisCache.DeleteItem(sender);
 
-    const ticker = text.toLowerCase().replace('$', '').replace('^', '');
+    const ticker = text.toLowerCase().replace('$', '').replace('¢', '');
 
     switch (action) {
       case 'TICKER_NEWS':

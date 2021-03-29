@@ -661,4 +661,13 @@ export default class Util {
 
     return text;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {String} text
+   */
+  static EncodeURL(text) {
+    return text.replace('-', '%2D').replace('^', '%5E').replace('.', '%2E');
+  }
 }

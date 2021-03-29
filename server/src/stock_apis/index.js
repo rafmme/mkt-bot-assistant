@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import MemCachier from '../cache/memcachier';
+import Util from '../utils';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
@@ -105,7 +106,7 @@ export default class StockAPI {
   static async GetStockQuote(symbol) {
     const { IEX_CLOUD } = process.env;
     const response = await new RequestBuilder()
-      .withURL(`https://cloud.iexapis.com/stable/stock/${symbol.toLowerCase()}/batch`)
+      .withURL(`https://cloud.iexapis.com/stable/stock/${Util.EncodeURL(symbol.toLowerCase())}/batch`)
       .method('GET')
       .queryParams({
         types: 'quote',
@@ -375,7 +376,7 @@ export default class StockAPI {
       .queryParams({
         token: FINNHUB,
         symbol,
-        from: `${new Date().getFullYear() - 1}-06-01`,
+        from: `${new Date().getFullYear()}-01-01`,
         to: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
       })
       .build()
