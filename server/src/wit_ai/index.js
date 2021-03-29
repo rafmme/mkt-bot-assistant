@@ -369,6 +369,10 @@ export default class WitAIHelper {
       case 'filing':
         await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_SEC_FILINGS');
         break;
+      case 'ipo':
+      case 'ipo calendar':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'IPO');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;

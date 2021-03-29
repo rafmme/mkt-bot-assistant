@@ -493,6 +493,10 @@ export default class FBGraphAPIRequest {
         await this.SendEconomicCalendar(sender);
         break;
 
+      case 'IPO':
+        await this.SendIPOCalendar(sender);
+        break;
+
       default:
         break;
     }
@@ -894,7 +898,7 @@ export default class FBGraphAPIRequest {
       data = await StockAPI.GetTechnicalIndicator(ticker, resolution);
     }
 
-    const text = Util.CreateTechnicalIndicatorText(data, ticker);
+    const text = Util.CreateTechnicalIndicatorText(data, ticker, resolution);
 
     await this.SendLongText({ sender, text });
   }
@@ -913,5 +917,19 @@ export default class FBGraphAPIRequest {
     const text = Util.CreateSECFilingsText(data, ticker);
 
     await this.SendLongText({ sender, text });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   */
+  static async SendIPOCalendar(sender) {
+    let data = await MemCachier.GetHashItem('ipo_calendar');
+
+    if (!data) {
+      data = await StockAPI.GetIPOCalendar();
+    }
+
+    await this.SendListRequest({ sender, text: 'Upcoming IPOs', list: Util.ParseIPOCalendarData(data) });
   }
 }

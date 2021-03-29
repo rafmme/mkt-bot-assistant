@@ -626,6 +626,8 @@ export default class Util {
    * @param {String} resolution
    */
   static CreateTechnicalIndicatorText(data, symbol, resolution) {
+    console.log(symbol);
+
     if (!data || Object.keys(data).length < 1) {
       return 'Sorry 😔, no data was found.';
     }
@@ -669,5 +671,26 @@ export default class Util {
    */
   static EncodeURL(text) {
     return text.replace('-', '%2D').replace('^', '%5E').replace('.', '%2E');
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Array} data
+   */
+  static ParseIPOCalendarData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { date, exchange, name, numberOfShares, price, status, symbol, totalSharesValue } = data[i];
+      list.push({
+        title: `${name} [${symbol}]`,
+        subtitle: `Date: ${date}\nPrice: ${price}\nStatus: ${status}\nEx: ${exchange}\nSh: ${this.FormatLargeNumbers(numberOfShares)}\nSh Value: $${this.FormatLargeNumbers(
+          totalSharesValue,
+        )}`,
+      });
+    }
+
+    return list;
   }
 }

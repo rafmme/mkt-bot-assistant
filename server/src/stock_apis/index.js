@@ -385,4 +385,26 @@ export default class StockAPI {
     await MemCachier.SetHashItem(`${symbol.toLowerCase()}Filings`, response, 86400 * 8);
     return response;
   }
+
+  /**
+   * @static
+   * @description
+   */
+  static async GetIPOCalendar() {
+    const { FINNHUB } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://finnhub.io/api/v1/calendar/ipo')
+      .method('GET')
+      .queryParams({
+        token: FINNHUB,
+        from: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
+      })
+      .build()
+      .send();
+
+    const { ipoCalendar } = response;
+
+    await MemCachier.SetHashItem('ipo_calendar', ipoCalendar, 86400 * 5);
+    return ipoCalendar;
+  }
 }
