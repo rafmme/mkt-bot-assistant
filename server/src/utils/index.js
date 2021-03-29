@@ -194,6 +194,10 @@ export default class Util {
    * @param {} symbol
    */
   static CreateStockQuoteText(data, symbol) {
+    if (!data && !data.companyName) {
+      return `Sorry 😔, I'm unable to complete this request.`;
+    }
+
     const {
       companyName,
       peRatio,
@@ -379,10 +383,12 @@ export default class Util {
    */
   static ParseNGNRatesData(rates, type) {
     let exchangeRates =
-      type === 'cbn_rate' ? 'CBN EXCHANGE RATES - NGN >> USD  GBP  EUR\n' : 'Quotes: * morning, ** midday, ***evening\nNGN >> USD (BUY/SELL) GBP (BUY/SELL) EUR (BUY/SELL)\n';
+      type === 'cbn_rate'
+        ? 'CBN EXCHANGE RATES - NGN-USD\nNGN-GBP\nNGN-EUR\n'
+        : 'Quotes: * morning, ** midday, *** evening\nNGN-USD (BUY/SELL)\nNGN-GBP (BUY/SELL)\nNGN-EUR (BUY/SELL)\n';
 
     if (type === 'bank_rate') {
-      exchangeRates = 'DATE  LOCATION  BANK  RATE  CURRENCY\n';
+      exchangeRates = 'DATE\nLOCATION\nBANK\nRATE\nCURRENCY\n';
     }
 
     if (!rates) {
