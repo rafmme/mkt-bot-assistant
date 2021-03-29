@@ -10,7 +10,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: '1',
       payload: `TAI|${ticker.replace('$', '')}+1`,
     }),
@@ -18,7 +18,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: '5',
       payload: `TAI|${ticker.replace('$', '')}+5`,
     }),
@@ -26,7 +26,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: '15',
       payload: `TAI|${ticker.replace('$', '')}+15`,
     }),
@@ -34,7 +34,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: '30',
       payload: `TAI|${ticker.replace('$', '')}+30`,
     }),
@@ -42,7 +42,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: '60',
       payload: `TAI|${ticker.replace('$', '')}+60`,
     }),
@@ -50,7 +50,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: 'D',
       payload: `TAI|${ticker.replace('$', '')}+D`,
     }),
@@ -58,7 +58,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: 'W',
       payload: `TAI|${ticker.replace('$', '')}+W`,
     }),
@@ -66,7 +66,7 @@ const createTechnicalIndicatorOptionButtons = (ticker) => {
 
   buttons.addButton(
     MessengerButtonFactory.CreateButton({
-      type: 'postback',
+      type: 'quick_reply',
       title: 'M',
       payload: `TAI|${ticker.replace('$', '')}+M`,
     }),
