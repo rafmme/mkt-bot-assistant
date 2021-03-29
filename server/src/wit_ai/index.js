@@ -10,6 +10,7 @@ import Util from '../utils';
 import MemCachier from '../cache/memcachier';
 import StockAPI from '../stock_apis';
 import createStockOptionButtons from '../fb_messenger/messenger_buttons/Menu/us_stock';
+import createTechnicalIndicatorOptionButtons from '../fb_messenger/messenger_buttons/technicalIndicatorButton';
 
 /**
  * @class WitAIHelper
@@ -209,6 +210,22 @@ export default class WitAIHelper {
           case 'ehistory':
             await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'earnings' });
             break;
+          case 'peers':
+            await FBGraphAPIRequest.SendCompanyPeers(sender, ticker);
+            break;
+          case 'indicator':
+            await FBGraphAPIRequest.SendQuickReplies(
+              sender,
+              `Please select $${ticker.toUpperCase()} Technical Indicator Resolution`,
+              createTechnicalIndicatorOptionButtons(ticker),
+            );
+            break;
+          case 'filling':
+          case 'sec filings':
+          case 'filings':
+          case 'sec filing':
+            await FBGraphAPIRequest.SendStockSECFilings({ sender, ticker });
+            break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
             break;
@@ -310,6 +327,48 @@ export default class WitAIHelper {
       case 'upcoming holiday':
         FBGraphAPIRequest.HandlePostbackPayload(sender, 'HOLIDAY');
         break;
+      case 'econ calendar':
+      case 'economic calender':
+      case 'calendar':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'ECON_CALENDAR');
+        break;
+      case 'ticker peers':
+      case 'stock peers':
+      case 'peers':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_PEERS');
+        break;
+      case 'quote':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_QUOTE');
+        break;
+      case 'overview':
+        FBGraphAPIRequest.HandlePostbackPayload(sender, 'TICKER_OVERVIEW');
+        break;
+      case 'recommendation':
+      case 'recommendations':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_RECOMMENDATION');
+        break;
+      case 'ratings':
+      case 'rating':
+      case 'analyst ratings':
+      case 'analyst rating':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_ANALYST_RATINGS');
+        break;
+      case 'upgrades':
+      case 'upgrade':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_UPGRADE');
+        break;
+      case 'ehistory':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_EARNINGS_HISTORY');
+        break;
+      case 'indicator':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_TAI');
+        break;
+      case 'sec filings':
+      case 'filings':
+      case 'sec filing':
+      case 'filing':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_SEC_FILINGS');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
@@ -352,6 +411,15 @@ export default class WitAIHelper {
         break;
       case 'STOCK_EARNINGS_HISTORY':
         await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'earnings' });
+        break;
+      case 'STOCK_PEERS':
+        await FBGraphAPIRequest.SendCompanyPeers(sender, ticker);
+        break;
+      case 'STOCK_TAI':
+        await FBGraphAPIRequest.SendQuickReplies(sender, `Please select $${ticker.toUpperCase()} Technical Indicator Resolution`, createTechnicalIndicatorOptionButtons(ticker));
+        break;
+      case 'STOCK_SEC_FILINGS':
+        await FBGraphAPIRequest.SendStockSECFilings({ sender, ticker });
         break;
       case 'CRYPTO_PRICE':
         await FBGraphAPIRequest.SendCryptoPrices(sender, ticker);

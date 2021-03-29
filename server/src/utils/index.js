@@ -585,7 +585,7 @@ export default class Util {
    * @param {*} data
    */
   static CreateEconomicCalendarText(data) {
-    let text = '* US Economic Calendar 🗓 *\n';
+    let text = '* US Economic Calendar 🗓 *\n\n';
 
     if (!data || data.length < 1) {
       return 'Sorry 😔, no data was found.';
@@ -594,6 +594,69 @@ export default class Util {
     for (let i = 0; i < data.length; i += 1) {
       const { event, impact, time } = data[i];
       text += `Event: ${event}\nImpact: ${impact.toUpperCase()}\nDate: ${time}\n\n`;
+    }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Array} data
+   */
+  static ParsePeersData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      list.push({
+        title: `${data[i]}`,
+        subtitle: `${data[i]}`,
+        buttons: createTickerOptionButtons(`${data[i]}`),
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {String} symbol
+   * @param {String} resolution
+   */
+  static CreateTechnicalIndicatorText(data, symbol, resolution) {
+    if (!data || Object.keys(data).length < 1) {
+      return 'Sorry 😔, no data was found.';
+    }
+
+    const {
+      technicalAnalysis: {
+        count: { buy, neutral, sell },
+        signal,
+      },
+      trend: { adx, trending },
+    } = data;
+    const text = `* ${symbol.toUpperCase()} Technical Indicator [Resolution: ${resolution}] *\n\n👉🏽 Technical Analysis Count\n  Buy: ${buy}\n  Neutral: ${neutral}\n  Sell: ${sell}\n\n👉🏽 Signal => ${signal.toUpperCase()}\n\n👉🏽 Trend\n  adx: ${adx}\n  Trending: ${trending}`;
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {String} symbol
+   */
+  static CreateSECFilingsText(data, symbol) {
+    let text = `* ${symbol.toUpperCase()} SEC Filings *\n\n`;
+
+    if (!data || data.length < 1) {
+      return 'Sorry 😔, no data was found.';
+    }
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { accessNumber, cik, form, filedDate, acceptedDate, reportUrl, filingUrl } = data[i];
+      text += `Access Number: ${accessNumber}\nCIK: ${cik}\nForm: ${form}\nFiled Date: ${filedDate}\nAccepted Date: ${acceptedDate}\nReport URL: ${reportUrl}\nFiling URL: ${filingUrl}\n\n`;
     }
 
     return text;

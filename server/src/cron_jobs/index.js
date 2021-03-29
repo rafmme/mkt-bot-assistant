@@ -98,7 +98,7 @@ export default class Cron {
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
-    this.SendUpcomingEarnings('0 9 * * Sunday').start();
+    this.SendUpcomingEarnings('0 9,12,16 * * Sunday').start();
     this.GetEarningsForTheWeek('0 0 * * Sunday').start();
   }
 }

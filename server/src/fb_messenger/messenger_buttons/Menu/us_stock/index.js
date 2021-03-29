@@ -27,6 +27,22 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
+      title: !ticker ? 'Stock SEC Filings' : `${ticker.toUpperCase()} SEC Filings`,
+      payload: !ticker ? 'STOCK_SEC_FILINGS' : `STOCK_SEC_FILINGS|${ticker}`,
+    }),
+  );
+
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
+      title: !ticker ? 'Stock Peers' : `${ticker.toUpperCase()} Peers`,
+      payload: !ticker ? 'STOCK_PEERS' : `STOCK_PEERS|${ticker}`,
+    }),
+  );
+
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
       title: !ticker ? 'Stock Overview' : `${ticker.toUpperCase()} Overview`,
       payload: !ticker ? 'TICKER_OVERVIEW' : `TICKER_OVERVIEW|${ticker}`,
     }),
