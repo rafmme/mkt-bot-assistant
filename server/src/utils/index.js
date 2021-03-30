@@ -192,10 +192,19 @@ export default class Util {
    * @description
    * @param {*} data
    * @param {} symbol
+   * @param {String} fh
    */
-  static CreateStockQuoteText(data, symbol) {
-    if (!data && !data.companyName) {
+  static CreateStockQuoteText(data, symbol, fh) {
+    if (!fh && !data && !data.companyName) {
       return `Sorry 😔, I'm unable to complete this request.`;
+    }
+
+    if (fh) {
+      const { o, h, l, c, pc, t } = data;
+      const text = data.c
+        ? `** ${symbol.toUpperCase()}) Stock Quote **\n\nPrevious Close: $ ${pc}\nOpen: ${o}\nPrice: $ ${c}\nLow: ${l}\nHigh: ${h}\nTime: ${new Date(t).toDateString()}`
+        : `Sorry 😔, I'm unable to complete this request.`;
+      return text;
     }
 
     const {
@@ -689,6 +698,65 @@ export default class Util {
         subtitle: `Date: ${date}\nPrice: ${price}\nStatus: ${status}\nEx: ${exchange}\nSh: ${this.FormatLargeNumbers(numberOfShares)}\nSh Value: $${this.FormatLargeNumbers(
           totalSharesValue,
         )}`,
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Array} data
+   * @param {Boolean} today
+   */
+  static ParseEarningsCalendarData(data, today) {
+    const list = [];
+    const earningHour = {
+      amc: 'Mkt Close',
+      bmo: 'Pre Mkt',
+      dmh: 'During Mkt',
+    };
+
+    if (today) {
+      const todaysEarnings = data.filter((earning) => {
+        return earning.date === `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
+      });
+
+      if (todaysEarnings < 1) {
+        return 'No Earnings Data was found for today.';
+      }
+
+      for (let i = 0; i < todaysEarnings.length; i += 1) {
+        const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = todaysEarnings;
+        const h = earningHour[`${hour}`];
+
+        list.push({
+          title: `${symbol}`,
+          subtitle: `Date: ${date}\nEPS Est.: ${epsEstimate}\nQuart.: ${quarter}\nHour: ${h}\nRev. Est.: ${this.FormatLargeNumbers(revenueEstimate)}\nYear: ${year}`,
+          buttons: createTickerOptionButtons(symbol),
+        });
+      }
+
+      return list;
+    }
+
+    const weekEarnings = data.filter((earning) => {
+      return `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}` <= earning.date;
+    });
+
+    if (weekEarnings < 1) {
+      return 'No Earnings Data was found for today.';
+    }
+
+    for (let i = 0; i < weekEarnings.length; i += 1) {
+      const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = weekEarnings;
+      const h = earningHour[`${hour}`];
+
+      list.push({
+        title: `${symbol}`,
+        subtitle: `Date: ${date}\nEPS Est.: ${epsEstimate}\nQuart.: ${quarter}\nHour: ${h}\nRev. Est.: ${this.FormatLargeNumbers(revenueEstimate)}\nYear: ${year}`,
+        buttons: createTickerOptionButtons(symbol),
       });
     }
 

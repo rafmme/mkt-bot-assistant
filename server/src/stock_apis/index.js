@@ -101,10 +101,27 @@ export default class StockAPI {
   /**
    * @static
    * @description
-   * @param {} symbol
+   * @param {String} symbol
+   * @param {String} fh
    */
-  static async GetStockQuote(symbol) {
-    const { IEX_CLOUD } = process.env;
+  static async GetStockQuote(symbol, fh) {
+    const { IEX_CLOUD, FINNHUB } = process.env;
+
+    if (fh) {
+      const response = await new RequestBuilder()
+        .withURL('https://finnhub.io/api/v1/quote')
+        .method('GET')
+        .queryParams({
+          symbol: symbol.toUpperCase(),
+          token: FINNHUB,
+        })
+        .build()
+        .send();
+
+      await MemCachier.SetHashItem(`${symbol.toLowerCase()}FHQuote`, response, 60);
+      return response;
+    }
+
     const response = await new RequestBuilder()
       .withURL(`https://cloud.iexapis.com/stable/stock/${Util.EncodeURL(symbol.toLowerCase())}/batch`)
       .method('GET')
@@ -332,7 +349,7 @@ export default class StockAPI {
       .method('GET')
       .queryParams({
         token: FINNHUB,
-        symbol,
+        symbol: symbol.toUpperCase(),
         resolution,
       })
       .build()
@@ -354,7 +371,7 @@ export default class StockAPI {
       .method('GET')
       .queryParams({
         token: FINNHUB,
-        symbol,
+        symbol: symbol.toUpperCase(),
       })
       .build()
       .send();
@@ -406,5 +423,30 @@ export default class StockAPI {
 
     await MemCachier.SetHashItem('ipo_calendar', ipoCalendar, 86400 * 5);
     return ipoCalendar;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} from
+   * @param {String} to
+   */
+  static async GetEarningsCalendar(from, to) {
+    const { FINNHUB } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://finnhub.io/api/v1/calendar/earnings')
+      .method('GET')
+      .queryParams({
+        token: FINNHUB,
+        from: from || '2021-03-28',
+        to: to || '2021-04-03',
+      })
+      .build()
+      .send();
+
+    const { earningsCalendar } = response;
+
+    await MemCachier.SetHashItem('er_calendar', earningsCalendar, 86400 * 5);
+    return earningsCalendar;
   }
 }

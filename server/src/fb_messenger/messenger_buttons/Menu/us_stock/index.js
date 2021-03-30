@@ -51,8 +51,8 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: !ticker ? 'Stock Balance Sheet' : `${ticker.toUpperCase()} Balance Sheet`,
-      payload: !ticker ? 'STOCK_BALANCE_SHEET' : `STOCK_BALANCE_SHEET|${ticker}`,
+      title: !ticker ? 'Stock Financials' : `${ticker.toUpperCase()} Financials`,
+      payload: !ticker ? 'STOCK_FINANCIALS' : `STOCK_FINANCIALS|${ticker}`,
     }),
   );
 

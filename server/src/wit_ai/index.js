@@ -11,6 +11,7 @@ import MemCachier from '../cache/memcachier';
 import StockAPI from '../stock_apis';
 import createStockOptionButtons from '../fb_messenger/messenger_buttons/Menu/us_stock';
 import createTechnicalIndicatorOptionButtons from '../fb_messenger/messenger_buttons/technicalIndicatorButton';
+import createStockFinancialsOptionButtons from '../fb_messenger/messenger_buttons/stockFinancialsButton';
 
 /**
  * @class WitAIHelper
@@ -226,6 +227,9 @@ export default class WitAIHelper {
           case 'sec filing':
             await FBGraphAPIRequest.SendStockSECFilings({ sender, ticker });
             break;
+          case 'q':
+            await FBGraphAPIRequest.SendStockQuote({ sender, ticker }, 'fh');
+            break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
             break;
@@ -373,6 +377,37 @@ export default class WitAIHelper {
       case 'ipo calendar':
         await FBGraphAPIRequest.HandlePostbackPayload(sender, 'IPO');
         break;
+      case 'financials':
+      case 'financial':
+      case 'finance':
+      case 'finances':
+      case 'bs':
+      case 'balance sheet':
+      case 'balance':
+      case 'sheet':
+      case 'ic':
+      case 'income':
+      case 'income statement':
+      case 'cash flow':
+      case 'cash':
+      case 'cf':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_FINANCIALS');
+        break;
+      case 'upcoming earnings':
+      case 'upcoming earning':
+      case 'up earnings':
+      case 'up earning':
+      case 'ue':
+      case 'upcoming earnings report':
+      case 'earnings report':
+      case 'uer':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'EARNINGS_WEEK');
+        break;
+      case 'today er':
+      case 'er':
+      case 'ter':
+        await FBGraphAPIRequest.HandlePostbackPayload(sender, 'EARNINGS_TODAY');
+        break;
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
@@ -421,6 +456,9 @@ export default class WitAIHelper {
         break;
       case 'STOCK_TAI':
         await FBGraphAPIRequest.SendQuickReplies(sender, `Please select $${ticker.toUpperCase()} Technical Indicator Resolution`, createTechnicalIndicatorOptionButtons(ticker));
+        break;
+      case 'STOCK_FINANCIALS':
+        await FBGraphAPIRequest.SendQuickReplies(sender, `Please select which $${ticker.toUpperCase()} Financials you want to view.`, createStockFinancialsOptionButtons(ticker));
         break;
       case 'STOCK_SEC_FILINGS':
         await FBGraphAPIRequest.SendStockSECFilings({ sender, ticker });
