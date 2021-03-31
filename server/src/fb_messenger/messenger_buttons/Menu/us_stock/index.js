@@ -3,7 +3,7 @@ import MessengerButtonFactory from '../../ButtonFactory';
 
 /**
  * @description
- * @param {*} ticker
+ * @param {String} ticker
  */
 const createStockOptionButtons = (ticker) => {
   const listOfButtons = new ButtonList();
@@ -11,7 +11,7 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Quote',
+      title: !ticker ? 'Stock Quote' : `${ticker.toUpperCase()} Quote`,
       payload: !ticker ? 'TICKER_QUOTE' : `TICKER_QUOTE|${ticker}`,
     }),
   );
@@ -19,7 +19,7 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Ticker News',
+      title: !ticker ? 'Ticker News' : `${ticker.toUpperCase()} News`,
       payload: !ticker ? 'TICKER_NEWS' : `TICKER_NEWS|${ticker}`,
     }),
   );
@@ -27,7 +27,23 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Overview',
+      title: !ticker ? 'Stock SEC Filings' : `${ticker.toUpperCase()} SEC Filings`,
+      payload: !ticker ? 'STOCK_SEC_FILINGS' : `STOCK_SEC_FILINGS|${ticker}`,
+    }),
+  );
+
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
+      title: !ticker ? 'Stock Peers' : `${ticker.toUpperCase()} Peers`,
+      payload: !ticker ? 'STOCK_PEERS' : `STOCK_PEERS|${ticker}`,
+    }),
+  );
+
+  listOfButtons.addButton(
+    MessengerButtonFactory.CreateButton({
+      type: 'quick_reply',
+      title: !ticker ? 'Stock Overview' : `${ticker.toUpperCase()} Overview`,
       payload: !ticker ? 'TICKER_OVERVIEW' : `TICKER_OVERVIEW|${ticker}`,
     }),
   );
@@ -35,15 +51,15 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Balance Sheet',
-      payload: !ticker ? 'STOCK_BALANCE_SHEET' : `STOCK_BALANCE_SHEET|${ticker}`,
+      title: !ticker ? 'Stock Financials' : `${ticker.toUpperCase()} Financials`,
+      payload: !ticker ? 'STOCK_FINANCIALS' : `STOCK_FINANCIALS|${ticker}`,
     }),
   );
 
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Analyst Ratings',
+      title: !ticker ? 'Stock Analyst Ratings' : `${ticker.toUpperCase()} Analyst Ratings`,
       payload: !ticker ? 'STOCK_ANALYST_RATINGS' : `STOCK_ANALYST_RATINGS|${ticker}`,
     }),
   );
@@ -51,7 +67,7 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Recommendations',
+      title: !ticker ? 'Stock Recommendations' : `${ticker.toUpperCase()} Recommendations`,
       payload: !ticker ? 'STOCK_RECOMMENDATION' : `STOCK_RECOMMENDATION|${ticker}`,
     }),
   );
@@ -59,7 +75,7 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Upgrades/Downgrades',
+      title: !ticker ? 'Stock Upgrades/Downgrades' : `${ticker.toUpperCase()} Upgrades/Downgrades`,
       payload: !ticker ? 'STOCK_UPGRADE' : `STOCK_UPGRADE|${ticker}`,
     }),
   );
@@ -67,7 +83,7 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Earnings History',
+      title: !ticker ? 'Stock Earnings History' : `${ticker.toUpperCase()} Earnings History`,
       payload: !ticker ? 'STOCK_EARNINGS_HISTORY' : `STOCK_EARNINGS_HISTORY|${ticker}`,
     }),
   );
@@ -75,8 +91,8 @@ const createStockOptionButtons = (ticker) => {
   listOfButtons.addButton(
     MessengerButtonFactory.CreateButton({
       type: 'quick_reply',
-      title: 'Stock Insider Roster',
-      payload: !ticker ? 'STOCK_INSIDER' : `STOCK_INSIDER|${ticker}`,
+      title: !ticker ? 'Stock TA Indicator' : `${ticker.toUpperCase()} TA Indicator`,
+      payload: !ticker ? 'STOCK_TAI' : `STOCK_TAI|${ticker}`,
     }),
   );
 

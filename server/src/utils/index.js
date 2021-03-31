@@ -192,8 +192,21 @@ export default class Util {
    * @description
    * @param {*} data
    * @param {} symbol
+   * @param {String} fh
    */
-  static CreateStockQuoteText(data, symbol) {
+  static CreateStockQuoteText(data, symbol, fh) {
+    if (!fh && !data && !data.companyName) {
+      return `Sorry 😔, I'm unable to complete this request.`;
+    }
+
+    if (fh) {
+      const { o, h, l, c, pc, t } = data;
+      const text = data.c
+        ? `** ${symbol.toUpperCase()} Stock Quote **\n\nPrevious Close: $${pc}\nOpen: $${o}\nPrice: $${c}\nLow: $${l}\nHigh: ${h}`
+        : `Sorry 😔, I'm unable to complete this request.`;
+      return text;
+    }
+
     const {
       companyName,
       peRatio,
@@ -379,10 +392,12 @@ export default class Util {
    */
   static ParseNGNRatesData(rates, type) {
     let exchangeRates =
-      type === 'cbn_rate' ? 'CBN EXCHANGE RATES - NGN >> USD  GBP  EUR\n' : 'Quotes: * morning, ** midday, ***evening\nNGN >> USD (BUY/SELL) GBP (BUY/SELL) EUR (BUY/SELL)\n';
+      type === 'cbn_rate'
+        ? 'CBN EXCHANGE RATES\nNGN-USD\nNGN-GBP\nNGN-EUR\n'
+        : 'Quotes: * morning, ** midday, *** evening\nNGN-USD (BUY/SELL)\nNGN-GBP (BUY/SELL)\nNGN-EUR (BUY/SELL)\n';
 
     if (type === 'bank_rate') {
-      exchangeRates = 'DATE  LOCATION  BANK  RATE  CURRENCY\n';
+      exchangeRates = 'DATE\nLOCATION\nBANK\nRATE\nCURRENCY\n';
     }
 
     if (!rates) {
@@ -571,5 +586,182 @@ export default class Util {
     }
 
     return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   */
+  static CreateEconomicCalendarText(data) {
+    let text = '* US Economic Calendar 🗓 *\n\n';
+
+    if (!data || data.length < 1) {
+      return 'Sorry 😔, no data was found.';
+    }
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { event, impact, time } = data[i];
+      text += `Event: ${event}\nImpact: ${impact.toUpperCase()}\nDate: ${time}\n\n`;
+    }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Array} data
+   */
+  static ParsePeersData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      list.push({
+        title: `${data[i]}`,
+        subtitle: `${data[i]}`,
+        buttons: createTickerOptionButtons(`${data[i]}`),
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {String} symbol
+   * @param {String} resolution
+   */
+  static CreateTechnicalIndicatorText(data, symbol, resolution) {
+    if (!data || Object.keys(data).length < 1) {
+      return 'Sorry 😔, no data was found.';
+    }
+
+    const {
+      technicalAnalysis: {
+        count: { buy, neutral, sell },
+        signal,
+      },
+      trend: { adx, trending },
+    } = data;
+
+    const signalText = signal ? signal.toUpperCase() : '-';
+    const text = `* ${symbol.toUpperCase()} Technical Indicator [Resolution: ${resolution}] *\n\n👉🏽 Technical Analysis Count\n  Buy: ${buy}\n  Neutral: ${neutral}\n  Sell: ${sell}\n\n👉🏽 Signal => ${signalText}\n\n👉🏽 Trend\n  adx: ${adx}\n  Trending: ${trending}`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {String} symbol
+   */
+  static CreateSECFilingsText(data, symbol) {
+    let text = `* ${symbol.toUpperCase()} SEC Filings *\n\n`;
+
+    if (!data || data.length < 1) {
+      return 'Sorry 😔, no data was found.';
+    }
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { accessNumber, cik, form, filedDate, acceptedDate, reportUrl, filingUrl } = data[i];
+      text += `Access Number: ${accessNumber}\nCIK: ${cik}\nForm: ${form}\nFiled Date: ${filedDate}\nAccepted Date: ${acceptedDate}\nReport URL: ${reportUrl}\nFiling URL: ${filingUrl}\n\n`;
+    }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} text
+   */
+  static EncodeURL(text) {
+    return text.replace('-', '%2D').replace('^', '%5E').replace('.', '%2E');
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Array} data
+   */
+  static ParseIPOCalendarData(data) {
+    const list = [];
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { date, exchange, name, numberOfShares, price, status, symbol, totalSharesValue } = data[i];
+      list.push({
+        title: `${name} [${symbol}]`,
+        subtitle: `Date: ${date}\nPrice: ${price}\nStatus: ${status}\nEx: ${exchange}\nSh: ${this.FormatLargeNumbers(numberOfShares)}\nSh Value: $${this.FormatLargeNumbers(
+          totalSharesValue,
+        )}`,
+      });
+    }
+
+    return list;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Array} data
+   * @param {Boolean} today
+   */
+  static ParseEarningsCalendarData(data, today) {
+    const list = [];
+    const earningHour = {
+      amc: 'Mkt Close',
+      bmo: 'Pre Mkt',
+      dmh: 'During Mkt',
+    };
+
+    if (today) {
+      const month = `${new Date().getMonth() + 1}`.length === 1 ? `0${new Date().getMonth() + 1}` : `${new Date().getMonth() + 1}`;
+      const todaysEarnings = data.filter((earning) => {
+        return earning.date === `${new Date().getFullYear()}-${month}-${new Date().getDate()}`;
+      });
+
+      if (todaysEarnings.length < 1) {
+        return 'No Earnings Data was found for today.';
+      }
+
+      for (let i = 0; i < todaysEarnings.length; i += 1) {
+        const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = todaysEarnings[i];
+        const h = earningHour[`${hour}`];
+
+        list.push({
+          title: `${symbol}`,
+          subtitle: `Date: ${date}\nEPS Est.: ${epsEstimate}\nQuart.: ${quarter}\nHour: ${h}\nRev. Est.: ${this.FormatLargeNumbers(revenueEstimate)}\nYear: ${year}`,
+          buttons: createTickerOptionButtons(symbol),
+        });
+      }
+
+      return list;
+    }
+
+    const weekEarnings = data.filter((earning) => {
+      const month = `${new Date().getMonth() + 1}`.length === 1 ? `0${new Date().getMonth() + 1}` : `${new Date().getMonth() + 1}`;
+      return `${new Date().getFullYear()}-${month}-${new Date().getDate()}` <= earning.date;
+    });
+
+    if (weekEarnings.length < 1) {
+      return 'No Earnings Data was found for today.';
+    }
+
+    for (let i = 0; i < weekEarnings.length; i += 1) {
+      const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = weekEarnings[i];
+      const h = earningHour[`${hour}`];
+
+      list.push({
+        title: `${symbol}`,
+        subtitle: `Date: ${date}\nEPS Est.: ${epsEstimate}\nQuart.: ${quarter}\nHour: ${h}\nRev. Est.: ${this.FormatLargeNumbers(revenueEstimate)}\nYear: ${year}`,
+        buttons: createTickerOptionButtons(symbol),
+      });
+    }
+
+    return list;
   }
 }

@@ -17,6 +17,8 @@ import Scraper from '../../scraper';
 import createStockOptionButtons from '../messenger_buttons/Menu/us_stock';
 import WitAIHelper from '../../wit_ai';
 import crypto from '../messenger_buttons/Menu/crypto';
+import createTechnicalIndicatorOptionButtons from '../messenger_buttons/technicalIndicatorButton';
+import createStockFinancialsOptionButtons from '../messenger_buttons/stockFinancialsButton';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
@@ -215,9 +217,15 @@ export default class FBGraphAPIRequest {
     await RedisCache.SetItem(sender, '', 1);
     await RedisCache.DeleteItem(sender);
 
+    const payload = postbackPayload.split('|')[0];
     const data = postbackPayload.split('|')[1];
 
-    switch (postbackPayload.split('|')[0]) {
+    if (payload.startsWith('TAI')) {
+      await this.SendStockTechnicalIndicator({ sender, ticker: data.split('+')[0], resolution: data.split('+')[1] });
+      return;
+    }
+
+    switch (payload) {
       case 'GET_STARTED_PAYLOAD':
         this.GetStartedGreeting(sender);
         break;
@@ -377,6 +385,16 @@ export default class FBGraphAPIRequest {
         await RedisCache.SetItem(sender, 'STOCK_RECOMMENDATION', 60 * 5);
         break;
 
+      case 'STOCK_TAI':
+        if (data) {
+          await this.SendQuickReplies(sender, `Please select $${data.toUpperCase()} Technical Indicator Resolution`, createTechnicalIndicatorOptionButtons(data));
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_TAI', 60 * 5);
+        break;
+
       case 'SHOW_FINNHUB_NEWS_SUMMARY':
         this.SendFinnHubNewsSummary(sender, data);
         break;
@@ -450,6 +468,52 @@ export default class FBGraphAPIRequest {
         }
 
         await this.SendTextMessage(sender, `Sorry 😔, I'm unable to complete this request.`);
+        break;
+
+      case 'STOCK_PEERS':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'STOCK_PEERS', data);
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_PEERS', 60 * 5);
+        break;
+
+      case 'STOCK_SEC_FILINGS':
+        if (data) {
+          await WitAIHelper.QRButtonResponseHandler(sender, 'STOCK_SEC_FILINGS', data);
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_SEC_FILINGS', 60 * 5);
+        break;
+
+      case 'ECON_CALENDAR':
+        await this.SendEconomicCalendar(sender);
+        break;
+
+      case 'IPO':
+        await this.SendIPOCalendar(sender);
+        break;
+
+      case 'STOCK_FINANCIALS':
+        if (data) {
+          await this.SendQuickReplies(sender, `Please select which $${data.toUpperCase()} Financials you want to view.`, createStockFinancialsOptionButtons(data));
+          return;
+        }
+
+        await this.SendTextMessage(sender, `Please enter the Ticker/Symbol of the Stock within the next 5 minutes.\nFor example: $AAPL`);
+        await RedisCache.SetItem(sender, 'STOCK_FINANCIALS', 60 * 5);
+        break;
+
+      case 'EARNINGS_TODAY':
+        await this.SendEarningsCalendar(sender, true);
+        break;
+
+      case 'EARNINGS_WEEK':
+        await this.SendEarningsCalendar(sender);
         break;
 
       default:
@@ -653,7 +717,18 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {*} object
    */
-  static async SendStockQuote({ sender, ticker }) {
+  static async SendStockQuote({ sender, ticker }, fh) {
+    if (fh) {
+      let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}FHQuote`);
+
+      if (!quote) {
+        quote = await StockAPI.GetStockQuote(ticker, 'fh');
+      }
+
+      await this.SendTextMessage(sender, Util.CreateStockQuoteText(quote, ticker, 'fh'));
+      return;
+    }
+
     let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
 
     if (!quote) {
@@ -811,5 +886,105 @@ export default class FBGraphAPIRequest {
     }
 
     await this.SendLongText({ sender, text });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   */
+  static async SendEconomicCalendar(sender) {
+    let data = await MemCachier.GetHashItem('ec_calendar');
+
+    if (!data) {
+      data = await StockAPI.GetEconomicCalendar();
+    }
+
+    await this.SendLongText({ sender, text: Util.CreateEconomicCalendarText(data) });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {String} symbol
+   */
+  static async SendCompanyPeers(sender, symbol) {
+    let data = await MemCachier.GetHashItem(`${symbol.toLowerCase()}Peers`);
+
+    if (!data) {
+      data = await StockAPI.GetCompanyPeers(symbol);
+    }
+
+    await this.SendListRequest({ sender, text: `Here's ${symbol.toUpperCase()} peers`, list: Util.ParsePeersData(data) });
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendStockTechnicalIndicator({ sender, ticker, resolution }) {
+    let data = await MemCachier.GetHashItem(`${ticker.toLowerCase()}${resolution}`);
+
+    if (!data) {
+      data = await StockAPI.GetTechnicalIndicator(ticker, resolution);
+    }
+
+    const text = Util.CreateTechnicalIndicatorText(data, ticker, resolution);
+
+    await this.SendLongText({ sender, text });
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendStockSECFilings({ sender, ticker }) {
+    let data = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Filings`);
+
+    if (!data) {
+      data = await StockAPI.GetSECFilings(ticker);
+    }
+
+    const text = Util.CreateSECFilingsText(data, ticker);
+
+    await this.SendLongText({ sender, text });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   */
+  static async SendIPOCalendar(sender) {
+    let data = await MemCachier.GetHashItem('ipo_calendar');
+
+    if (!data) {
+      data = await StockAPI.GetIPOCalendar();
+    }
+
+    await this.SendListRequest({ sender, text: 'Upcoming IPOs', list: Util.ParseIPOCalendarData(data) });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {Boolean} today
+   * @param {String} text
+   */
+  static async SendEarningsCalendar(sender, today, text) {
+    let data = await MemCachier.GetHashItem('er_calendar');
+
+    if (!data) {
+      data = await StockAPI.GetEarningsCalendar();
+    }
+
+    let word = text || `Here's the upcoming earnings report for this week.`;
+    word = today ? `Here's the earnings report for today.` : word;
+    const earnings = today ? Util.ParseEarningsCalendarData(data, today) : Util.ParseEarningsCalendarData(data);
+
+    if (typeof earnings === 'string') {
+      await this.SendTextMessage(sender, earnings);
+      return;
+    }
+
+    await this.SendListRequest({ sender, text: word, list: earnings });
   }
 }
