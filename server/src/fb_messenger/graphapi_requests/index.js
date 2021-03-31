@@ -967,14 +967,16 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {String} sender
    * @param {Boolean} today
+   * @param {String} text
    */
-  static async SendEarningsCalendar(sender, today) {
+  static async SendEarningsCalendar(sender, today, text) {
     let data = await MemCachier.GetHashItem('er_calendar');
 
     if (!data) {
       data = await StockAPI.GetEarningsCalendar();
     }
 
+    const word = text || `Here's the upcoming earnings report for this week.`;
     const earnings = today ? Util.ParseEarningsCalendarData(data, today) : Util.ParseEarningsCalendarData(data);
 
     if (typeof earnings === 'string') {
@@ -982,6 +984,6 @@ export default class FBGraphAPIRequest {
       return;
     }
 
-    await this.SendListRequest({ sender, text: 'Upcoming IPOs', list: earnings });
+    await this.SendListRequest({ sender, text: word, list: earnings });
   }
 }

@@ -438,15 +438,15 @@ export default class StockAPI {
       .method('GET')
       .queryParams({
         token: FINNHUB,
-        from: from || '2021-03-28',
-        to: to || '2021-04-03',
+        from,
+        to,
       })
       .build()
       .send();
 
     const { earningsCalendar } = response;
 
-    await MemCachier.SetHashItem('er_calendar', earningsCalendar, 86400 * 5);
+    await MemCachier.SetHashItem('er_calendar', earningsCalendar, 86400 * 6);
     return earningsCalendar;
   }
 }

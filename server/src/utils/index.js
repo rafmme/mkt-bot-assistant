@@ -202,7 +202,7 @@ export default class Util {
     if (fh) {
       const { o, h, l, c, pc, t } = data;
       const text = data.c
-        ? `** ${symbol.toUpperCase()}) Stock Quote **\n\nPrevious Close: $ ${pc}\nOpen: ${o}\nPrice: $ ${c}\nLow: ${l}\nHigh: ${h}\nTime: ${new Date(t).toDateString()}`
+        ? `** ${symbol.toUpperCase()}) Stock Quote **\n\nPrevious Close: $${pc}\nOpen: $${o}\nPrice: $${c}\nLow: $${l}\nHigh: ${h}`
         : `Sorry 😔, I'm unable to complete this request.`;
       return text;
     }
@@ -719,11 +719,12 @@ export default class Util {
     };
 
     if (today) {
+      const month = `${new Date().getMonth() + 1}`.length === 1 ? `0${new Date().getMonth() + 1}` : `${new Date().getMonth() + 1}`;
       const todaysEarnings = data.filter((earning) => {
-        return earning.date === `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
+        return earning.date === `${new Date().getFullYear()}-${month}-${new Date().getDate()}`;
       });
 
-      if (todaysEarnings < 1) {
+      if (todaysEarnings.length < 1) {
         return 'No Earnings Data was found for today.';
       }
 
@@ -742,10 +743,11 @@ export default class Util {
     }
 
     const weekEarnings = data.filter((earning) => {
-      return `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}` <= earning.date;
+      const month = `${new Date().getMonth() + 1}`.length === 1 ? `0${new Date().getMonth() + 1}` : `${new Date().getMonth() + 1}`;
+      return `${new Date().getFullYear()}-${month}-${new Date().getDate()}` <= earning.date;
     });
 
-    if (weekEarnings < 1) {
+    if (weekEarnings.length < 1) {
       return 'No Earnings Data was found for today.';
     }
 
