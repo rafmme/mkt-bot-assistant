@@ -976,7 +976,8 @@ export default class FBGraphAPIRequest {
       data = await StockAPI.GetEarningsCalendar();
     }
 
-    const word = text || `Here's the upcoming earnings report for this week.`;
+    let word = text || `Here's the upcoming earnings report for this week.`;
+    word = today ? `Here's the earnings report for today.` : word;
     const earnings = today ? Util.ParseEarningsCalendarData(data, today) : Util.ParseEarningsCalendarData(data);
 
     if (typeof earnings === 'string') {

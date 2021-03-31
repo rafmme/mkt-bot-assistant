@@ -5,6 +5,7 @@ import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Util from '../utils';
 import StockAPI from '../stock_apis';
 import MemCachier from '../cache/memcachier';
+import sendSMS from '../sms';
 
 dotenv.config();
 
@@ -124,6 +125,8 @@ export default class Cron {
             const { date, holiday } = currentYearHolidays[i];
 
             if (date === `${currentDate.toDateString()}`) {
+              sendSMS(`Hi, this is to remind you that the Market will not open today ${date} in observation of the ${holiday}.\nHappy holidays!`);
+
               for (let index = 0; index < users.length; index += 1) {
                 const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
                 await FBGraphAPIRequest.SendTextMessage(
@@ -164,6 +167,8 @@ export default class Cron {
             const { date, holiday } = currentYearHolidays[i];
 
             if (date === new Date(new Date().setDate(new Date().getDate() + 1)).toDateString()) {
+              sendSMS(`Hi, this is to notify you that the Market will not open tomorrow ${date} in observation of the ${holiday}.\nHappy holidays!`);
+
               for (let index = 0; index < users.length; index += 1) {
                 const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
                 await FBGraphAPIRequest.SendTextMessage(
@@ -176,6 +181,8 @@ export default class Cron {
             }
 
             if (`${currentDate.toDateString().split(' ')[0]}` === 'Fri' && date === new Date(new Date().setDate(new Date().getDate() + 3)).toDateString()) {
+              sendSMS(`Hi, this is to notify you that the Market will not open this coming Monday ${date} in observation of the ${holiday}.\nHappy holidays!`);
+
               for (let index = 0; index < users.length; index += 1) {
                 const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
                 await FBGraphAPIRequest.SendTextMessage(

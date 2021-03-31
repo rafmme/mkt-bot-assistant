@@ -202,7 +202,7 @@ export default class Util {
     if (fh) {
       const { o, h, l, c, pc, t } = data;
       const text = data.c
-        ? `** ${symbol.toUpperCase()}) Stock Quote **\n\nPrevious Close: $${pc}\nOpen: $${o}\nPrice: $${c}\nLow: $${l}\nHigh: ${h}`
+        ? `** ${symbol.toUpperCase()} Stock Quote **\n\nPrevious Close: $${pc}\nOpen: $${o}\nPrice: $${c}\nLow: $${l}\nHigh: ${h}`
         : `Sorry 😔, I'm unable to complete this request.`;
       return text;
     }
@@ -729,7 +729,7 @@ export default class Util {
       }
 
       for (let i = 0; i < todaysEarnings.length; i += 1) {
-        const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = todaysEarnings;
+        const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = todaysEarnings[i];
         const h = earningHour[`${hour}`];
 
         list.push({
@@ -752,7 +752,7 @@ export default class Util {
     }
 
     for (let i = 0; i < weekEarnings.length; i += 1) {
-      const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = weekEarnings;
+      const { date, epsEstimate, hour, quarter, revenueEstimate, symbol, year } = weekEarnings[i];
       const h = earningHour[`${hour}`];
 
       list.push({
