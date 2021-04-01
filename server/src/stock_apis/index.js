@@ -449,4 +449,27 @@ export default class StockAPI {
     await MemCachier.SetHashItem('er_calendar', earningsCalendar, 86400 * 6);
     return earningsCalendar;
   }
+
+  /**
+   * @static
+   * @description
+   * @param {String} symbol
+   * @param {String} type
+   */
+  static async GetStockFinancials(symbol, type) {
+    const { AV_KEY } = process.env;
+    const response = await new RequestBuilder()
+      .withURL('https://www.alphavantage.co/query')
+      .method('GET')
+      .queryParams({
+        function: 'OVERVIEW',
+        symbol: `${symbol.toLowerCase()}`,
+        apikey: AV_KEY,
+      })
+      .build()
+      .send();
+
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Overview`, response, 60 * 15);
+    return response;
+  }
 }
