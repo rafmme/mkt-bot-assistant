@@ -458,18 +458,35 @@ export default class StockAPI {
    */
   static async GetStockFinancials(symbol, type) {
     const { AV_KEY } = process.env;
+    let cacheKey = '';
+
+    switch (type) {
+      case 'BALANCE_SHEET':
+        cacheKey = `${symbol.toLowerCase()}BS`;
+        break;
+      case 'CASH_FLOW':
+        cacheKey = `${symbol.toLowerCase()}CF`;
+        break;
+      case 'INCOME_STATEMENT':
+        cacheKey = `${symbol.toLowerCase()}IS`;
+        break;
+
+      default:
+        break;
+    }
+
     const response = await new RequestBuilder()
       .withURL('https://www.alphavantage.co/query')
       .method('GET')
       .queryParams({
-        function: 'OVERVIEW',
+        function: `${type}`,
         symbol: `${symbol.toLowerCase()}`,
         apikey: AV_KEY,
       })
       .build()
       .send();
 
-    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Overview`, response, 60 * 15);
+    await MemCachier.SetHashItem(cacheKey, response, 86400 * 31);
     return response;
   }
 }

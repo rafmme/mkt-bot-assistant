@@ -192,7 +192,10 @@ export default class WitAIHelper {
           case 'news':
             await FBGraphAPIRequest.fetchNews(sender, 'tickerNews', ticker);
             break;
+          case 'abs':
+          case 'bs':
           case 'balance':
+            await FBGraphAPIRequest.HandlePostbackPayload(sender, `STOCK_BALANCE_SHEET_A|${ticker.toLowerCase()}`);
             break;
           case 'earnings':
             break;
@@ -269,6 +272,8 @@ export default class WitAIHelper {
       case '❤️':
       case '🥰':
       case '😍':
+      case 'thanks':
+      case 'thank you':
         await FBGraphAPIRequest.SendTextMessage(sender, `Glad I could be of help 🙂.\nIf you don't mind, Buy me a coffee 😉`);
         break;
 

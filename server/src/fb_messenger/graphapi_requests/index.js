@@ -508,6 +508,27 @@ export default class FBGraphAPIRequest {
         await RedisCache.SetItem(sender, 'STOCK_FINANCIALS', 60 * 5);
         break;
 
+      case 'STOCK_BALANCE_SHEET_A':
+        let absData = await MemCachier.GetHashItem(`${data.toLowerCase()}BS`);
+
+        if (!absData) {
+          absData = await StockAPI.GetStockFinancials(data, 'BALANCE_SHEET');
+        }
+
+        Util.ParseStockAnnualBalanceSheetData(absData, data, this.SendLongText, sender);
+
+        break;
+      case 'STOCK_BALANCE_SHEET_Q':
+        break;
+      case 'STOCK_CASH_FLOW_A':
+        break;
+      case 'STOCK_CASH_FLOW_Q':
+        break;
+      case 'STOCK_INCOME_A':
+        break;
+      case 'STOCK_INCOME_Q':
+        break;
+
       case 'EARNINGS_TODAY':
         await this.SendEarningsCalendar(sender, true);
         break;
