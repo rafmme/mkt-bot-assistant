@@ -43,6 +43,10 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/policy', (req, res) => {
+  res.redirect('https://www.privacypolicygenerator.info/live.php?token=GYK0e7sRJHlqqdzKEGjYGqsXIHxKALO4');
+});
+
 app.get('/webhook', WebhookRouteHandler.VerifyWebhook);
 app.post('/webhook', WebhookRouteHandler.PostWebhook);
 

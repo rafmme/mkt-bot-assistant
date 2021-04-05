@@ -62,7 +62,7 @@ export default class Cron {
           for (let index = 0; index < users.length; index += 1) {
             const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
             const text = `👋🏾 Hi ${firstName}, here's the upcoming earnings report for this week. Enjoy.🙂`;
-            await FBGraphAPIRequest.SendEarningsCalendar(users[index], null, text);
+            await FBGraphAPIRequest.SendEarningsCalendar(users[index], undefined, text);
           }
         },
         {
@@ -86,12 +86,10 @@ export default class Cron {
         schedule,
         async () => {
           const fromDate = new Date();
-          const fromMonth = `${fromDate.getMonth() + 1}`.length === 1 ? `0${fromDate.getMonth() + 1}` : `${fromDate.getMonth() + 1}`;
-          const from = `${fromDate.getFullYear()}-${fromMonth}-${fromDate.getDate()}`;
+          const from = `${fromDate.getFullYear()}-${fromDate.getMonth() + 1}-${fromDate.getDate()}`;
 
           const toDate = new Date(new Date().setDate(new Date(from).getDate() + 6));
-          const toDateMonth = `${toDate.getMonth() + 1}`.length === 1 ? `0${toDate.getMonth() + 1}` : `${toDate.getMonth() + 1}`;
-          const to = `${toDate.getFullYear()}-${toDateMonth}-${toDate.getDate()}`;
+          const to = `${toDate.getFullYear()}-${toDate.getMonth() + 1}-${toDate.getDate()}`;
 
           await StockAPI.GetEarningsCalendar(from, to);
         },
@@ -208,8 +206,8 @@ export default class Cron {
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
-    this.GetEarningsForTheWeek('0 0 * * Sunday').start();
-    this.SendUpcomingEarnings('0 3 * * Sunday').start();
+    this.GetEarningsForTheWeek('20 14 * * Monday').start();
+    this.SendUpcomingEarnings('30 14 * * Monday').start();
     this.SendHolidayReminder('0 3 * * Monday-Friday').start();
     this.ComingHolidayReminder('0 9 * * Monday-Friday').start();
   }

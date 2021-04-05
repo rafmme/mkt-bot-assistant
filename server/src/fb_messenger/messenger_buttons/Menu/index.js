@@ -6,6 +6,22 @@ const listOfButtons = new ButtonList();
 listOfButtons.addButton(
   MessengerButtonFactory.CreateButton({
     type: 'quick_reply',
+    title: 'Show List of Menu',
+    payload: 'MENU_LIST',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
+    title: 'Donate (Help My Creator)',
+    payload: 'DONATE',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
     title: 'Read News',
     payload: 'MENU_NEWS',
   }),
@@ -32,6 +48,14 @@ listOfButtons.addButton(
     type: 'quick_reply',
     title: 'Check Crypto',
     payload: 'MENU_CRYPTO',
+  }),
+);
+
+listOfButtons.addButton(
+  MessengerButtonFactory.CreateButton({
+    type: 'quick_reply',
+    title: 'Give FeedBack',
+    payload: 'FEEDBACK',
   }),
 );
 

@@ -749,7 +749,7 @@ export default class Util {
     });
 
     if (weekEarnings.length < 1) {
-      return 'No Earnings Data was found for today.';
+      return 'No Earnings Data was found for this week.';
     }
 
     for (let i = 0; i < weekEarnings.length; i += 1) {
@@ -769,6 +769,257 @@ export default class Util {
   /**
    * @static
    * @description
+   * @param {Object} data
+   * @param {String} ticker
+   * @param {String} type
+   */
+  static async CreateBalanceSheetText(data, ticker, type) {
+    const bsType = type === 'q' ? 'Quaterly' : 'Annual';
+    const {
+      fiscalDateEnding,
+      reportedCurrency,
+      totalAssets,
+      intangibleAssets,
+      earningAssets,
+      otherCurrentAssets,
+      totalLiabilities,
+      totalShareholderEquity,
+      deferredLongTermLiabilities,
+      otherCurrentLiabilities,
+      commonStock,
+      retainedEarnings,
+      otherLiabilities,
+      goodwill,
+      otherAssets,
+      cash,
+      totalCurrentLiabilities,
+      shortTermDebt,
+      currentLongTermDebt,
+      otherShareholderEquity,
+      propertyPlantEquipment,
+      totalCurrentAssets,
+      longTermInvestments,
+      netTangibleAssets,
+      shortTermInvestments,
+      netReceivables,
+      longTermDebt,
+      inventory,
+      accountsPayable,
+      totalPermanentEquity,
+      additionalPaidInCapital,
+      commonStockTotalEquity,
+      preferredStockTotalEquity,
+      retainedEarningsTotalEquity,
+      treasuryStock,
+      accumulatedAmortization,
+      otherNonCurrrentAssets,
+      deferredLongTermAssetCharges,
+      totalNonCurrentAssets,
+      capitalLeaseObligations,
+      totalLongTermDebt,
+      otherNonCurrentLiabilities,
+      totalNonCurrentLiabilities,
+      negativeGoodwill,
+      warrants,
+      preferredStockRedeemable,
+      capitalSurplus,
+      liabilitiesAndShareholderEquity,
+      cashAndShortTermInvestments,
+      accumulatedDepreciation,
+      commonStockSharesOutstanding,
+    } = data;
+
+    const text = `📘 ${ticker.toUpperCase()} ${bsType} Balance Sheet\n\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nTotal Assets: ${this.FormatLargeNumbers(
+      totalAssets,
+    )}\nIntangible Assets: ${this.FormatLargeNumbers(intangibleAssets)}\nEarning Assets: ${this.FormatLargeNumbers(earningAssets)}\nOther Current Assets: ${this.FormatLargeNumbers(
+      otherCurrentAssets,
+    )}\nTotal Liabilities: ${this.FormatLargeNumbers(totalLiabilities)}\nTotal Shareholder Equity: ${this.FormatLargeNumbers(
+      totalShareholderEquity,
+    )}\nDeferred LongTerm Liabilities: ${this.FormatLargeNumbers(deferredLongTermLiabilities)}\nOther Current Liabilities: ${this.FormatLargeNumbers(
+      otherCurrentLiabilities,
+    )}\nCommon Stock: ${this.FormatLargeNumbers(commonStock)}\nRetained Earnings: ${this.FormatLargeNumbers(retainedEarnings)}\nOther Liabilities: ${this.FormatLargeNumbers(
+      otherLiabilities,
+    )}\nGoodwill: ${this.FormatLargeNumbers(goodwill)}\nOther Assets: ${this.FormatLargeNumbers(otherAssets)}\nCash: ${this.FormatLargeNumbers(
+      cash,
+    )}\nTotal Current Liabilities: ${this.FormatLargeNumbers(totalCurrentLiabilities)}\nShortTerm Debt: ${this.FormatLargeNumbers(
+      shortTermDebt,
+    )}\nCurrent LongTerm Debt: ${this.FormatLargeNumbers(currentLongTermDebt)}\nOther Shareholder Equity: ${this.FormatLargeNumbers(
+      otherShareholderEquity,
+    )}\nProperty Plant Equipment: ${this.FormatLargeNumbers(propertyPlantEquipment)}\nTotal Current Assets: ${this.FormatLargeNumbers(
+      totalCurrentAssets,
+    )}\nLongTerm Investments: ${this.FormatLargeNumbers(longTermInvestments)}\nNet Tangible Assets: ${this.FormatLargeNumbers(
+      netTangibleAssets,
+    )}\nShortTerm Investments: ${this.FormatLargeNumbers(shortTermInvestments)}\nNet Receivables: ${this.FormatLargeNumbers(
+      netReceivables,
+    )}\nLongTerm Debt: ${this.FormatLargeNumbers(longTermDebt)}\nInventory: ${this.FormatLargeNumbers(inventory)}\nAccounts Payable: ${this.FormatLargeNumbers(
+      accountsPayable,
+    )}\nTotal Permanent Equity: ${this.FormatLargeNumbers(totalPermanentEquity)}\nAdditional PaidIn Capital: ${this.FormatLargeNumbers(
+      additionalPaidInCapital,
+    )}\nCommon Stock Total Equity: ${this.FormatLargeNumbers(commonStockTotalEquity)}\nPreferred Stock Total Equity: ${this.FormatLargeNumbers(
+      preferredStockTotalEquity,
+    )}\nRetained Earnings Total Equity: ${this.FormatLargeNumbers(retainedEarningsTotalEquity)}\nTreasury Stock: ${this.FormatLargeNumbers(
+      treasuryStock,
+    )}\nAccumulated Amortization: ${this.FormatLargeNumbers(accumulatedAmortization)}\nOther Non-Currrent Assets: ${this.FormatLargeNumbers(
+      otherNonCurrrentAssets,
+    )}\nDeferred LongTerm Asset Charges: ${this.FormatLargeNumbers(deferredLongTermAssetCharges)}\nTotal Non-Current Assets: ${this.FormatLargeNumbers(
+      totalNonCurrentAssets,
+    )}\nCapital Lease Obligations: ${this.FormatLargeNumbers(capitalLeaseObligations)}\nTotal LongTerm Debt: ${this.FormatLargeNumbers(
+      totalLongTermDebt,
+    )}\nOther Non-Current Liabilities: ${this.FormatLargeNumbers(otherNonCurrentLiabilities)}\nTotal Non-Current Liabilities: ${this.FormatLargeNumbers(
+      totalNonCurrentLiabilities,
+    )}\nNegative Goodwill: ${this.FormatLargeNumbers(negativeGoodwill)}\nWarrants: ${this.FormatLargeNumbers(warrants)}\nPreferred Stock Redeemable: ${this.FormatLargeNumbers(
+      preferredStockRedeemable,
+    )}\nCapital Surplus: ${this.FormatLargeNumbers(capitalSurplus)}\nLiabilities & Shareholder Equity: ${this.FormatLargeNumbers(
+      liabilitiesAndShareholderEquity,
+    )}\nCash & ShortTerm Investments: ${this.FormatLargeNumbers(cashAndShortTermInvestments)}\nAccumulated Depreciation: ${this.FormatLargeNumbers(
+      accumulatedDepreciation,
+    )}\nCommon Stock SharesOutstanding: ${this.FormatLargeNumbers(commonStockSharesOutstanding)}`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Object} data
+   * @param {String} ticker
+   * @param {String} type
+   */
+  static async CreateIncomeStatementText(data, ticker, type) {
+    const isType = type === 'q' ? 'Quaterly' : 'Annual';
+    const {
+      fiscalDateEnding,
+      reportedCurrency,
+      grossProfit,
+      totalRevenue,
+      costOfRevenue,
+      costofGoodsAndServicesSold,
+      operatingIncome,
+      sellingGeneralAndAdministrative,
+      researchAndDevelopment,
+      operatingExpenses,
+      investmentIncomeNet,
+      netInterestIncome,
+      interestIncome,
+      interestExpense,
+      nonInterestIncome,
+      otherNonOperatingIncome,
+      depreciation,
+      depreciationAndAmortization,
+      incomeBeforeTax,
+      incomeTaxExpense,
+      interestAndDebtExpense,
+      netIncomeFromContinuingOperations,
+      comprehensiveIncomeNetOfTax,
+      ebit,
+      ebitda,
+      netIncome,
+    } = data;
+
+    const text = `📘 ${ticker.toUpperCase()} ${isType} Income Statement\n\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nGross Profit: ${this.FormatLargeNumbers(
+      grossProfit,
+    )}\nTotal Revenue: ${this.FormatLargeNumbers(totalRevenue)}\nCost Of Revenue: ${this.FormatLargeNumbers(
+      costOfRevenue,
+    )}\nCost of Goods & Services Sold: ${this.FormatLargeNumbers(costofGoodsAndServicesSold)}\nOperating Income: ${this.FormatLargeNumbers(
+      operatingIncome,
+    )}\nSelling General & Administrative: ${this.FormatLargeNumbers(sellingGeneralAndAdministrative)}\nResearch & Development: ${this.FormatLargeNumbers(
+      researchAndDevelopment,
+    )}\nOperating Expenses: ${this.FormatLargeNumbers(operatingExpenses)}\nInvestment Income Net: ${this.FormatLargeNumbers(
+      investmentIncomeNet,
+    )}\nNet Interest Income: ${this.FormatLargeNumbers(netInterestIncome)}\nInterest Income: ${this.FormatLargeNumbers(
+      interestIncome,
+    )}\nInterest Expense: ${this.FormatLargeNumbers(interestExpense)}\nNon-Interest Income: ${this.FormatLargeNumbers(
+      nonInterestIncome,
+    )}\nOther Non-Operating Income: ${this.FormatLargeNumbers(otherNonOperatingIncome)}\nDepreciation: ${this.FormatLargeNumbers(
+      depreciation,
+    )}\nDepreciation & Amortization: ${this.FormatLargeNumbers(depreciationAndAmortization)}\nIncome Before Tax: ${this.FormatLargeNumbers(
+      incomeBeforeTax,
+    )}\nIncome Tax Expense: ${this.FormatLargeNumbers(incomeTaxExpense)}\nInterest & Debt Expense: ${this.FormatLargeNumbers(
+      interestAndDebtExpense,
+    )}\nNet Income From Continuing Operations: ${this.FormatLargeNumbers(netIncomeFromContinuingOperations)}\nComprehensive Income Net Of Tax: ${this.FormatLargeNumbers(
+      comprehensiveIncomeNetOfTax,
+    )}\nEbit: ${this.FormatLargeNumbers(ebit)}\nEbitda: ${this.FormatLargeNumbers(ebitda)}\nNet Income: ${this.FormatLargeNumbers(netIncome)}`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {Object} data
+   * @param {String} ticker
+   * @param {String} type
+   */
+  static async CreateCashFlowText(data, ticker, type) {
+    const cfType = type === 'q' ? 'Quaterly' : 'Annual';
+    const {
+      fiscalDateEnding,
+      reportedCurrency,
+      operatingCashflow,
+      paymentsForOperatingActivities,
+      proceedsFromOperatingActivities,
+      changeInOperatingLiabilities,
+      changeInOperatingAssets,
+      depreciationDepletionAndAmortization,
+      capitalExpenditures,
+      changeInReceivables,
+      changeInInventory,
+      profitLoss,
+      cashflowFromInvestment,
+      cashflowFromFinancing,
+      proceedsFromRepaymentsOfShortTermDebt,
+      paymentsForRepurchaseOfCommonStock,
+      paymentsForRepurchaseOfEquity,
+      paymentsForRepurchaseOfPreferredStock,
+      dividendPayout,
+      dividendPayoutCommonStock,
+      dividendPayoutPreferredStock,
+      proceedsFromIssuanceOfCommonStock,
+      proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet,
+      proceedsFromIssuanceOfPreferredStock,
+      proceedsFromRepurchaseOfEquity,
+      proceedsFromSaleOfTreasuryStock,
+      changeInCashAndCashEquivalents,
+      changeInExchangeRate,
+      netIncome,
+    } = data;
+
+    const text = `📘 ${ticker.toUpperCase()} ${cfType} Cash Flow\n\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nOperating Cashflow: ${this.FormatLargeNumbers(
+      operatingCashflow,
+    )}\nPayments For Operating Activities: ${this.FormatLargeNumbers(paymentsForOperatingActivities)}\nProceeds From Operating Activities: ${this.FormatLargeNumbers(
+      proceedsFromOperatingActivities,
+    )}\nChange In Operating Liabilities: ${this.FormatLargeNumbers(changeInOperatingLiabilities)}\nChange In Operating Assets: ${this.FormatLargeNumbers(
+      changeInOperatingAssets,
+    )}\nDepreciation Depletion & Amortization: ${this.FormatLargeNumbers(depreciationDepletionAndAmortization)}\nCapital Expenditures: ${this.FormatLargeNumbers(
+      capitalExpenditures,
+    )}\nChange In Receivables: ${this.FormatLargeNumbers(changeInReceivables)}\nChange In Inventory: ${this.FormatLargeNumbers(
+      changeInInventory,
+    )}\nProfit Loss: ${this.FormatLargeNumbers(profitLoss)}\nCashflow From Investment: ${this.FormatLargeNumbers(
+      cashflowFromInvestment,
+    )}\nCashflow From Financing: ${this.FormatLargeNumbers(cashflowFromFinancing)}\nProceeds From Repayments Of ShortTerm Debt: ${this.FormatLargeNumbers(
+      proceedsFromRepaymentsOfShortTermDebt,
+    )}\nPayments For Repurchase Of Common Stock: ${this.FormatLargeNumbers(paymentsForRepurchaseOfCommonStock)}\nPayments For Repurchase Of Equity: ${this.FormatLargeNumbers(
+      paymentsForRepurchaseOfEquity,
+    )}\nPayments For Repurchase Of Preferred Stock: ${this.FormatLargeNumbers(paymentsForRepurchaseOfPreferredStock)}\nDividend Payout: ${this.FormatLargeNumbers(
+      dividendPayout,
+    )}\nDividend Payout Common Stock: ${this.FormatLargeNumbers(dividendPayoutCommonStock)}\nDividend Payout Preferred Stock: ${this.FormatLargeNumbers(
+      dividendPayoutPreferredStock,
+    )}\nProceeds From Issuance Of Common Stock: ${this.FormatLargeNumbers(
+      proceedsFromIssuanceOfCommonStock,
+    )}\nProceeds From Issuance Of LongTerm Debt & Capital Securities Net: ${this.FormatLargeNumbers(
+      proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet,
+    )}\nProceeds From Issuance Of Preferred Stock: ${this.FormatLargeNumbers(proceedsFromIssuanceOfPreferredStock)}\nProceeds From Repurchase Of Equity: ${this.FormatLargeNumbers(
+      proceedsFromRepurchaseOfEquity,
+    )}\nProceeds From Sale Of Treasury Stock: ${this.FormatLargeNumbers(proceedsFromSaleOfTreasuryStock)}\nChange In Cash & Cash Equivalents: ${this.FormatLargeNumbers(
+      changeInCashAndCashEquivalents,
+    )}\nChange In Exchange Rate: ${changeInExchangeRate}\nNet Income: ${this.FormatLargeNumbers(netIncome)}`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
    * @param {*} data
    * @param {String} ticker
    * @param {Function} sendText
@@ -783,108 +1034,7 @@ export default class Util {
     }
 
     for (let i = 0; i < 3; i += 1) {
-      const {
-        fiscalDateEnding,
-        reportedCurrency,
-        totalAssets,
-        intangibleAssets,
-        earningAssets,
-        otherCurrentAssets,
-        totalLiabilities,
-        totalShareholderEquity,
-        deferredLongTermLiabilities,
-        otherCurrentLiabilities,
-        commonStock,
-        retainedEarnings,
-        otherLiabilities,
-        goodwill,
-        otherAssets,
-        cash,
-        totalCurrentLiabilities,
-        shortTermDebt,
-        currentLongTermDebt,
-        otherShareholderEquity,
-        propertyPlantEquipment,
-        totalCurrentAssets,
-        longTermInvestments,
-        netTangibleAssets,
-        shortTermInvestments,
-        netReceivables,
-        longTermDebt,
-        inventory,
-        accountsPayable,
-        totalPermanentEquity,
-        additionalPaidInCapital,
-        commonStockTotalEquity,
-        preferredStockTotalEquity,
-        retainedEarningsTotalEquity,
-        treasuryStock,
-        accumulatedAmortization,
-        otherNonCurrrentAssets,
-        deferredLongTermAssetCharges,
-        totalNonCurrentAssets,
-        capitalLeaseObligations,
-        totalLongTermDebt,
-        otherNonCurrentLiabilities,
-        totalNonCurrentLiabilities,
-        negativeGoodwill,
-        warrants,
-        preferredStockRedeemable,
-        capitalSurplus,
-        liabilitiesAndShareholderEquity,
-        cashAndShortTermInvestments,
-        accumulatedDepreciation,
-        commonStockSharesOutstanding,
-      } = annualReports[i];
-
-      const text = `📘 ${ticker.toUpperCase()} Annual Balance Sheet\n\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nTotal Assets: ${this.FormatLargeNumbers(
-        totalAssets,
-      )}\nIntangible Assets: ${this.FormatLargeNumbers(intangibleAssets)}\nEarning Assets: ${this.FormatLargeNumbers(
-        earningAssets,
-      )}\nOther Current Assets: ${this.FormatLargeNumbers(otherCurrentAssets)}\nTotal Liabilities: ${this.FormatLargeNumbers(
-        totalLiabilities,
-      )}\nTotal Shareholder Equity: ${this.FormatLargeNumbers(totalShareholderEquity)}\nDeferred LongTerm Liabilities: ${this.FormatLargeNumbers(
-        deferredLongTermLiabilities,
-      )}\nOther Current Liabilities: ${this.FormatLargeNumbers(otherCurrentLiabilities)}\nCommon Stock: ${this.FormatLargeNumbers(
-        commonStock,
-      )}\nRetained Earnings: ${this.FormatLargeNumbers(retainedEarnings)}\nOther Liabilities: ${this.FormatLargeNumbers(otherLiabilities)}\nGoodwill: ${this.FormatLargeNumbers(
-        goodwill,
-      )}\nOther Assets: ${this.FormatLargeNumbers(otherAssets)}\nCash: ${this.FormatLargeNumbers(cash)}\nTotal Current Liabilities: ${this.FormatLargeNumbers(
-        totalCurrentLiabilities,
-      )}\nShortTerm Debt: ${this.FormatLargeNumbers(shortTermDebt)}\nCurrent LongTerm Debt: ${this.FormatLargeNumbers(
-        currentLongTermDebt,
-      )}\nOther Shareholder Equity: ${this.FormatLargeNumbers(otherShareholderEquity)}\nProperty Plant Equipment: ${this.FormatLargeNumbers(
-        propertyPlantEquipment,
-      )}\nTotal Current Assets: ${this.FormatLargeNumbers(totalCurrentAssets)}\nLongTerm Investments: ${this.FormatLargeNumbers(
-        longTermInvestments,
-      )}\nNet Tangible Assets: ${this.FormatLargeNumbers(netTangibleAssets)}\nShortTerm Investments: ${this.FormatLargeNumbers(
-        shortTermInvestments,
-      )}\nNet Receivables: ${this.FormatLargeNumbers(netReceivables)}\nLongTerm Debt: ${this.FormatLargeNumbers(longTermDebt)}\nInventory: ${this.FormatLargeNumbers(
-        inventory,
-      )}\nAccounts Payable: ${this.FormatLargeNumbers(accountsPayable)}\nTotal Permanent Equity: ${this.FormatLargeNumbers(
-        totalPermanentEquity,
-      )}\nAdditional PaidIn Capital: ${this.FormatLargeNumbers(additionalPaidInCapital)}\nCommon Stock Total Equity: ${this.FormatLargeNumbers(
-        commonStockTotalEquity,
-      )}\nPreferred Stock Total Equity: ${this.FormatLargeNumbers(preferredStockTotalEquity)}\nRetained Earnings Total Equity: ${this.FormatLargeNumbers(
-        retainedEarningsTotalEquity,
-      )}\nTreasury Stock: ${this.FormatLargeNumbers(treasuryStock)}\nAccumulated Amortization: ${this.FormatLargeNumbers(
-        accumulatedAmortization,
-      )}\nOther NonCurrrent Assets: ${this.FormatLargeNumbers(otherNonCurrrentAssets)}\nDeferred LongTerm Asset Charges: ${this.FormatLargeNumbers(
-        deferredLongTermAssetCharges,
-      )}\nTotal NonCurrent Assets: ${this.FormatLargeNumbers(totalNonCurrentAssets)}\nCapital Lease Obligations: ${this.FormatLargeNumbers(
-        capitalLeaseObligations,
-      )}\nTotal LongTerm Debt: ${this.FormatLargeNumbers(totalLongTermDebt)}\nOther NonCurrent Liabilities: ${this.FormatLargeNumbers(
-        otherNonCurrentLiabilities,
-      )}\nTotal NonCurrent Liabilities: ${this.FormatLargeNumbers(totalNonCurrentLiabilities)}\nNegative Goodwill: ${this.FormatLargeNumbers(
-        negativeGoodwill,
-      )}\nWarrants: ${this.FormatLargeNumbers(warrants)}\nPreferred Stock Redeemable: ${this.FormatLargeNumbers(
-        preferredStockRedeemable,
-      )}\nCapital Surplus: ${this.FormatLargeNumbers(capitalSurplus)}\nLiabilities & Shareholder Equity: ${this.FormatLargeNumbers(
-        liabilitiesAndShareholderEquity,
-      )}\nCash & ShortTerm Investments: ${this.FormatLargeNumbers(cashAndShortTermInvestments)}\nAccumulated Depreciation: ${this.FormatLargeNumbers(
-        accumulatedDepreciation,
-      )}\nCommon Stock SharesOutstanding: ${this.FormatLargeNumbers(commonStockSharesOutstanding)}`;
-
+      const text = this.CreateBalanceSheetText(annualReports[i], ticker);
       await sendText({ sender, text });
     }
   }
@@ -894,38 +1044,108 @@ export default class Util {
    * @description
    * @param {*} data
    * @param {String} ticker
+   * @param {Function} sendText
+   * @param {String} sender
    */
-  static ParseStockAnnualCashFlowData(data, ticker) {}
+  static async ParseStockAnnualCashFlowData(data, ticker, sendText, sender) {
+    const { annualReports } = data;
+
+    if (!annualReports || annualReports.length < 1) {
+      await sendText({ sender, text: `Sorry 😔, no data was found.` });
+      return;
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      const text = this.CreateCashFlowText(annualReports[i], ticker);
+      await sendText({ sender, text });
+    }
+  }
 
   /**
    * @static
    * @description
    * @param {*} data
    * @param {String} ticker
+   * @param {Function} sendText
+   * @param {String} sender
    */
-  static ParseStockAnnualIncomeStatementData(data, ticker) {}
+  static async ParseStockAnnualIncomeStatementData(data, ticker, sendText, sender) {
+    const { annualReports } = data;
+
+    if (!annualReports || annualReports.length < 1) {
+      await sendText({ sender, text: `Sorry 😔, no data was found.` });
+      return;
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      const text = this.CreateIncomeStatementText(annualReports[i], ticker);
+      await sendText({ sender, text });
+    }
+  }
 
   /**
    * @static
    * @description
    * @param {*} data
    * @param {String} ticker
+   * @param {Function} sendText
+   * @param {String} sender
    */
-  static ParseStockQuaterlyBalanceSheetData(data, ticker) {}
+  static async ParseStockQuaterlyBalanceSheetData(data, ticker, sendText, sender) {
+    const { quarterlyReports } = data;
+
+    if (!quarterlyReports || quarterlyReports.length < 1) {
+      await sendText({ sender, text: `Sorry 😔, no data was found.` });
+      return;
+    }
+
+    for (let i = 0; i < 8; i += 1) {
+      const text = this.CreateBalanceSheetText(quarterlyReports[i], ticker, 'q');
+      await sendText({ sender, text });
+    }
+  }
 
   /**
    * @static
    * @description
    * @param {*} data
    * @param {String} ticker
+   * @param {Function} sendText
+   * @param {String} sender
    */
-  static ParseStockQuaterlyCashFlowData(data, ticker) {}
+  static async ParseStockQuaterlyCashFlowData(data, ticker, sendText, sender) {
+    const { quarterlyReports } = data;
+
+    if (!quarterlyReports || quarterlyReports.length < 1) {
+      await sendText({ sender, text: `Sorry 😔, no data was found.` });
+      return;
+    }
+
+    for (let i = 0; i < 8; i += 1) {
+      const text = this.CreateCashFlowText(quarterlyReports[i], ticker, 'q');
+      await sendText({ sender, text });
+    }
+  }
 
   /**
    * @static
    * @description
    * @param {*} data
    * @param {String} ticker
+   * @param {Function} sendText
+   * @param {String} sender
    */
-  static ParseStockQuaterlyIncomeStatementData(data, ticker) {}
+  static async ParseStockQuaterlyIncomeStatementData(data, ticker, sendText, sender) {
+    const { quarterlyReports } = data;
+
+    if (!quarterlyReports || quarterlyReports.length < 1) {
+      await sendText({ sender, text: `Sorry 😔, no data was found.` });
+      return;
+    }
+
+    for (let i = 0; i < 8; i += 1) {
+      const text = this.CreateIncomeStatementText(quarterlyReports[i], ticker, 'q');
+      await sendText({ sender, text });
+    }
+  }
 }

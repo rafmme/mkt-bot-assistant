@@ -231,7 +231,12 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'MARKET_NEWS':
-        this.fetchNews(sender);
+        await this.fetchNews(sender);
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'SHOW_MARKET_NEWS_CONTENT':
@@ -243,7 +248,34 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'SHOW_CRYPTOS_PRICES':
-        this.SendCryptoPrices(sender);
+        await this.SendCryptoPrices(sender);
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
+        break;
+
+      case 'MENU_LIST':
+        await this.SendLongText({
+          sender,
+          text: `Please Enter the number corresponding to the actions below.\n#. Menu\n1. Read US Market News\n2. Read Nigeria News\n3. Crypto News\n4. Ticker/Stock News\n5. Merger news\n6. Forex News\n7. Show Cryptos Price List\n8. Check CryptoCoin Price\n9. Show US Stock Market Top Movers\n10. Show US Stock Market Trending Tickers\n11. Search for a Company\n12. Show US Stock Market Earnings Report for Today\n13. Show US Stock Market Earnings Report for this week\n14. Show US Stock Market Upcoming IPOs\n15. Show US Holidays for the year\n16. Show US Economic Calendar\n17. Show US Market Stock Quote\n18. Show US Market Stock News\n19. Show US Market Stock SEC Fillings\n20. Show US Market Stock Peers\n21. Show US Market Stock Overview\n22. Show US Market Stock Financials\n23. Show US Market Stock Analyst Ratings\n24. Show US Market Stock Recommendation\n25. Show US Market Stock Upgrades/Downgrades\n26. Show US Market Stock Earnings History\n27. Show US Market Stock Technical Analysis Indicator\n28. Show Nigeria (NSE) Stock Quote\n29. Show Nigerian Naira Parallel Market Rate\n30. Show Nigerian Naira Bank/Online Rate\n31. Show Nigerian Naira CBN/Official Rate`,
+        });
+        break;
+
+      case 'DONATE':
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
+        break;
+
+      case 'FEEDBACK':
+        await this.SendLongText({
+          sender,
+          text: 'Got any feedback? bug report or wanna request for a new feature? Holla at my Creator via fartim96@gmail.com',
+        });
         break;
 
       case 'MENU_CRYPTO':
@@ -277,7 +309,12 @@ export default class FBGraphAPIRequest {
         if (!list) {
           list = await StockAPI.GetTrendingTickers();
         }
-        this.SendListRequest({ sender, text: `Here's a list of Trending Tickers in the US Stock Market`, list: Util.ParseTrendingTickersData(list) });
+        await this.SendListRequest({ sender, text: `Here's a list of Trending Tickers in the US Stock Market`, list: Util.ParseTrendingTickersData(list) });
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'TOP_MOVERS':
@@ -297,10 +334,20 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'CHECK_STOCK':
-        this.SendStockQuote({ sender, ticker: data });
+        await this.SendStockQuote({ sender, ticker: data });
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
       case 'STOCK_OVERVIEW':
-        this.SendStockOverview({ sender, ticker: data });
+        await this.SendStockOverview({ sender, ticker: data });
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'CRYPTO_NEWS':
@@ -406,10 +453,20 @@ export default class FBGraphAPIRequest {
 
       case 'NGN_P_RATES':
         await this.SendNGNCurrencyRates(sender);
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'NGN_CBN_RATES':
         await this.SendNGNCurrencyRates(sender, 'cbn_rate');
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'NGN_NEWS':
@@ -420,6 +477,11 @@ export default class FBGraphAPIRequest {
         }
 
         await this.SendListRequest({ sender, text: `Here's the Nigeria news update 📰. Enjoy.`, list: Util.ParseNgNews(ngNews) });
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'NGN_STOCK':
@@ -429,6 +491,11 @@ export default class FBGraphAPIRequest {
 
       case 'NGN_BANK_RATES':
         await this.SendNGNCurrencyRates(sender, 'bank_rate');
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'SHOW_NG_NEWS_SUMMARY':
@@ -440,6 +507,11 @@ export default class FBGraphAPIRequest {
         }
 
         await this.SendLongText({ sender, text: newsContent.replace('MARKET NEWS', '').replace('ADVERTISEMENT', '').replace('\n', '') });
+        await this.SendLongText({
+          sender,
+          text:
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        });
         break;
 
       case 'MARKET_FUTURES':
@@ -464,6 +536,11 @@ export default class FBGraphAPIRequest {
 
         if (holidays) {
           await this.SendLongText({ sender, text: Util.GetUpcomingHolidays(holidays) });
+          await this.SendLongText({
+            sender,
+            text:
+              'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+          });
           return;
         }
 
@@ -516,17 +593,56 @@ export default class FBGraphAPIRequest {
         }
 
         Util.ParseStockAnnualBalanceSheetData(absData, data, this.SendLongText, sender);
+        break;
 
-        break;
       case 'STOCK_BALANCE_SHEET_Q':
+        let qbsData = await MemCachier.GetHashItem(`${data.toLowerCase()}BS`);
+
+        if (!qbsData) {
+          qbsData = await StockAPI.GetStockFinancials(data, 'BALANCE_SHEET');
+        }
+
+        Util.ParseStockQuaterlyBalanceSheetData(qbsData, data, this.SendLongText, sender);
         break;
+
       case 'STOCK_CASH_FLOW_A':
+        let acfData = await MemCachier.GetHashItem(`${data.toLowerCase()}CF`);
+
+        if (!acfData) {
+          acfData = await StockAPI.GetStockFinancials(data, 'CASH_FLOW');
+        }
+
+        Util.ParseStockAnnualCashFlowData(acfData, data, this.SendLongText, sender);
         break;
+
       case 'STOCK_CASH_FLOW_Q':
+        let qcfData = await MemCachier.GetHashItem(`${data.toLowerCase()}CF`);
+
+        if (!qcfData) {
+          qcfData = await StockAPI.GetStockFinancials(data, 'CASH_FLOW');
+        }
+
+        Util.ParseStockQuaterlyCashFlowData(qcfData, data, this.SendLongText, sender);
         break;
+
       case 'STOCK_INCOME_A':
+        let aisData = await MemCachier.GetHashItem(`${data.toLowerCase()}IS`);
+
+        if (!aisData) {
+          aisData = await StockAPI.GetStockFinancials(data, 'INCOME_STATEMENT');
+        }
+
+        Util.ParseStockAnnualIncomeStatementData(aisData, data, this.SendLongText, sender);
         break;
+
       case 'STOCK_INCOME_Q':
+        let qisData = await MemCachier.GetHashItem(`${data.toLowerCase()}IS`);
+
+        if (!qisData) {
+          qisData = await StockAPI.GetStockFinancials(data, 'INCOME_STATEMENT');
+        }
+
+        Util.ParseStockQuaterlyIncomeStatementData(qisData, data, this.SendLongText, sender);
         break;
 
       case 'EARNINGS_TODAY':
@@ -952,6 +1068,11 @@ export default class FBGraphAPIRequest {
     const text = Util.CreateTechnicalIndicatorText(data, ticker, resolution);
 
     await this.SendLongText({ sender, text });
+    await this.SendLongText({
+      sender,
+      text:
+        'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+    });
   }
 
   /**
@@ -982,6 +1103,11 @@ export default class FBGraphAPIRequest {
     }
 
     await this.SendListRequest({ sender, text: 'Upcoming IPOs', list: Util.ParseIPOCalendarData(data) });
+    await this.SendLongText({
+      sender,
+      text:
+        'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+    });
   }
 
   /**
