@@ -108,6 +108,42 @@ export default class Cron {
    * @param {} schedule
    * @param {} timezone
    */
+  static SendEarningsForToday(schedule, timezone = TZ) {
+    const users = [TEST_USER1, TEST_USER2];
+
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          const data = await MemCachier.GetHashItem('er_calendar');
+
+          const text = `Here's the earnings report for today.`;
+          const earnings = Util.ParseEarningsCalendarData(data, true);
+
+          for (let index = 0; index < users.length; index += 1) {
+            if (typeof earnings === 'string') {
+              await FBGraphAPIRequest.SendTextMessage(users[index], earnings);
+              return;
+            }
+
+            await FBGraphAPIRequest.SendListRequest({ sender: users[index], text, list: earnings });
+          }
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
   static SendHolidayReminder(schedule, timezone = TZ) {
     const users = [TEST_USER1, TEST_USER2];
 
@@ -206,8 +242,9 @@ export default class Cron {
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
-    this.GetEarningsForTheWeek('20 14 * * Monday').start();
-    this.SendUpcomingEarnings('30 14 * * Monday').start();
+    this.GetEarningsForTheWeek('0 1 * * 0').start();
+    this.SendUpcomingEarnings('0 3 * * 0').start();
+    this.SendEarningsForToday('0 2 * * Monday-Friday').start();
     this.SendHolidayReminder('0 3 * * Monday-Friday').start();
     this.ComingHolidayReminder('0 9 * * Monday-Friday').start();
   }

@@ -111,7 +111,7 @@ export default class WitAIHelper {
         if (trait === 'wit$greetings') {
           await FBGraphAPIRequest.SendQuickReplies(
             sender,
-            `Hi 👋🏾, how can I be of help?\nPlease Enter the number corresponding to the actions or use the buttons below.\n#. Menu\n1. Read US Market News\n2. Read Nigeria News\n3. Crypto News\n4. Ticker/Stock News\n5. Merger news\n6. Forex News\n7. Show Cryptos Price List\n8. Check CryptoCoin Price\n9. Show US Stock Market Top Movers\n10. Show US Stock Market Trending Tickers\n11. Search for a Company\n12. Show US Stock Market Earnings Report for Today\n13. Show US Stock Market Earnings Report for this week\n14. Show US Stock Market Upcoming IPOs\n15. Show US Holidays for the year\n16. Show US Economic Calendar\n17. Show US Market Stock Quote\n18. Show US Market Stock News\n19. Show US Market Stock SEC Fillings\n20. Show US Market Stock Peers\n21. Show US Market Stock Overview\n22. Show US Market Stock Financials\n23. Show US Market Stock Analyst Ratings\n24. Show US Market Stock Recommendation\n25. Show US Market Stock Upgrades/Downgrades\n26. Show US Market Stock Earnings History\n27. Show US Market Stock Technical Analysis Indicator\n28. Show Nigeria (NSE) Stock Quote\n29. Show Nigerian Naira Parallel Market Rate\n30. Show Nigerian Naira Bank/Online Rate\n31. Show Nigerian Naira CBN/Official Rate`,
+            `Hi 👋🏾, how can I be of help?\n\nPlease Enter the number corresponding to the actions or use the buttons below.\n\n#. Menu\n\n1. Read US Market News\n\n2. Read Nigeria News\n\n3. Crypto News\n\n4. Ticker/Stock News\n\n5. Merger news\n\n6. Forex News\n\n7. Show Cryptos Price List\n\n8. Check CryptoCoin Price\n\n9. Show US Stock Market Top Movers\n\n10. Show US Stock Market Trending Tickers\n\n11. Search for a Company\n\n12. Show US Stock Market Earnings Report for Today\n\n13. Show US Stock Market Earnings Report for this week\n\n14. Show US Stock Market Upcoming IPOs\n\n15. Show US Holidays for the year\n\n16. Show US Economic Calendar\n\n17. Show US Market Stock Quote\n\n18. Show US Market Stock News\n\n19. Show US Market Stock SEC Fillings\n\n20. Show US Market Stock Peers\n\n21. Show US Market Stock Overview\n\n22. Show US Market Stock Financials\n\n23. Show US Market Stock Analyst Ratings\n\n24. Show US Market Stock Recommendation\n\n25. Show US Market Stock Upgrades/Downgrades\n\n26. Show US Market Stock Earnings History\n\n27. Show US Market Stock Technical Analysis Indicator\n\n28. Show Nigeria (NSE) Stock Quote\n\n29. Show Nigerian Naira Parallel Market Rate\n\n30. Show Nigerian Naira Bank/Online Rate\n\n31. Show Nigerian Naira CBN/Official Rate`,
             Menu,
           );
         } else if (trait === 'wit$sentiment') {
@@ -237,6 +237,10 @@ export default class WitAIHelper {
           case 'q':
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker }, 'fh');
             break;
+          case 'financial':
+          case 'financials':
+            await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_FINANCIALS');
+            break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });
             break;
@@ -257,7 +261,7 @@ export default class WitAIHelper {
       case 'help':
         await FBGraphAPIRequest.SendQuickReplies(
           sender,
-          `Hi 👋🏾, how can I be of help?\nPlease Enter the number corresponding to the actions or use the buttons below.\n#. Menu\n1. Read US Market News\n2. Read Nigeria News\n3. Crypto News\n4. Ticker/Stock News\n5. Merger news\n6. Forex News\n7. Show Cryptos Price List\n8. Check CryptoCoin Price\n9. Show US Stock Market Top Movers\n10. Show US Stock Market Trending Tickers\n11. Search for a Company\n12. Show US Stock Market Earnings Report for Today\n13. Show US Stock Market Earnings Report for this week\n14. Show US Stock Market Upcoming IPOs\n15. Show US Holidays for the year\n16. Show US Economic Calendar\n17. Show US Market Stock Quote\n18. Show US Market Stock News\n19. Show US Market Stock SEC Fillings\n20. Show US Market Stock Peers\n21. Show US Market Stock Overview\n22. Show US Market Stock Financials\n23. Show US Market Stock Analyst Ratings\n24. Show US Market Stock Recommendation\n25. Show US Market Stock Upgrades/Downgrades\n26. Show US Market Stock Earnings History\n27. Show US Market Stock Technical Analysis Indicator\n28. Show Nigeria (NSE) Stock Quote\n29. Show Nigerian Naira Parallel Market Rate\n30. Show Nigerian Naira Bank/Online Rate\n31. Show Nigerian Naira CBN/Official Rate`,
+          `Hi 👋🏾, how can I be of help?\n\nPlease Enter the number corresponding to the actions or use the buttons below.\n\n#. Menu\n\n1. Read US Market News\n\n2. Read Nigeria News\n\n3. Crypto News\n\n4. Ticker/Stock News\n\n5. Merger news\n\n6. Forex News\n\n7. Show Cryptos Price List\n\n8. Check CryptoCoin Price\n\n9. Show US Stock Market Top Movers\n\n10. Show US Stock Market Trending Tickers\n\n11. Search for a Company\n\n12. Show US Stock Market Earnings Report for Today\n\n13. Show US Stock Market Earnings Report for this week\n\n14. Show US Stock Market Upcoming IPOs\n\n15. Show US Holidays for the year\n\n16. Show US Economic Calendar\n\n17. Show US Market Stock Quote\n\n18. Show US Market Stock News\n\n19. Show US Market Stock SEC Fillings\n\n20. Show US Market Stock Peers\n\n21. Show US Market Stock Overview\n\n22. Show US Market Stock Financials\n\n23. Show US Market Stock Analyst Ratings\n\n24. Show US Market Stock Recommendation\n\n25. Show US Market Stock Upgrades/Downgrades\n\n26. Show US Market Stock Earnings History\n\n27. Show US Market Stock Technical Analysis Indicator\n\n28. Show Nigeria (NSE) Stock Quote\n\n29. Show Nigerian Naira Parallel Market Rate\n\n30. Show Nigerian Naira Bank/Online Rate\n\n31. Show Nigerian Naira CBN/Official Rate`,
           Menu,
         );
         break;
@@ -284,7 +288,10 @@ export default class WitAIHelper {
       case '😍':
       case 'thanks':
       case 'thank you':
-        await FBGraphAPIRequest.SendTextMessage(sender, `Glad I could be of help 🙂.\nIf you don't mind, Buy me a coffee 😉`);
+        await FBGraphAPIRequest.SendTextMessage(
+          sender,
+          'Enjoying Lewis the Assistant? Help me & my creator by donating\n\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\n\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+        );
         break;
 
       case 'news':
@@ -457,10 +464,6 @@ export default class WitAIHelper {
 
       default:
         const msg = `Sorry 😕, I don't understand what you are trying to do.\nMaybe try one of the actions below`;
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text: `Please Enter the number corresponding to the actions or use the buttons below.\n#. Menu\n1. Read US Market News\n2. Read Nigeria News\n3. Crypto News\n4. Ticker/Stock News\n5. Merger news\n6. Forex News\n7. Show Cryptos Price List\n8. Check CryptoCoin Price\n9. Show US Stock Market Top Movers\n10. Show US Stock Market Trending Tickers\n11. Search for a Company\n12. Show US Stock Market Earnings Report for Today\n13. Show US Stock Market Earnings Report for this week\n14. Show US Stock Market Upcoming IPOs\n15. Show US Holidays for the year\n16. Show US Economic Calendar\n17. Show US Market Stock Quote\n18. Show US Market Stock News\n19. Show US Market Stock SEC Fillings\n20. Show US Market Stock Peers\n21. Show US Market Stock Overview\n22. Show US Market Stock Financials\n23. Show US Market Stock Analyst Ratings\n24. Show US Market Stock Recommendation\n25. Show US Market Stock Upgrades/Downgrades\n26. Show US Market Stock Earnings History\n27. Show US Market Stock Technical Analysis Indicator\n28. Show Nigeria (NSE) Stock Quote\n29. Show Nigerian Naira Parallel Market Rate\n30. Show Nigerian Naira Bank/Online Rate\n31. Show Nigerian Naira CBN/Official Rate`,
-        });
         await FBGraphAPIRequest.SendQuickReplies(sender, msg, Menu);
         break;
     }
@@ -481,11 +484,6 @@ export default class WitAIHelper {
     switch (action) {
       case 'TICKER_NEWS':
         await FBGraphAPIRequest.fetchNews(sender, 'tickerNews', ticker);
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-        });
         break;
 
       case 'TICKER_QUOTE':
@@ -496,27 +494,12 @@ export default class WitAIHelper {
         break;
       case 'STOCK_ANALYST_RATINGS':
         await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'ratings' });
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-        });
         break;
       case 'STOCK_RECOMMENDATION':
         await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'recommendation' });
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-        });
         break;
       case 'STOCK_UPGRADE':
         await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'upgrades' });
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-        });
         break;
       case 'STOCK_EARNINGS_HISTORY':
         await FBGraphAPIRequest.SendStockAnalysis({ sender, ticker, type: 'earnings' });
@@ -547,11 +530,6 @@ export default class WitAIHelper {
           await RedisCache.SetItem(`${ticker}NG`, ngStock, 60 * 10);
         }
         await FBGraphAPIRequest.SendLongText({ sender, text: ngStock });
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-        });
         break;
       case 'SEARCH_COMPANY':
         let matches = await MemCachier.GetHashItem(ticker);
@@ -562,21 +540,10 @@ export default class WitAIHelper {
 
         if (matches.length === 0 || !matches) {
           await FBGraphAPIRequest.SendTextMessage(sender, `Sorry 😔, no match was found for ${ticker}`);
-          await FBGraphAPIRequest.SendLongText({
-            sender,
-            text:
-              'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-          });
           return;
         }
 
         await FBGraphAPIRequest.SendListRequest({ sender, text: `Here's the search result for ${ticker}`, list: Util.ParseCompaniesSearchResultData(matches) });
-        await FBGraphAPIRequest.SendLongText({
-          sender,
-          text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
-        });
-
         break;
 
       default:
