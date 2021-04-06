@@ -531,63 +531,27 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'STOCK_BALANCE_SHEET_A':
-        let absData = await MemCachier.GetHashItem(`${data.toLowerCase()}BS`);
-
-        if (!absData) {
-          absData = await StockAPI.GetStockFinancials(data, 'BALANCE_SHEET');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockAnnualBalanceSheetData(absData, data) });
+        this.SendLongText({ sender, text: postbackPayload });
         break;
 
       case 'STOCK_BALANCE_SHEET_Q':
-        let qbsData = await MemCachier.GetHashItem(`${data.toLowerCase()}BS`);
-
-        if (!qbsData) {
-          qbsData = await StockAPI.GetStockFinancials(data, 'BALANCE_SHEET');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockQuaterlyBalanceSheetData(qbsData, data) });
+        this.SendLongText({ sender, text: postbackPayload });
         break;
 
       case 'STOCK_CASH_FLOW_A':
-        let acfData = await MemCachier.GetHashItem(`${data.toLowerCase()}CF`);
-
-        if (!acfData) {
-          acfData = await StockAPI.GetStockFinancials(data, 'CASH_FLOW');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockAnnualCashFlowData(acfData, data) });
+        this.SendLongText({ sender, text: postbackPayload });
         break;
 
       case 'STOCK_CASH_FLOW_Q':
-        let qcfData = await MemCachier.GetHashItem(`${data.toLowerCase()}CF`);
-
-        if (!qcfData) {
-          qcfData = await StockAPI.GetStockFinancials(data, 'CASH_FLOW');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockQuaterlyCashFlowData(qcfData, data) });
+        this.SendLongText({ sender, text: postbackPayload });
         break;
 
       case 'STOCK_INCOME_A':
-        let aisData = await MemCachier.GetHashItem(`${data.toLowerCase()}IS`);
-
-        if (!aisData) {
-          aisData = await StockAPI.GetStockFinancials(data, 'INCOME_STATEMENT');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockAnnualIncomeStatementData(aisData, data) });
+        this.SendLongText({ sender, text: postbackPayload });
         break;
 
       case 'STOCK_INCOME_Q':
-        let qisData = await MemCachier.GetHashItem(`${data.toLowerCase()}IS`);
-
-        if (!qisData) {
-          qisData = await StockAPI.GetStockFinancials(data, 'INCOME_STATEMENT');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockQuaterlyIncomeStatementData(qisData, data) });
+        this.SendLongText({ sender, text: postbackPayload });
         break;
 
       case 'EARNINGS_TODAY':
