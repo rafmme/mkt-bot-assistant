@@ -239,7 +239,7 @@ export default class WitAIHelper {
             break;
           case 'financial':
           case 'financials':
-            await FBGraphAPIRequest.HandlePostbackPayload(sender, 'STOCK_FINANCIALS');
+            await FBGraphAPIRequest.HandlePostbackPayload(sender, `STOCK_FINANCIALS|${ticker}`);
             break;
           default:
             await FBGraphAPIRequest.SendStockQuote({ sender, ticker });

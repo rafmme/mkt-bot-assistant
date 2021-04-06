@@ -772,7 +772,7 @@ export default class Util {
    * @description
    * @param {Object} data
    */
-  static async CreateBalanceSheetText(data) {
+  static CreateBalanceSheetText(data) {
     const {
       fiscalDateEnding,
       reportedCurrency,
@@ -881,7 +881,7 @@ export default class Util {
    * @description
    * @param {Object} data
    */
-  static async CreateIncomeStatementText(data) {
+  static CreateIncomeStatementText(data) {
     const {
       fiscalDateEnding,
       reportedCurrency,
@@ -943,7 +943,7 @@ export default class Util {
    * @description
    * @param {Object} data
    */
-  static async CreateCashFlowText(data) {
+  static CreateCashFlowText(data) {
     const {
       fiscalDateEnding,
       reportedCurrency,
