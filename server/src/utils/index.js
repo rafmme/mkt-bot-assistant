@@ -147,24 +147,31 @@ export default class Util {
    * @param {*} number
    */
   static FormatLargeNumbers(number) {
-    const n = Number.parseFloat(number);
+    let n;
+    let isNegative = false;
+
+    if (`${number}`.startsWith('-')) {
+      n = Number.parseFloat(`${number}`.replace('-', ''));
+      isNegative = true;
+    } else {
+      n = Number.parseFloat(number);
+    }
 
     if (Number.isNaN(n)) {
-      return '-';
+      return 'N/A';
     }
 
     if (n >= 1e3) {
       const units = ['k', 'M', 'B', 'T'];
-
       const unit = Math.floor((n.toFixed(0).length - 1) / 3) * 3;
       const num = (n / `1e${unit}`).toFixed(2);
       const unitname = units[Math.floor(unit / 3) - 1];
-      const formatedNum = num + unitname;
+      const formatedNum = isNegative ? `-${num + unitname}` : num + unitname;
 
       return formatedNum;
     }
 
-    return n.toLocaleString();
+    return isNegative ? `-${n.toLocaleString()}` : n.toLocaleString();
   }
 
   /**
@@ -827,7 +834,7 @@ export default class Util {
       commonStockSharesOutstanding,
     } = data;
 
-    const text = `Fiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nTotal Assets: ${this.FormatLargeNumbers(
+    const text = `*** 🗓 ***\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nTotal Assets: ${this.FormatLargeNumbers(
       totalAssets,
     )}\nIntangible Assets: ${this.FormatLargeNumbers(intangibleAssets)}\nEarning Assets: ${this.FormatLargeNumbers(earningAssets)}\nOther Current Assets: ${this.FormatLargeNumbers(
       otherCurrentAssets,
@@ -911,7 +918,7 @@ export default class Util {
       netIncome,
     } = data;
 
-    const text = `Fiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nGross Profit: ${this.FormatLargeNumbers(
+    const text = `*** 🗓 ***\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nGross Profit: ${this.FormatLargeNumbers(
       grossProfit,
     )}\nTotal Revenue: ${this.FormatLargeNumbers(totalRevenue)}\nCost Of Revenue: ${this.FormatLargeNumbers(
       costOfRevenue,
@@ -976,7 +983,7 @@ export default class Util {
       netIncome,
     } = data;
 
-    const text = `Fiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nOperating Cashflow: ${this.FormatLargeNumbers(
+    const text = `*** 🗓 ***\nFiscal Date Ending: ${fiscalDateEnding}\nReported Currency: ${reportedCurrency}\nOperating Cashflow: ${this.FormatLargeNumbers(
       operatingCashflow,
     )}\nPayments For Operating Activities: ${this.FormatLargeNumbers(paymentsForOperatingActivities)}\nProceeds From Operating Activities: ${this.FormatLargeNumbers(
       proceedsFromOperatingActivities,
@@ -1013,18 +1020,20 @@ export default class Util {
    * @static
    * @description
    * @param {*} data
-   * @param {String} ticker
+   * @param {String} time
    */
-  static ParseStockAnnualBalanceSheetData(data, ticker) {
-    const { annualReports } = data;
-    let text = `📘 ${ticker.toUpperCase()} Annual Balance Sheet\n\n`;
+  static ParseStockBalanceSheetData(data, time) {
+    const { symbol } = data;
+    const quantity = time === 'q' ? 8 : 3;
+    const reports = time === 'q' ? data.quarterlyReports : data.annualReports;
+    let text = time === 'q' ? `📘 ${symbol.toUpperCase()} Quaterly Balance Sheet\n\n` : `📘 ${symbol.toUpperCase()} Annual Balance Sheet\n\n`;
 
-    if (!annualReports || annualReports.length < 1) {
+    if (!reports || reports.length < 1) {
       return `Sorry 😔, no data was found.`;
     }
 
-    for (let i = 0; i < 3; i += 1) {
-      text += this.CreateBalanceSheetText(annualReports[i]);
+    for (let i = 0; i < quantity; i += 1) {
+      text += this.CreateBalanceSheetText(reports[i]);
     }
 
     return text;
@@ -1034,20 +1043,20 @@ export default class Util {
    * @static
    * @description
    * @param {*} data
-   * @param {String} ticker
-   * @param {Function} sendText
-   * @param {String} sender
+   * @param {String} time
    */
-  static ParseStockAnnualCashFlowData(data, ticker) {
-    const { annualReports } = data;
-    let text = `📘 ${ticker.toUpperCase()} Annual Cash Flow\n\n`;
+  static ParseStockCashFlowData(data, time) {
+    const { symbol } = data;
+    const quantity = time === 'q' ? 8 : 3;
+    const reports = time === 'q' ? data.quarterlyReports : data.annualReports;
+    let text = time === 'q' ? `📘 ${symbol.toUpperCase()} Quaterly Cash Flow\n\n` : `📘 ${symbol.toUpperCase()} Annual Cash Flow\n\n`;
 
-    if (!annualReports || annualReports.length < 1) {
+    if (!reports || reports.length < 1) {
       return `Sorry 😔, no data was found.`;
     }
 
-    for (let i = 0; i < 3; i += 1) {
-      text += this.CreateCashFlowText(annualReports[i]);
+    for (let i = 0; i < quantity; i += 1) {
+      text += this.CreateCashFlowText(reports[i]);
     }
 
     return text;
@@ -1057,81 +1066,20 @@ export default class Util {
    * @static
    * @description
    * @param {*} data
-   * @param {String} ticker
+   * @param {String} time
    */
-  static ParseStockAnnualIncomeStatementData(data, ticker) {
-    const { annualReports } = data;
-    let text = `📘 ${ticker.toUpperCase()} Annual Income Statement\n\n`;
+  static ParseStockIncomeStatementData(data, time) {
+    const { symbol } = data;
+    const quantity = time === 'q' ? 8 : 3;
+    const reports = time === 'q' ? data.quarterlyReports : data.annualReports;
+    let text = time === 'q' ? `📘 ${symbol.toUpperCase()} Quaterly Income Statement\n\n` : `📘 ${symbol.toUpperCase()} Annual Income Statement\n\n`;
 
-    if (!annualReports || annualReports.length < 1) {
+    if (!reports || reports.length < 1) {
       return `Sorry 😔, no data was found.`;
     }
 
-    for (let i = 0; i < 3; i += 1) {
-      text += this.CreateIncomeStatementText(annualReports[i], ticker);
-    }
-
-    return text;
-  }
-
-  /**
-   * @static
-   * @description
-   * @param {*} data
-   * @param {String} ticker
-   */
-  static ParseStockQuaterlyBalanceSheetData(data, ticker) {
-    const { quarterlyReports } = data;
-    let text = `📘 ${ticker.toUpperCase()} Quaterly Balance Sheet\n\n`;
-
-    if (!quarterlyReports || quarterlyReports.length < 1) {
-      return `Sorry 😔, no data was found.`;
-    }
-
-    for (let i = 0; i < 8; i += 1) {
-      text = this.CreateBalanceSheetText(quarterlyReports[i]);
-    }
-
-    return text;
-  }
-
-  /**
-   * @static
-   * @description
-   * @param {*} data
-   * @param {String} ticker
-   */
-  static ParseStockQuaterlyCashFlowData(data, ticker) {
-    const { quarterlyReports } = data;
-    let text = `📘 ${ticker.toUpperCase()} Quaterly Cash Flow\n\n`;
-
-    if (!quarterlyReports || quarterlyReports.length < 1) {
-      return `Sorry 😔, no data was found.`;
-    }
-
-    for (let i = 0; i < 8; i += 1) {
-      text += this.CreateCashFlowText(quarterlyReports[i]);
-    }
-
-    return text;
-  }
-
-  /**
-   * @static
-   * @description
-   * @param {*} data
-   * @param {String} ticker
-   */
-  static ParseStockQuaterlyIncomeStatementData(data, ticker) {
-    const { quarterlyReports } = data;
-    let text = `📘 ${ticker.toUpperCase()} Quaterly Income Statement\n\n`;
-
-    if (!quarterlyReports || quarterlyReports.length < 1) {
-      return `Sorry 😔, no data was found.`;
-    }
-
-    for (let i = 0; i < 8; i += 1) {
-      text += this.CreateIncomeStatementText(quarterlyReports[i]);
+    for (let i = 0; i < quantity; i += 1) {
+      text += this.CreateIncomeStatementText(reports[i]);
     }
 
     return text;

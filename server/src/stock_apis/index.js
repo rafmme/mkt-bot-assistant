@@ -457,36 +457,36 @@ export default class StockAPI {
    * @param {String} type
    */
   static async GetStockFinancials(symbol, type) {
+    let cacheKey;
     const { AV_KEY } = process.env;
-    let cacheKey = '';
+    const queryObject = {
+      apikey: AV_KEY,
+      symbol: `${symbol.toUpperCase()}`,
+    };
 
     switch (type) {
-      case 'BALANCE_SHEET':
-        cacheKey = `${symbol.toLowerCase()}BS`;
+      case 'bs':
+        queryObject.function = 'BALANCE_SHEET';
+        cacheKey = `${symbol.toLowerCase()}Bs`;
         break;
-      case 'CASH_FLOW':
-        cacheKey = `${symbol.toLowerCase()}CF`;
+
+      case 'is':
+        queryObject.function = 'INCOME_STATEMENT';
+        cacheKey = `${symbol.toLowerCase()}Is`;
         break;
-      case 'INCOME_STATEMENT':
-        cacheKey = `${symbol.toLowerCase()}IS`;
+
+      case 'cf':
+        queryObject.function = 'CASH_FLOW';
+        cacheKey = `${symbol.toLowerCase()}Cf`;
         break;
 
       default:
         break;
     }
 
-    const response = await new RequestBuilder()
-      .withURL('https://www.alphavantage.co/query')
-      .method('GET')
-      .queryParams({
-        function: `${type}`,
-        symbol: `${symbol.toLowerCase()}`,
-        apikey: AV_KEY,
-      })
-      .build()
-      .send();
+    const response = await new RequestBuilder().withURL('https://www.alphavantage.co/query').method('GET').queryParams(queryObject).build().send();
 
-    await MemCachier.SetHashItem(cacheKey, response, 86400 * 31);
+    await MemCachier.SetHashItem(cacheKey, response, 86400 * 7);
     return response;
   }
 }

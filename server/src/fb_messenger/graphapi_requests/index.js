@@ -531,27 +531,27 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'STOCK_BALANCE_SHEET_A':
-        this.SendLongText({ sender, text: postbackPayload });
+        await this.SendStockFinancials({ sender, ticker: data, type: 'abs' });
         break;
 
       case 'STOCK_BALANCE_SHEET_Q':
-        this.SendLongText({ sender, text: postbackPayload });
+        await this.SendStockFinancials({ sender, ticker: data, type: 'qbs' });
         break;
 
       case 'STOCK_CASH_FLOW_A':
-        this.SendLongText({ sender, text: postbackPayload });
+        await this.SendStockFinancials({ sender, ticker: data, type: 'acf' });
         break;
 
       case 'STOCK_CASH_FLOW_Q':
-        this.SendLongText({ sender, text: postbackPayload });
+        await this.SendStockFinancials({ sender, ticker: data, type: 'qcf' });
         break;
 
       case 'STOCK_INCOME_A':
-        this.SendLongText({ sender, text: postbackPayload });
+        await this.SendStockFinancials({ sender, ticker: data, type: 'ais' });
         break;
 
       case 'STOCK_INCOME_Q':
-        this.SendLongText({ sender, text: postbackPayload });
+        await this.SendStockFinancials({ sender, ticker: data, type: 'qis' });
         break;
 
       case 'EARNINGS_TODAY':
@@ -1033,5 +1033,76 @@ export default class FBGraphAPIRequest {
     }
 
     await this.SendListRequest({ sender, text: word, list: earnings });
+  }
+
+  /**
+   * @description
+   * @param {*} object
+   */
+  static async SendStockFinancials({ sender, ticker, type }) {
+    switch (type) {
+      case 'abs':
+        let abs = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Bs`);
+
+        if (!abs) {
+          abs = await StockAPI.GetStockFinancials(ticker, 'bs');
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseStockBalanceSheetData(abs) });
+        break;
+
+      case 'qbs':
+        let qbs = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Bs`);
+
+        if (!qbs) {
+          qbs = await StockAPI.GetStockFinancials(ticker, 'bs');
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseStockBalanceSheetData(qbs, 'q') });
+        break;
+
+      case 'acf':
+        let acf = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Cf`);
+
+        if (!acf) {
+          acf = await StockAPI.GetStockFinancials(ticker, 'cf');
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseStockCashFlowData(acf) });
+        break;
+
+      case 'qcf':
+        let qcf = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Cf`);
+
+        if (!qcf) {
+          qcf = await StockAPI.GetStockFinancials(ticker, 'cf');
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseStockCashFlowData(qcf, 'q') });
+        break;
+
+      case 'ais':
+        let ais = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Is`);
+
+        if (!ais) {
+          ais = await StockAPI.GetStockFinancials(ticker, 'is');
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseStockIncomeStatementData(ais) });
+        break;
+
+      case 'qis':
+        let qis = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Is`);
+
+        if (!qis) {
+          qis = await StockAPI.GetStockFinancials(ticker, 'is');
+        }
+
+        await this.SendLongText({ sender, text: Util.ParseStockIncomeStatementData(qis, 'q') });
+        break;
+
+      default:
+        break;
+    }
   }
 }
