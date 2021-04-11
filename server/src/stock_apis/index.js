@@ -1,3 +1,4 @@
+import axios from 'axios';
 import dotenv from 'dotenv';
 import MemCachier from '../cache/memcachier';
 import Util from '../utils';
@@ -454,39 +455,38 @@ export default class StockAPI {
    * @static
    * @description
    * @param {String} symbol
-   * @param {String} type
    */
-  static async GetStockFinancials(symbol, type) {
-    let cacheKey;
+  static async GetStockBalanceSheet(symbol) {
     const { AV_KEY } = process.env;
-    const queryObject = {
-      apikey: AV_KEY,
-      symbol: `${symbol.toUpperCase()}`,
-    };
+    const response = await axios.get(`https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=${symbol.toUpperCase()}&apikey=${AV_KEY}`);
 
-    switch (type) {
-      case 'bs':
-        queryObject.function = 'BALANCE_SHEET';
-        cacheKey = `${symbol.toLowerCase()}Bs`;
-        break;
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Bs`, response.data, 86400 * 7);
+    return response.data;
+  }
 
-      case 'is':
-        queryObject.function = 'INCOME_STATEMENT';
-        cacheKey = `${symbol.toLowerCase()}Is`;
-        break;
+  /**
+   * @static
+   * @description
+   * @param {String} symbol
+   */
+  static async GetStockCashFlow(symbol) {
+    const { AV_KEY } = process.env;
+    const response = await axios.get(`https://www.alphavantage.co/query?function=CASH_FLOW&symbol=${symbol.toUpperCase()}&apikey=${AV_KEY}`);
 
-      case 'cf':
-        queryObject.function = 'CASH_FLOW';
-        cacheKey = `${symbol.toLowerCase()}Cf`;
-        break;
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Cf`, response.data, 86400 * 7);
+    return response.data;
+  }
 
-      default:
-        break;
-    }
+  /**
+   * @static
+   * @description
+   * @param {String} symbol
+   */
+  static async GetStockIncomeStatement(symbol) {
+    const { AV_KEY } = process.env;
+    const response = await axios.get(`https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=${symbol.toUpperCase()}&apikey=${AV_KEY}`);
 
-    const response = await new RequestBuilder().withURL('https://www.alphavantage.co/query').method('GET').queryParams(queryObject).build().send();
-
-    await MemCachier.SetHashItem(cacheKey, response, 86400 * 7);
-    return response;
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Is`, response.data, 86400 * 7);
+    return response.data;
   }
 }

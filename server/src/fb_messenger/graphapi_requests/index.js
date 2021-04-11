@@ -257,7 +257,7 @@ export default class FBGraphAPIRequest {
         await this.SendLongText({
           sender,
           text:
-            'Enjoying Lewis the Assistant? Help me & my creator by donating\n\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\n\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+            'Enjoying Lewis the Assistant? Help me & my creator by donating\n\nPayStack Link: https://paystack.com/pay/2m39897gfh\n\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\n\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nWanna hire my Creator for a Tech Job? Reach him via rafmme@gmail.com.',
         });
         break;
 
@@ -531,27 +531,27 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'STOCK_BALANCE_SHEET_A':
-        await this.SendStockFinancials({ sender, ticker: data, type: 'abs' });
+        this.SendStockBalanceSheet(sender, data);
         break;
 
       case 'STOCK_BALANCE_SHEET_Q':
-        await this.SendStockFinancials({ sender, ticker: data, type: 'qbs' });
+        await this.SendStockBalanceSheet(sender, data, 'q');
         break;
 
       case 'STOCK_CASH_FLOW_A':
-        await this.SendStockFinancials({ sender, ticker: data, type: 'acf' });
+        await this.SendStockCashFlow(sender, data);
         break;
 
       case 'STOCK_CASH_FLOW_Q':
-        await this.SendStockFinancials({ sender, ticker: data, type: 'qcf' });
+        await this.SendStockCashFlow(sender, data, 'q');
         break;
 
       case 'STOCK_INCOME_A':
-        await this.SendStockFinancials({ sender, ticker: data, type: 'ais' });
+        await this.SendStockIncomeStatement(sender, data);
         break;
 
       case 'STOCK_INCOME_Q':
-        await this.SendStockFinancials({ sender, ticker: data, type: 'qis' });
+        await this.SendStockIncomeStatement(sender, data, 'q');
         break;
 
       case 'EARNINGS_TODAY':
@@ -1037,72 +1037,52 @@ export default class FBGraphAPIRequest {
 
   /**
    * @description
-   * @param {*} object
+   * @param {String} sender
+   * @param {String} ticker
+   * @param {String} type
    */
-  static async SendStockFinancials({ sender, ticker, type }) {
-    switch (type) {
-      case 'abs':
-        let abs = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Bs`);
+  static async SendStockBalanceSheet(sender, ticker, type) {
+    let bs = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Bs`);
 
-        if (!abs) {
-          abs = await StockAPI.GetStockFinancials(ticker, 'bs');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockBalanceSheetData(abs) });
-        break;
-
-      case 'qbs':
-        let qbs = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Bs`);
-
-        if (!qbs) {
-          qbs = await StockAPI.GetStockFinancials(ticker, 'bs');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockBalanceSheetData(qbs, 'q') });
-        break;
-
-      case 'acf':
-        let acf = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Cf`);
-
-        if (!acf) {
-          acf = await StockAPI.GetStockFinancials(ticker, 'cf');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockCashFlowData(acf) });
-        break;
-
-      case 'qcf':
-        let qcf = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Cf`);
-
-        if (!qcf) {
-          qcf = await StockAPI.GetStockFinancials(ticker, 'cf');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockCashFlowData(qcf, 'q') });
-        break;
-
-      case 'ais':
-        let ais = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Is`);
-
-        if (!ais) {
-          ais = await StockAPI.GetStockFinancials(ticker, 'is');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockIncomeStatementData(ais) });
-        break;
-
-      case 'qis':
-        let qis = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Is`);
-
-        if (!qis) {
-          qis = await StockAPI.GetStockFinancials(ticker, 'is');
-        }
-
-        await this.SendLongText({ sender, text: Util.ParseStockIncomeStatementData(qis, 'q') });
-        break;
-
-      default:
-        break;
+    if (!bs) {
+      bs = await StockAPI.GetStockBalanceSheet(ticker);
     }
+
+    const text = type === 'q' ? Util.ParseStockBalanceSheetData(bs, 'q') : Util.ParseStockBalanceSheetData(bs);
+    await this.SendLongText({ sender, text });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {String} ticker
+   * @param {String} type
+   */
+  static async SendStockCashFlow(sender, ticker, type) {
+    let cf = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Cf`);
+
+    if (!cf) {
+      cf = await StockAPI.GetStockCashFlow(ticker);
+    }
+
+    const text = type === 'q' ? Util.ParseStockCashFlowData(cf, 'q') : Util.ParseStockCashFlowData(cf);
+    await this.SendLongText({ sender, text });
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   * @param {String} ticker
+   * @param {String} type
+   */
+  static async SendStockIncomeStatement(sender, ticker, type) {
+    let is = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Is`);
+
+    if (!is) {
+      is = await StockAPI.GetStockIncomeStatement(ticker);
+    }
+
+    const text = type === 'q' ? Util.ParseStockIncomeStatementData(is, 'q') : Util.ParseStockIncomeStatementData(is);
+    await this.SendLongText({ sender, text });
   }
 }

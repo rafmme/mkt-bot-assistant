@@ -1024,11 +1024,11 @@ export default class Util {
    */
   static ParseStockBalanceSheetData(data, time) {
     const { symbol } = data;
-    const quantity = time === 'q' ? 8 : 3;
+    const quantity = time === 'q' ? 6 : 3;
     const reports = time === 'q' ? data.quarterlyReports : data.annualReports;
     let text = time === 'q' ? `📘 ${symbol.toUpperCase()} Quaterly Balance Sheet\n\n` : `📘 ${symbol.toUpperCase()} Annual Balance Sheet\n\n`;
 
-    if (!reports || reports.length < 1) {
+    if (!reports || reports.length < 1 || Object.keys(data).length < 1) {
       return `Sorry 😔, no data was found.`;
     }
 
@@ -1047,11 +1047,11 @@ export default class Util {
    */
   static ParseStockCashFlowData(data, time) {
     const { symbol } = data;
-    const quantity = time === 'q' ? 8 : 3;
+    const quantity = time === 'q' ? 6 : 3;
     const reports = time === 'q' ? data.quarterlyReports : data.annualReports;
     let text = time === 'q' ? `📘 ${symbol.toUpperCase()} Quaterly Cash Flow\n\n` : `📘 ${symbol.toUpperCase()} Annual Cash Flow\n\n`;
 
-    if (!reports || reports.length < 1) {
+    if (!reports || reports.length < 1 || Object.keys(data).length < 1) {
       return `Sorry 😔, no data was found.`;
     }
 
@@ -1070,11 +1070,11 @@ export default class Util {
    */
   static ParseStockIncomeStatementData(data, time) {
     const { symbol } = data;
-    const quantity = time === 'q' ? 8 : 3;
+    const quantity = time === 'q' ? 6 : 3;
     const reports = time === 'q' ? data.quarterlyReports : data.annualReports;
     let text = time === 'q' ? `📘 ${symbol.toUpperCase()} Quaterly Income Statement\n\n` : `📘 ${symbol.toUpperCase()} Annual Income Statement\n\n`;
 
-    if (!reports || reports.length < 1) {
+    if (!reports || reports.length < 1 || Object.keys(data).length < 1) {
       return `Sorry 😔, no data was found.`;
     }
 

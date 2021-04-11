@@ -290,7 +290,7 @@ export default class WitAIHelper {
       case 'thank you':
         await FBGraphAPIRequest.SendTextMessage(
           sender,
-          'Enjoying Lewis the Assistant? Help me & my creator by donating\n\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\n\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nBank Account: ALAT Wema, 0236962044\n\n Wanna hire my Creator for a job? Reach him via rafmme@gmail.com.',
+          'Enjoying Lewis the Assistant? Help me & my creator by donating\n\nPayStack Link: https://paystack.com/pay/2m39897gfh\n\nBTC: 1PMuSW7354YSKGnxC8ZeM8JqLdSzNjTFGW\n\nETH, USDT: 0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nWanna hire my Creator for a Tech Job? Reach him via rafmme@gmail.com.',
         );
         break;
 
