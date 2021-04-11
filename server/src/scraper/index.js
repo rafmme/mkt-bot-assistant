@@ -3,7 +3,6 @@
 /* eslint-disable consistent-return */
 import puppeteer from 'puppeteer';
 import MemCachier from '../cache/memcachier';
-import Util from '../utils';
 
 /**
  * @class

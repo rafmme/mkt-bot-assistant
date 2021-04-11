@@ -16,8 +16,8 @@
     "build-server": "babel -d dist server --ignore 'node_modules','server/public','server/test' -s",
     "clean": "rm -rf dist && mkdir dist",
     "dev": "nodemon --exec babel-node server/src/app.js",
-    "postinstall": "npm run build && npm run migrate",
-    "start": "node dist/src/app.js",
+    "postinstall": "npm run build",
+    "start": "npm run migrate && node dist/src/app.js",
     "test": "cross-env NODE_ENV=test mocha --require @babel/register server/test/**/*.spec.js --exit"
   },
   "repository": {

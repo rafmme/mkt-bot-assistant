@@ -21,7 +21,7 @@ import createTechnicalIndicatorOptionButtons from '../messenger_buttons/technica
 import createStockFinancialsOptionButtons from '../messenger_buttons/stockFinancialsButton';
 
 dotenv.config();
-const { FB_PAGE_ACCESS_TOKEN, SEND_API } = process.env;
+const { FB_PAGE_ACCESS_TOKEN, SEND_API, HEROKU_APP_URL } = process.env;
 
 export default class FBGraphAPIRequest {
   /**
@@ -199,8 +199,28 @@ export default class FBGraphAPIRequest {
    * @description
    * @param {String} sender
    */
+  static async SaveUserData(sender) {
+    const { first_name: firstName, last_name: lastName, profile_pic: profilePic } = await this.RetrieveFBUserProfile(sender);
+    const fullName = `${firstName} ${lastName}`;
+
+    await new RequestBuilder()
+      .withURL(`${HEROKU_APP_URL}/api`)
+      .method('POST')
+      .data({
+        query: `mutation { addUser(facebookId: "${sender}", fullName: "${fullName}", profilePic: "${profilePic}") }`,
+      })
+      .build()
+      .send();
+
+    return firstName;
+  }
+
+  /**
+   * @description
+   * @param {String} sender
+   */
   static async GetStartedGreeting(sender) {
-    const { first_name: firstName } = await this.RetrieveFBUserProfile(sender);
+    const firstName = await this.SaveUserData(sender);
     const text = firstName
       ? `Hi ${firstName}, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market\nWhat'd you like to do?`
       : `Hi there, I am 🤖 Lewis The Bot Assistant and I was created to help you keep an eye on the US Stock Market\nWhat'd you like to do?`;
@@ -214,6 +234,7 @@ export default class FBGraphAPIRequest {
    * @param {*} postbackPayload
    */
   static async HandlePostbackPayload(sender, postbackPayload) {
+    await this.SaveUserData(sender);
     await RedisCache.SetItem(sender, '', 1);
     await RedisCache.DeleteItem(sender);
 

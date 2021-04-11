@@ -1,10 +1,14 @@
 require('dotenv').config();
 
-const { DEV_DB_URL, TEST_DB_URL, DATABASE_URL } = process.env;
+const { TEST_DB_URL, DATABASE_URL } = process.env;
 
 module.exports = {
   development: {
-    url: DEV_DB_URL,
+    username: 'rafmme',
+    password: null,
+    database: 'lewis',
+    host: '127.0.0.1',
+    port: '5432',
     dialect: 'postgres',
   },
   test: {
@@ -16,7 +20,7 @@ module.exports = {
     ssl: true,
     dialect: 'postgres',
     dialectOptions: {
-      ssl: true,
+      ssl: { require: true, rejectUnauthorized: false },
     },
   },
 };

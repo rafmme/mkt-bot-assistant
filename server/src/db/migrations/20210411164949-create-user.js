@@ -4,12 +4,13 @@ module.exports = {
       id: {
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true,
         type: Sequelize.INTEGER,
+        unique: true,
       },
       facebookId: {
         type: Sequelize.STRING,
         allowNull: false,
+        primaryKey: true,
       },
       fullName: {
         allowNull: true,

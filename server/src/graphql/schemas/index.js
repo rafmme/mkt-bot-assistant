@@ -3,15 +3,20 @@ import { gql } from 'apollo-server-express';
 const rootType = gql`
   type Query {
     root: String
-    me: User
+    users: [User]
   }
 
   type User {
-    username: String!
+    id: Int
+    facebookId: String!
+    fullName: String
+    profilePic: String
+    createdAt: String
+    updatedAt: String
   }
 
   type Mutation {
-    root: String
+    addUser(facebookId: String!, fullName: String, profilePic: String): String
   }
 `;
 
