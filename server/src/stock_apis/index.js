@@ -1,3 +1,4 @@
+import axios from 'axios';
 import dotenv from 'dotenv';
 import MemCachier from '../cache/memcachier';
 import Util from '../utils';
@@ -448,5 +449,44 @@ export default class StockAPI {
 
     await MemCachier.SetHashItem('er_calendar', earningsCalendar, 86400 * 6);
     return earningsCalendar;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} symbol
+   */
+  static async GetStockBalanceSheet(symbol) {
+    const { AV_KEY } = process.env;
+    const response = await axios.get(`https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=${symbol.toUpperCase()}&apikey=${AV_KEY}`);
+
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Bs`, response.data, 86400 * 7);
+    return response.data;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} symbol
+   */
+  static async GetStockCashFlow(symbol) {
+    const { AV_KEY } = process.env;
+    const response = await axios.get(`https://www.alphavantage.co/query?function=CASH_FLOW&symbol=${symbol.toUpperCase()}&apikey=${AV_KEY}`);
+
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Cf`, response.data, 86400 * 7);
+    return response.data;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {String} symbol
+   */
+  static async GetStockIncomeStatement(symbol) {
+    const { AV_KEY } = process.env;
+    const response = await axios.get(`https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=${symbol.toUpperCase()}&apikey=${AV_KEY}`);
+
+    await MemCachier.SetHashItem(`${symbol.toLowerCase()}Is`, response.data, 86400 * 7);
+    return response.data;
   }
 }

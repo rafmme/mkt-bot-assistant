@@ -62,7 +62,7 @@ export default class Cron {
           for (let index = 0; index < users.length; index += 1) {
             const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
             const text = `👋🏾 Hi ${firstName}, here's the upcoming earnings report for this week. Enjoy.🙂`;
-            await FBGraphAPIRequest.SendEarningsCalendar(users[index], null, text);
+            await FBGraphAPIRequest.SendEarningsCalendar(users[index], undefined, text);
           }
         },
         {
@@ -86,14 +86,48 @@ export default class Cron {
         schedule,
         async () => {
           const fromDate = new Date();
-          const fromMonth = `${fromDate.getMonth() + 1}`.length === 1 ? `0${fromDate.getMonth() + 1}` : `${fromDate.getMonth() + 1}`;
-          const from = `${fromDate.getFullYear()}-${fromMonth}-${fromDate.getDate()}`;
+          const from = `${fromDate.getFullYear()}-${fromDate.getMonth() + 1}-${fromDate.getDate()}`;
 
           const toDate = new Date(new Date().setDate(new Date(from).getDate() + 6));
-          const toDateMonth = `${toDate.getMonth() + 1}`.length === 1 ? `0${toDate.getMonth() + 1}` : `${toDate.getMonth() + 1}`;
-          const to = `${toDate.getFullYear()}-${toDateMonth}-${toDate.getDate()}`;
+          const to = `${toDate.getFullYear()}-${toDate.getMonth() + 1}-${toDate.getDate()}`;
 
           await StockAPI.GetEarningsCalendar(from, to);
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static SendEarningsForToday(schedule, timezone = TZ) {
+    const users = [TEST_USER1, TEST_USER2];
+
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          const data = await MemCachier.GetHashItem('er_calendar');
+
+          const text = `Here's the earnings report for today.`;
+          const earnings = Util.ParseEarningsCalendarData(data, true);
+
+          for (let index = 0; index < users.length; index += 1) {
+            if (typeof earnings === 'string') {
+              await FBGraphAPIRequest.SendTextMessage(users[index], earnings);
+              return;
+            }
+
+            await FBGraphAPIRequest.SendListRequest({ sender: users[index], text, list: earnings });
+          }
         },
         {
           timezone,
@@ -208,8 +242,9 @@ export default class Cron {
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
-    this.GetEarningsForTheWeek('0 0 * * Sunday').start();
-    this.SendUpcomingEarnings('0 3 * * Sunday').start();
+    this.GetEarningsForTheWeek('0 1 * * 0').start();
+    this.SendUpcomingEarnings('0 3 * * 0').start();
+    this.SendEarningsForToday('0 2 * * Monday-Friday').start();
     this.SendHolidayReminder('0 3 * * Monday-Friday').start();
     this.ComingHolidayReminder('0 9 * * Monday-Friday').start();
   }
