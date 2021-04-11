@@ -8,11 +8,15 @@
     "npm": "6.x"
   },
   "scripts": {
+    "undomigrate":"node_modules/.bin/sequelize db:migrate:undo:all",
+    "migrate":"node_modules/.bin/sequelize db:migrate",
+    "undoseed":"node_modules/.bin/sequelize db:seed:undo:all",
+    "seed":"node_modules/.bin/sequelize db:seed:all",
     "build": "npm run clean && npm run build-server",
     "build-server": "babel -d dist server --ignore 'node_modules','server/public','server/test' -s",
     "clean": "rm -rf dist && mkdir dist",
     "dev": "nodemon --exec babel-node server/src/app.js",
-    "postinstall": "npm run build",
+    "postinstall": "npm run build && npm run migrate",
     "start": "node dist/src/app.js",
     "test": "cross-env NODE_ENV=test mocha --require @babel/register server/test/**/*.spec.js --exit"
   },
@@ -52,6 +56,7 @@
     "puppeteer-core": "^5.5.0",
     "redis": "^3.0.2",
     "sequelize": "^6.3.5",
+    "sequelize-cli": "^6.2.0",
     "twilio": "^3.54.1"
   },
   "devDependencies": {
