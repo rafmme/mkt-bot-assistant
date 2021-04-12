@@ -5,11 +5,11 @@ import FBGraphAPIRequest from '../fb_messenger/graphapi_requests';
 import Util from '../utils';
 import StockAPI from '../stock_apis';
 import MemCachier from '../cache/memcachier';
-import sendSMS from '../sms';
+import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
 
-const { TZ, TEST_USER1, TEST_USER2 } = process.env;
+const { TZ, HEROKU_APP_URL } = process.env;
 
 /**
  * @class
@@ -18,23 +18,49 @@ const { TZ, TEST_USER1, TEST_USER2 } = process.env;
 export default class Cron {
   /**
    * @static
+   * @description Get All Users
+   */
+  static async GetAllUsers() {
+    const response = await new RequestBuilder()
+      .withURL(`${HEROKU_APP_URL}/api`)
+      .method('POST')
+      .data({
+        query: `{
+          users {
+            facebookId,
+            fullName
+          },
+        }`,
+      })
+      .build()
+      .send();
+
+    return response.data.users;
+  }
+
+  /**
+   * @static
    * @description
    * @param {} schedule
    * @param {} timezone
    */
   static SendDailyNewsUpdate(schedule, timezone = TZ) {
-    const users = [TEST_USER1, TEST_USER2];
-
     if (cron.validate(schedule)) {
       const task = cron.schedule(
         schedule,
         async () => {
+          const users = await this.GetAllUsers();
           const marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
           const news = Util.convertAPIResponseToMessengerList(marketNews);
 
           for (let index = 0; index < users.length; index += 1) {
-            const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
-            await FBGraphAPIRequest.SendListRequest({ sender: users[index], text: `👋🏾 Hi ${firstName}, here is your Market news update 📰 for today. Enjoy.🙂`, list: news });
+            const firstName = users[index].fullName.split(' ')[0];
+
+            await FBGraphAPIRequest.SendListRequest({
+              sender: users[index].facebookId,
+              text: `👋🏾 Hi ${firstName}, here is your Market news update 📰 for today. Enjoy.🙂`,
+              list: news,
+            });
           }
         },
         {
@@ -53,16 +79,16 @@ export default class Cron {
    * @param {} timezone
    */
   static SendUpcomingEarnings(schedule, timezone = TZ) {
-    const users = [TEST_USER1, TEST_USER2];
-
     if (cron.validate(schedule)) {
       const task = cron.schedule(
         schedule,
         async () => {
+          const users = await this.GetAllUsers();
+
           for (let index = 0; index < users.length; index += 1) {
-            const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
+            const firstName = users[index].fullName.split(' ')[0];
             const text = `👋🏾 Hi ${firstName}, here's the upcoming earnings report for this week. Enjoy.🙂`;
-            await FBGraphAPIRequest.SendEarningsCalendar(users[index], undefined, text);
+            await FBGraphAPIRequest.SendEarningsCalendar(users[index].facebookId, undefined, text);
           }
         },
         {
@@ -109,24 +135,22 @@ export default class Cron {
    * @param {} timezone
    */
   static SendEarningsForToday(schedule, timezone = TZ) {
-    const users = [TEST_USER1, TEST_USER2];
-
     if (cron.validate(schedule)) {
       const task = cron.schedule(
         schedule,
         async () => {
+          const users = await this.GetAllUsers();
           const data = await MemCachier.GetHashItem('er_calendar');
-
           const text = `Here's the earnings report for today.`;
           const earnings = Util.ParseEarningsCalendarData(data, true);
 
           for (let index = 0; index < users.length; index += 1) {
             if (typeof earnings === 'string') {
-              await FBGraphAPIRequest.SendTextMessage(users[index], earnings);
+              await FBGraphAPIRequest.SendTextMessage(users[index].facebookId, earnings);
               return;
             }
 
-            await FBGraphAPIRequest.SendListRequest({ sender: users[index], text, list: earnings });
+            await FBGraphAPIRequest.SendListRequest({ sender: users[index].facebookId, text, list: earnings });
           }
         },
         {
@@ -145,12 +169,11 @@ export default class Cron {
    * @param {} timezone
    */
   static SendHolidayReminder(schedule, timezone = TZ) {
-    const users = [TEST_USER1, TEST_USER2];
-
     if (cron.validate(schedule)) {
       const task = cron.schedule(
         schedule,
         async () => {
+          const users = await this.GetAllUsers();
           const holidays = await MemCachier.GetHashItem('holidays');
           const currentDate = new Date();
           const currentYearHolidays = holidays[`${currentDate.getFullYear()}`];
@@ -159,12 +182,10 @@ export default class Cron {
             const { date, holiday } = currentYearHolidays[i];
 
             if (date === `${currentDate.toDateString()}`) {
-              sendSMS(`Hi, this is to remind you that the Market will not open today ${date} in observation of the ${holiday}.\nHappy holidays!`);
-
               for (let index = 0; index < users.length; index += 1) {
-                const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
+                const firstName = users[index].fullName.split(' ')[0];
                 await FBGraphAPIRequest.SendTextMessage(
-                  users[index],
+                  users[index].facebookId,
                   `Hi ${firstName}, this is to remind you that the Market will not open today ${date} in observation of the ${holiday}.\nHappy holidays!`,
                 );
               }
@@ -187,12 +208,11 @@ export default class Cron {
    * @param {} timezone
    */
   static ComingHolidayReminder(schedule, timezone = TZ) {
-    const users = [TEST_USER1, TEST_USER2];
-
     if (cron.validate(schedule)) {
       const task = cron.schedule(
         schedule,
         async () => {
+          const users = await this.GetAllUsers();
           const holidays = await MemCachier.GetHashItem('holidays');
           const currentDate = new Date();
           const currentYearHolidays = holidays[`${currentDate.getFullYear()}`];
@@ -201,12 +221,10 @@ export default class Cron {
             const { date, holiday } = currentYearHolidays[i];
 
             if (date === new Date(new Date().setDate(new Date().getDate() + 1)).toDateString()) {
-              sendSMS(`Hi, this is to notify you that the Market will not open tomorrow ${date} in observation of the ${holiday}.\nHappy holidays!`);
-
               for (let index = 0; index < users.length; index += 1) {
-                const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
+                const firstName = users[index].fullName.split(' ')[0];
                 await FBGraphAPIRequest.SendTextMessage(
-                  users[index],
+                  users[index].facebookId,
                   `Hi ${firstName}, this is to notify you that the Market will not open tomorrow ${date} in observation of the ${holiday}.\nHappy holidays!`,
                 );
               }
@@ -215,12 +233,10 @@ export default class Cron {
             }
 
             if (`${currentDate.toDateString().split(' ')[0]}` === 'Fri' && date === new Date(new Date().setDate(new Date().getDate() + 3)).toDateString()) {
-              sendSMS(`Hi, this is to notify you that the Market will not open this coming Monday ${date} in observation of the ${holiday}.\nHappy holidays!`);
-
               for (let index = 0; index < users.length; index += 1) {
-                const { first_name: firstName } = await FBGraphAPIRequest.RetrieveFBUserProfile(users[index]);
+                const firstName = users[index].fullName.split(' ')[0];
                 await FBGraphAPIRequest.SendTextMessage(
-                  users[index],
+                  users[index].facebookId,
                   `Hi ${firstName}, this is to notify you that the Market will not open this coming Monday ${date} in observation of the ${holiday}.\nHappy holidays!`,
                 );
               }
