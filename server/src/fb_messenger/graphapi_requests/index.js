@@ -19,6 +19,7 @@ import WitAIHelper from '../../wit_ai';
 import crypto from '../messenger_buttons/Menu/crypto';
 import createTechnicalIndicatorOptionButtons from '../messenger_buttons/technicalIndicatorButton';
 import createStockFinancialsOptionButtons from '../messenger_buttons/stockFinancialsButton';
+import holidaysData from '../../data/holiday';
 
 dotenv.config();
 const { FB_PAGE_ACCESS_TOKEN, SEND_API, HEROKU_APP_URL } = process.env;
@@ -503,7 +504,7 @@ export default class FBGraphAPIRequest {
         break;
 
       case 'HOLIDAY':
-        const holidays = await MemCachier.GetHashItem('holidays');
+        const holidays = holidaysData || (await MemCachier.GetHashItem('holidays'));
 
         if (holidays) {
           await this.SendLongText({ sender, text: Util.GetUpcomingHolidays(holidays) });

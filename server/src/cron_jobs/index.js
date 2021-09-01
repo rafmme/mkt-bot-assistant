@@ -6,6 +6,7 @@ import Util from '../utils';
 import StockAPI from '../stock_apis';
 import MemCachier from '../cache/memcachier';
 import RequestBuilder from '../utils/Request/RequestBuilder';
+import holidaysData from '../data/holiday';
 
 dotenv.config();
 
@@ -174,7 +175,7 @@ export default class Cron {
         schedule,
         async () => {
           const users = await this.GetAllUsers();
-          const holidays = await MemCachier.GetHashItem('holidays');
+          const holidays = holidaysData || (await MemCachier.GetHashItem('holidays'));
           const currentDate = new Date();
           const currentYearHolidays = holidays[`${currentDate.getFullYear()}`];
 
@@ -213,7 +214,7 @@ export default class Cron {
         schedule,
         async () => {
           const users = await this.GetAllUsers();
-          const holidays = await MemCachier.GetHashItem('holidays');
+          const holidays = holidaysData || (await MemCachier.GetHashItem('holidays'));
           const currentDate = new Date();
           const currentYearHolidays = holidays[`${currentDate.getFullYear()}`];
 
@@ -255,6 +256,68 @@ export default class Cron {
   /**
    * @static
    * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static GetEconomicEventsForTheWeek(schedule, timezone = TZ) {
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          const fromDate = new Date();
+          const from = `${fromDate.getFullYear()}-${fromDate.getMonth() + 1}-${fromDate.getDate()}`;
+
+          const toDate = new Date(new Date().setDate(new Date(from).getDate() + 6));
+          const to = `${toDate.getFullYear()}-${toDate.getMonth() + 1}-${toDate.getDate()}`;
+
+          await StockAPI.GetEconomicCalendar(from, to);
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static SendEconomicEventsForToday(schedule, timezone = TZ) {
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          const users = await this.GetAllUsers();
+          const data = (await MemCachier.GetHashItem('ec_calendar')) || (await StockAPI.GetEconomicCalendar());
+          const ecData = data.filter((ec) => {
+            return new Date(ec.time) === new Date();
+          });
+
+          if (!ecData || ecData.length <= 0) {
+            return;
+          }
+
+          for (let index = 0; index < users.length; index += 1) {
+            FBGraphAPIRequest.SendLongText({ sender: users[index].facebookId, text: Util.CreateEconomicCalendarText(ecData) });
+          }
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
@@ -263,5 +326,7 @@ export default class Cron {
     this.SendEarningsForToday('0 2 * * Monday-Friday').start();
     this.SendHolidayReminder('0 3 * * Monday-Friday').start();
     this.ComingHolidayReminder('0 9 * * Monday-Friday').start();
+    this.GetEconomicEventsForTheWeek('0 1 * * 0').start();
+    this.SendEconomicEventsForToday('0 3 * * Monday-Friday').start();
   }
 }

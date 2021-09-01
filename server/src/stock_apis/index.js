@@ -316,24 +316,28 @@ export default class StockAPI {
   /**
    * @static
    * @description
+   * @param {String} from
+   * @param {String} to
    */
-  static async GetEconomicCalendar() {
+  static async GetEconomicCalendar(from, to) {
     const { FINNHUB } = process.env;
     const response = await new RequestBuilder()
       .withURL('https://finnhub.io/api/v1/calendar/economic')
       .method('GET')
       .queryParams({
         token: FINNHUB,
+        from,
+        to,
       })
       .build()
       .send();
 
     const { economicCalendar } = response;
     const data = economicCalendar.filter((ec) => {
-      return ec.country === 'US' && new Date(ec.time) >= new Date();
+      return ec.country === 'US' && new Date(ec.time) >= new Date() && (ec.impact.toLowerCase() === 'medium' || ec.impact.toLowerCase() === 'high');
     });
 
-    await MemCachier.SetHashItem('ec_calendar', data, 86400 * 7);
+    await MemCachier.SetHashItem('ec_calendar', data, 86400 * 6);
     return data;
   }
 
