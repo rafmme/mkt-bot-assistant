@@ -8,10 +8,10 @@
     "npm": "6.x"
   },
   "scripts": {
-    "undomigrate":"node_modules/.bin/sequelize db:migrate:undo:all",
-    "migrate":"node_modules/.bin/sequelize db:migrate",
-    "undoseed":"node_modules/.bin/sequelize db:seed:undo:all",
-    "seed":"node_modules/.bin/sequelize db:seed:all",
+    "undomigrate": "node_modules/.bin/sequelize db:migrate:undo:all",
+    "migrate": "node_modules/.bin/sequelize db:migrate",
+    "undoseed": "node_modules/.bin/sequelize db:seed:undo:all",
+    "seed": "node_modules/.bin/sequelize db:seed:all",
     "build": "npm run clean && npm run build-server",
     "build-server": "babel -d dist server --ignore 'node_modules','server/public','server/test' -s",
     "clean": "rm -rf dist && mkdir dist",
@@ -48,6 +48,7 @@
     "memjs": "^1.3.0",
     "morgan": "^1.10.0",
     "node-cron": "^2.0.3",
+    "node-telegram-bot-api": "^0.54.0",
     "node-wit": "^6.0.0",
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
