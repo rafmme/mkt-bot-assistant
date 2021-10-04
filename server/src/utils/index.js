@@ -1128,7 +1128,7 @@ export default class Util {
     }
 
     const { latestPrice, latestTime, change, changePercent } = quote;
-    const stockMovement = change.startsWith('-') ? '🔻' : '🆙';
+    const stockMovement = `${change}`.startsWith('-') ? '🔻' : '🆙';
     const text = `${Name} (${stockTicker})\n\nUSD $${latestPrice} (${stockMovement} USD $${change} / ${
       changePercent * 100
     }%)\n\nIndustry: ${Industry}\nSector: ${Sector}\n\nTime: ${latestTime} GMT -5\nhttps://finance.yahoo.com/quote/${ticker}`;
