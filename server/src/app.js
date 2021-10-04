@@ -10,6 +10,7 @@ import resolvers from './graphql/resolvers';
 import typeDefs from './graphql/schemas';
 import WebhookRouteHandler from './fb_messenger';
 import Cron from './cron_jobs';
+import startTelegramBot from './telegram';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.get('/webhook', WebhookRouteHandler.VerifyWebhook);
 app.post('/webhook', WebhookRouteHandler.PostWebhook);
 
 Cron.StartCronJobs();
+(async () => startTelegramBot())();
 
 if (!module.parent) {
   app.listen(PORT, () => {

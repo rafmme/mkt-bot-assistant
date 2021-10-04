@@ -1,12 +1,15 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-case-declarations */
 /* eslint-disable consistent-return */
 import axios from 'axios';
 import dotenv from 'dotenv';
+import MemCachier from '../cache/memcachier';
 import createFinnHubNewsOptionButtons from '../fb_messenger/messenger_buttons/finnhubNewsButton';
 import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
 import createNgNewsOptionButtons from '../fb_messenger/messenger_buttons/ngNewsButton';
 import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
+import StockAPI from '../stock_apis';
 
 dotenv.config();
 
@@ -1081,6 +1084,54 @@ export default class Util {
     for (let i = 0; i < quantity; i += 1) {
       text += this.CreateIncomeStatementText(reports[i]);
     }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} telegramMessage
+   */
+  static GetTicker(telegramMessage) {
+    const text = telegramMessage.split(' ');
+    let ticker;
+
+    for (let i = 0; i < text.length; i += 1) {
+      if (text[i].startsWith('$')) {
+        const data = text[i].split('$');
+        ticker = data[1];
+      }
+    }
+
+    return Number.isSafeInteger(Number.parseInt(ticker, 10)) ? undefined : ticker;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   * @param {} ticker
+   */
+  static async ParseStockDataTelegram(data, ticker) {
+    let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
+
+    if (!quote) {
+      quote = await StockAPI.GetStockQuote(ticker);
+    }
+
+    const { Symbol: stockTicker, Name, Sector, Industry } = data;
+
+    if (!Name) {
+      const overviewData = `Visit https://finance.yahoo.com/quote/${ticker}`;
+      return overviewData;
+    }
+
+    const { latestPrice, latestTime, change, changePercent } = quote;
+    const stockMovement = change.startsWith('-') ? '🔻' : '🆙';
+    const text = `${Name} (${stockTicker})\n\nUSD $${latestPrice} (${stockMovement} USD $${change} / ${
+      changePercent * 100
+    }%)\n\nIndustry: ${Industry}\nSector: ${Sector}\n\nTime: ${latestTime} GMT -5\nhttps://finance.yahoo.com/quote/${ticker}`;
 
     return text;
   }
