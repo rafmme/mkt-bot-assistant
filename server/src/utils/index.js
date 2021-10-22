@@ -1132,9 +1132,9 @@ export default class Util {
     const priceChange = `${change}`.slice(0,5);
     const percentChange = `${changePercent * 100}`.slice(0,5);
 
-    const text = `${Name} (${stockTicker})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${
+    const text = `**${Name} (${stockTicker})**\n\n__${stockMovement} $${latestPrice}   ${percentChange}%   $${
       priceChange
-    }\n\nIndustry: ${Industry}\nSector: ${Sector}\n\nTime: ${latestTime} GMT -5\n\nhttps://finance.yahoo.com/quote/${ticker}`;
+    }__\n\nIndustry: __${Industry}__\nSector: __${Sector}__\n\nTime: __${latestTime} GMT -5__\n\nhttps://finance.yahoo.com/quote/${ticker}`;
 
     return text;
   }
