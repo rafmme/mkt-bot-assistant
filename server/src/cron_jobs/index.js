@@ -7,6 +7,7 @@ import StockAPI from '../stock_apis';
 import MemCachier from '../cache/memcachier';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 import holidaysData from '../data/holiday';
+import { TeleBot } from '../telegram';
 
 dotenv.config();
 
@@ -55,13 +56,23 @@ export default class Cron {
           const news = Util.convertAPIResponseToMessengerList(marketNews);
 
           for (let index = 0; index < users.length; index += 1) {
-            const firstName = users[index].fullName.split(' ')[0];
+            const userId = users[index].facebookId;
 
-            await FBGraphAPIRequest.SendListRequest({
-              sender: users[index].facebookId,
-              text: `👋🏾 Hi ${firstName}, here is your Market news update 📰 for today. Enjoy.🙂`,
-              list: news,
-            });
+            if (userId.startsWith('TelgBoT_')) {
+              const chatId = userId.split('TelgBoT_')[1];
+              const newsList = await Util.TelegramNews();
+              TeleBot.sendMessage(chatId, newsList[0]);
+              TeleBot.sendMessage(chatId, newsList[1]);
+              TeleBot.sendMessage(chatId, Util.FundSolicitation());
+            } else {
+              const firstName = users[index].fullName.split(' ')[0];
+
+              await FBGraphAPIRequest.SendListRequest({
+                sender: users[index].facebookId,
+                text: `👋🏾 Hi ${firstName}, here is your Market news update 📰 for today. Enjoy.🙂`,
+                list: news,
+              });
+            }
           }
         },
         {
@@ -184,11 +195,19 @@ export default class Cron {
 
             if (date === `${currentDate.toDateString()}`) {
               for (let index = 0; index < users.length; index += 1) {
-                const firstName = users[index].fullName.split(' ')[0];
-                await FBGraphAPIRequest.SendTextMessage(
-                  users[index].facebookId,
-                  `Hi ${firstName}, this is to remind you that the Market will not open today ${date} in observation of the ${holiday}.\nHappy holidays!`,
-                );
+                const userId = users[index].facebookId;
+
+                if (userId.startsWith('TelgBoT_')) {
+                  const text = `Hi there, this is to remind you that the Market will not open today ${date} in observance of the ${holiday}.\nHappy holidays!`;
+                  const chatId = userId.split('TelgBoT_')[1];
+                  TeleBot.sendMessage(chatId, text);
+                } else {
+                  const firstName = users[index].fullName.split(' ')[0];
+                  await FBGraphAPIRequest.SendTextMessage(
+                    users[index].facebookId,
+                    `Hi ${firstName}, this is to remind you that the Market will not open today ${date} in observance of the ${holiday}.\nHappy holidays!`,
+                  );
+                }
               }
             }
           }
@@ -223,11 +242,19 @@ export default class Cron {
 
             if (date === new Date(new Date().setDate(new Date().getDate() + 1)).toDateString()) {
               for (let index = 0; index < users.length; index += 1) {
-                const firstName = users[index].fullName.split(' ')[0];
-                await FBGraphAPIRequest.SendTextMessage(
-                  users[index].facebookId,
-                  `Hi ${firstName}, this is to notify you that the Market will not open tomorrow ${date} in observation of the ${holiday}.\nHappy holidays!`,
-                );
+                const userId = users[index].facebookId;
+
+                if (userId.startsWith('TelgBoT_')) {
+                  const text = `Hi there, this is to notify you that the Market will not open tomorrow ${date} in observance of the ${holiday}.\nHappy holidays!`;
+                  const chatId = userId.split('TelgBoT_')[1];
+                  TeleBot.sendMessage(chatId, text);
+                } else {
+                  const firstName = users[index].fullName.split(' ')[0];
+                  await FBGraphAPIRequest.SendTextMessage(
+                    users[index].facebookId,
+                    `Hi ${firstName}, this is to notify you that the Market will not open tomorrow ${date} in observance of the ${holiday}.\nHappy holidays!`,
+                  );
+                }
               }
 
               return;
@@ -235,11 +262,19 @@ export default class Cron {
 
             if (`${currentDate.toDateString().split(' ')[0]}` === 'Fri' && date === new Date(new Date().setDate(new Date().getDate() + 3)).toDateString()) {
               for (let index = 0; index < users.length; index += 1) {
-                const firstName = users[index].fullName.split(' ')[0];
-                await FBGraphAPIRequest.SendTextMessage(
-                  users[index].facebookId,
-                  `Hi ${firstName}, this is to notify you that the Market will not open this coming Monday ${date} in observation of the ${holiday}.\nHappy holidays!`,
-                );
+                const userId = users[index].facebookId;
+
+                if (userId.startsWith('TelgBoT_')) {
+                  const text = `Hi there, this is to notify you that the Market will not open this coming Monday ${date} in observance of the ${holiday}.\nHappy holidays!`;
+                  const chatId = userId.split('TelgBoT_')[1];
+                  TeleBot.sendMessage(chatId, text);
+                } else {
+                  const firstName = users[index].fullName.split(' ')[0];
+                  await FBGraphAPIRequest.SendTextMessage(
+                    users[index].facebookId,
+                    `Hi ${firstName}, this is to notify you that the Market will not open this coming Monday ${date} in observance of the ${holiday}.\nHappy holidays!`,
+                  );
+                }
               }
             }
           }
@@ -318,6 +353,80 @@ export default class Cron {
   /**
    * @static
    * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static SendAdvice(schedule, timezone = TZ) {
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          const users = await this.GetAllUsers();
+
+          for (let index = 0; index < users.length; index += 1) {
+            const userId = users[index].facebookId;
+
+            if (userId.startsWith('TelgBoT_')) {
+              const chatId = userId.split('TelgBoT_')[1];
+              const advice = Util.BotAdvice();
+              TeleBot.sendMessage(chatId, advice);
+              TeleBot.sendMessage(chatId, Util.FundSolicitation());
+            }
+          }
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static SendEconEventsForTheWeek(schedule, timezone = TZ) {
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          let data = await MemCachier.GetHashItem('ec_calendar');
+
+          if (!data) {
+            data = await StockAPI.GetEconomicCalendar();
+          }
+
+          const response = Util.CreateEconomicCalendarText(data);
+          const users = await this.GetAllUsers();
+
+          for (let index = 0; index < users.length; index += 1) {
+            const userId = users[index].facebookId;
+
+            if (userId.startsWith('TelgBoT_')) {
+              const chatId = userId.split('TelgBoT_')[1];
+              TeleBot.sendMessage(chatId, response);
+              TeleBot.sendMessage(chatId, Util.FundSolicitation());
+            } else {
+              await FBGraphAPIRequest.SendLongText({ sender: userId, text: response });
+            }
+          }
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
@@ -328,5 +437,7 @@ export default class Cron {
     this.ComingHolidayReminder('0 9 * * Monday-Friday').start();
     this.GetEconomicEventsForTheWeek('0 1 * * 0').start();
     this.SendEconomicEventsForToday('0 3 * * Monday-Friday').start();
+    // this.SendAdvice('0 9 * * Monday-Friday').start();
+    this.SendEconEventsForTheWeek('0 6 * * Monday').start();
   }
 }

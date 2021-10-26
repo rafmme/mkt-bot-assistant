@@ -1129,13 +1129,130 @@ export default class Util {
 
     const { latestPrice, latestTime, change, changePercent } = quote;
     const stockMovement = `${change}`.startsWith('-') ? '🔻' : '🆙';
-    const priceChange = `${change}`.slice(0,5);
-    const percentChange = `${changePercent * 100}`.slice(0,5);
+    const priceChange = `${change}`.slice(0, 5);
+    const percentChange = `${changePercent * 100}`.slice(0, 5);
 
-    const text = `**${Name} (${stockTicker})**\n\n__${stockMovement} $${latestPrice}   ${percentChange}%   $${
-      priceChange
-    }__\n\nIndustry: __${Industry}__\nSector: __${Sector}__\n\nTime: __${latestTime} GMT -5__\n\nhttps://finance.yahoo.com/quote/${ticker}`;
+    const text = `${Name} (${stockTicker})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nIndustry: ${Industry}\nSector: ${Sector}\n\nTime: ${latestTime} GMT -5\n\nhttps://finance.yahoo.com/quote/${ticker}`;
 
     return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static async ParseTelegramTrendingTickersData() {
+    let data = await MemCachier.GetHashItem('trendingTickers');
+
+    if (!data) {
+      data = await StockAPI.GetTrendingTickers();
+    }
+
+    let text = '** Trending Tickers **\n\n';
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { shortName, symbol } = data[i];
+      text += `${i + 1}. ${shortName} ($${symbol})\n`;
+    }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static BotAdvice() {
+    const text = `** Daily Reminder **\n1. Plan your trade & trade your plan.\n2. Don't revenge trade\n3. Do not allow the fear of missing out(FOMO) get to you. Do not FOMO.\n4. Don't romance profit\n5. Don't be greedy\n6. Don't beat yourself up for selling too early.\n7. Get a mentor\n8. You win some & lose some, it's part of the game.\n\nPlease do take note of the above.\nHave a green day! Cheers! 🎉`;
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static FundSolicitation() {
+    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (ERC20 Wallet): \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static AboutBot() {
+    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (ERC20 Wallet) \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static async ParseTelegramTopMoversData() {
+    let moversData = await MemCachier.GetHashItem('movers');
+    let activeText = '** Most Active **\n';
+    let gainersText = '** Top Gainers **\n';
+    let losersText = '** Top Losers **\n';
+
+    if (!moversData) {
+      moversData = await StockAPI.GetMarketMovers();
+    }
+
+    for (let i = 0; i < moversData.length; i += 1) {
+      const moversList = moversData[i].listOfMovers;
+      const type = moversData[i].title;
+      const actionType = type.split('-')[0].trim().toUpperCase();
+
+      for (let j = 0; j < moversList.length; j += 1) {
+        const { symbol } = moversList[j];
+        if (actionType === 'DAY GAINERS') {
+          gainersText += `  $${symbol}\n`;
+        }
+
+        if (actionType === 'MOST ACTIVES') {
+          activeText += `  $${symbol}\n`;
+        }
+
+        if (actionType === 'DAY LOSERS') {
+          losersText += `  $${symbol}\n`;
+        }
+      }
+    }
+
+    const text = `Here's the US Stock Market Top Gainers, Losers and Most Active\n\n${gainersText}\n\n${losersText}\n\n${activeText}`;
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static async TelegramNews() {
+    let response = await MemCachier.GetHashItem('generalnews');
+
+    if (!response) {
+      response = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
+    }
+
+    const createNewsText = (list) => {
+      let text = '';
+
+      for (let i = 0; i < list.length; i += 1) {
+        const { title, link: url } = list[i];
+        text += `${title}\n${url}\n\n`;
+      }
+
+      return text;
+    };
+
+    const nl1 = createNewsText(response.slice(0, 11));
+    const nl2 = createNewsText(response.slice(11, 23));
+
+    const newsList = `** Market News Update **\n\n${nl1}`;
+
+    return [newsList, nl2];
   }
 }
