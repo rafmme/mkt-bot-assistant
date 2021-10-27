@@ -63,7 +63,7 @@ export default class Cron {
               const newsList = await Util.TelegramNews();
               TeleBot.sendMessage(chatId, newsList[0]);
               TeleBot.sendMessage(chatId, newsList[1]);
-              TeleBot.sendMessage(chatId, Util.FundSolicitation());
+              // TeleBot.sendMessage(chatId, Util.FundSolicitation());
             } else {
               const firstName = users[index].fullName.split(' ')[0];
 
@@ -370,7 +370,7 @@ export default class Cron {
               const chatId = userId.split('TelgBoT_')[1];
               const advice = Util.BotAdvice();
               TeleBot.sendMessage(chatId, advice);
-              TeleBot.sendMessage(chatId, Util.FundSolicitation());
+              // TeleBot.sendMessage(chatId, Util.FundSolicitation());
             }
           }
         },
