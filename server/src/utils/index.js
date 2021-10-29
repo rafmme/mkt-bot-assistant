@@ -1172,7 +1172,7 @@ export default class Util {
    * @description
    */
   static FundSolicitation() {
-    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (ERC20 Wallet): \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
+    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (BEP-20 Wallet): \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
 
     return text;
   }
@@ -1182,7 +1182,7 @@ export default class Util {
    * @description
    */
   static AboutBot() {
-    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (ERC20 Wallet) \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
+    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (BEP-20 Wallet) \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
 
     return text;
   }
