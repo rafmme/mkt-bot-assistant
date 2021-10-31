@@ -55,7 +55,8 @@ export default class WitAIHelper {
       console.error('Oops! Got an error from Wit: ', error.stack || error);
     } finally {
       if (err === true) {
-        await FBGraphAPIRequest.SendTextMessage(sender, `Sorry 😔, I can't process your request now. My home 💻 is currently not in order`);
+        await this.UnknownResponseHandler(sender, text);
+        // await FBGraphAPIRequest.SendTextMessage(sender, `Sorry 😔, I can't process your request now. My home 💻 is currently not in order`);
       }
       err = false;
     }

@@ -1271,9 +1271,30 @@ export default class Util {
     const nl1 = createNewsText(response.slice(0, 11));
     const nl2 = createNewsText(response.slice(11, 23));
 
-    const newsList = `** Market News Update **\n\n${nl1}`;
+    const newsList = `** 🇺🇸 Market News Update **\n\n${nl1}`;
 
     return [newsList, nl2];
+  }
+
+  /**
+   * @static
+   * @description
+   * @param ticker
+   */
+  static async ParseTelegramTickerNewsData(ticker) {
+    let data = await MemCachier.GetHashItem(`${ticker.toLowerCase()}News`);
+    let newsList = `** $${ticker.toUpperCase()} News **\n\n`;
+
+    if (!data) {
+      data = await StockAPI.GetOtherNews('tickerNews', ticker);
+    }
+
+    for (let i = 0; i < 10; i += 1) {
+      const { headline, url } = data[i];
+      newsList += `${headline}\n${url}\n\n`;
+    }
+
+    return newsList;
   }
 
   /**
@@ -1300,10 +1321,12 @@ export default class Util {
           USD: { price, volume_24h, percent_change_1h, market_cap },
         },
       } = cryptosData[i];
+      const formattedPrice = `${price}`.slice(0, 10);
+      const percentChange = `${percent_change_1h}`.slice(0, 5);
 
-      text = `${name} (¢${ticker.toUpperCase()})\nPrice: $${price}\n% Change (1h): ${this.FormatLargeNumbers(percent_change_1h)}\nMarket Cap: ${this.FormatLargeNumbers(
+      text = `${name} (${ticker.toUpperCase()})\n\nPrice: $${formattedPrice}\n\n% Change (1h): ${percentChange}%\n\nMarket Cap: ${this.FormatLargeNumbers(
         market_cap,
-      )}\n24h Volume: ${this.FormatLargeNumbers(volume_24h)}`;
+      )}\n\n24h Volume: ${this.FormatLargeNumbers(volume_24h)}`;
     }
 
     return text;

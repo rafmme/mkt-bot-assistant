@@ -7,19 +7,13 @@ import Util from '../utils';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
-const { PORT: APP_PORT, HEROKU_APP_URL, TELEGRAM_TOKEN, TG_ID } = process.env;
-const PORT = Number.parseInt(APP_PORT, 10) || 3000;
-const url = `${HEROKU_APP_URL}:443`;
+const { HEROKU_APP_URL, TELEGRAM_TOKEN, TG_ID } = process.env;
 
 const configOptions = {
   polling: true,
-  webHook: {
-    port: PORT,
-  },
 };
 
 const TeleBot = new TelegramBot(TELEGRAM_TOKEN, configOptions);
-TeleBot.setWebHook(`${url}/bot${TELEGRAM_TOKEN}`);
 
 const storeUserData = async (chatId) => {
   await new RequestBuilder()
@@ -74,6 +68,20 @@ const getStockInfo = async () => {
       const response = await Util.ParseStockDataTelegram(overview, ticker);
       TeleBot.sendMessage(chatId, response);
       //  TeleBot.sendMessage(chatId, Util.FundSolicitation());
+    }
+  });
+};
+
+const getTickerNews = async () => {
+  TeleBot.onText(/(?:)/, async (msg) => {
+    const chatId = msg.chat.id;
+    const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
+    await storeUserData(chatId);
+
+    if (receivedMsg && receivedMsg[1].toLowerCase() === 'news') {
+      const ticker = receivedMsg[0].split('$')[1];
+      const response = Util.ParseTelegramTickerNewsData(ticker);
+      TeleBot.sendMessage(chatId, response);
     }
   });
 };
@@ -134,7 +142,7 @@ const getNews = async () => {
   });
 };
 
-const brodcastMessage = async () => {
+const broadcastMessage = async () => {
   TeleBot.onText(/(?:)/, async (msg) => {
     const chatId = msg.chat.id;
     const receivedMsg = msg.text;
@@ -143,7 +151,7 @@ const brodcastMessage = async () => {
       TeleBot.sendMessage(receipientId, message);
     };
 
-    if (TG_ID === chatId && (receivedMsg.startsWith('BCM|') || receivedMsg.startsWith('bcm|'))) {
+    if (`${TG_ID}` === `${chatId}` && (receivedMsg.startsWith('BCM|') || receivedMsg.startsWith('bcm|'))) {
       const bcData = receivedMsg.split('|');
 
       if (bcData[1] === 'all') {
@@ -174,7 +182,8 @@ const startTelegramBot = async () => {
   await getMovers();
   await getNews();
   await getTrendingStocks();
-  await brodcastMessage();
+  await broadcastMessage();
+  await getTickerNews();
 };
 
 export { startTelegramBot, TeleBot };

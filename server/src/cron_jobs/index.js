@@ -443,6 +443,6 @@ export default class Cron {
     this.GetEconomicEventsForTheWeek('0 1 * * 0').start();
     this.SendEconomicEventsForToday('0 3 * * Monday-Friday').start();
     // this.SendAdvice('0 9 * * Monday-Friday').start();
-    this.SendEconEventsForTheWeek('0 6 * * Monday').start();
+    // this.SendEconEventsForTheWeek('0 6 * * Monday').start();
   }
 }
