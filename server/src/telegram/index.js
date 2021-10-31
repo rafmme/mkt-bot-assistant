@@ -57,6 +57,16 @@ const getStockInfo = async () => {
     const chatId = msg.chat.id;
     await storeUserData(chatId);
     const ticker = Util.GetTicker(msg.text);
+    const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
+
+    if (receivedMsg && receivedMsg.length > 1) {
+      if (receivedMsg[1].toLowerCase() === 'news') {
+        const symbol = receivedMsg[0].split('$')[1];
+        const response = await Util.ParseTelegramTickerNewsData(symbol);
+        TeleBot.sendMessage(chatId, response);
+        return;
+      }
+    }
 
     if (ticker) {
       let overview = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Overview`);
@@ -68,20 +78,6 @@ const getStockInfo = async () => {
       const response = await Util.ParseStockDataTelegram(overview, ticker);
       TeleBot.sendMessage(chatId, response);
       //  TeleBot.sendMessage(chatId, Util.FundSolicitation());
-    }
-  });
-};
-
-const getTickerNews = async () => {
-  TeleBot.onText(/(?:)/, async (msg) => {
-    const chatId = msg.chat.id;
-    const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
-    await storeUserData(chatId);
-
-    if (receivedMsg && receivedMsg[1].toLowerCase() === 'news') {
-      const ticker = receivedMsg[0].split('$')[1];
-      const response = Util.ParseTelegramTickerNewsData(ticker);
-      TeleBot.sendMessage(chatId, response);
     }
   });
 };
@@ -183,7 +179,6 @@ const startTelegramBot = async () => {
   await getNews();
   await getTrendingStocks();
   await broadcastMessage();
-  await getTickerNews();
 };
 
 export { startTelegramBot, TeleBot };
