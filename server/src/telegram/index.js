@@ -7,7 +7,7 @@ import Util from '../utils';
 import RequestBuilder from '../utils/Request/RequestBuilder';
 
 dotenv.config();
-const { PORT: APP_PORT, HEROKU_APP_URL, TELEGRAM_TOKEN } = process.env;
+const { PORT: APP_PORT, HEROKU_APP_URL, TELEGRAM_TOKEN, TG_ID } = process.env;
 const PORT = Number.parseInt(APP_PORT, 10) || 3000;
 const url = `${HEROKU_APP_URL}:443`;
 
@@ -78,6 +78,23 @@ const getStockInfo = async () => {
   });
 };
 
+const getCryptoInfo = async () => {
+  TeleBot.onText(/(?:)/, async (msg) => {
+    const chatId = msg.chat.id;
+    await storeUserData(chatId);
+    const symbol = Util.GetCryptoSymbol(msg.text);
+
+    if (symbol) {
+      const response = await Util.ParseTelegramCryptoPriceData(symbol);
+
+      if (response) {
+        TeleBot.sendMessage(chatId, response);
+        //  TeleBot.sendMessage(chatId, Util.FundSolicitation());å
+      }
+    }
+  });
+};
+
 const getAboutMe = async () => {
   TeleBot.onText(/\/about/, async (msg) => {
     const chatId = msg.chat.id;
@@ -117,14 +134,47 @@ const getNews = async () => {
   });
 };
 
+const brodcastMessage = async () => {
+  TeleBot.onText(/(?:)/, async (msg) => {
+    const chatId = msg.chat.id;
+    const receivedMsg = msg.text;
+
+    const sendMessage = (receipientId, message) => {
+      TeleBot.sendMessage(receipientId, message);
+    };
+
+    if (TG_ID === chatId && (receivedMsg.startsWith('BCM|') || receivedMsg.startsWith('bcm|'))) {
+      const bcData = receivedMsg.split('|');
+
+      if (bcData[1] === 'all') {
+        const users = await Util.GetAllUsers();
+
+        for (let index = 0; index < users.length; index += 1) {
+          const userId = users[index].facebookId;
+
+          if (userId.startsWith('TelgBoT_')) {
+            const receiverId = userId.split('TelgBoT_')[1];
+            sendMessage(receiverId, bcData[2]);
+          }
+        }
+        return;
+      }
+
+      sendMessage(bcData[1], bcData[2]);
+    }
+  });
+};
+
 const startTelegramBot = async () => {
   await getMarketHolidays();
   await getAboutMe();
   await getEconomicEvents();
+  await getCryptoInfo();
   await getStockInfo();
   await getMovers();
   await getNews();
   await getTrendingStocks();
+  await brodcastMessage();
 };
 
 export { startTelegramBot, TeleBot };

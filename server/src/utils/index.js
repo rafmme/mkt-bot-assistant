@@ -10,6 +10,7 @@ import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButto
 import createNgNewsOptionButtons from '../fb_messenger/messenger_buttons/ngNewsButton';
 import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
 import StockAPI from '../stock_apis';
+import RequestBuilder from './Request/RequestBuilder';
 
 dotenv.config();
 
@@ -605,7 +606,7 @@ export default class Util {
    * @param {*} data
    */
   static CreateEconomicCalendarText(data) {
-    let text = '* US Economic Calendar 🗓 *\n\n';
+    let text = '* 🇺🇸 US Economic Calendar 🗓 for this week *\n\n';
 
     if (!data || data.length < 1) {
       return 'Sorry 😔, no data was found.';
@@ -613,7 +614,7 @@ export default class Util {
 
     for (let i = 0; i < data.length; i += 1) {
       const { event, impact, time } = data[i];
-      text += `Event: ${event}\nImpact: ${impact.toUpperCase()}\nDate: ${time}\n\n`;
+      text += `Date: ${time}\nEvent: ${event}\nImpact: ${impact.toUpperCase()}\n\n`;
     }
 
     return text;
@@ -1110,6 +1111,25 @@ export default class Util {
   /**
    * @static
    * @description
+   * @param {*} telegramMessage
+   */
+  static GetCryptoSymbol(telegramMessage) {
+    const text = telegramMessage.split(' ');
+    let symbol;
+
+    for (let i = 0; i < text.length; i += 1) {
+      if (text[i].startsWith('¢')) {
+        const data = text[i].split('¢');
+        symbol = data[1];
+      }
+    }
+
+    return Number.isSafeInteger(Number.parseInt(symbol, 10)) ? undefined : symbol;
+  }
+
+  /**
+   * @static
+   * @description
    * @param {*} data
    * @param {} ticker
    */
@@ -1172,7 +1192,7 @@ export default class Util {
    * @description
    */
   static FundSolicitation() {
-    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (BEP-20 Wallet): \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
+    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nTRON (TRX) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
 
     return text;
   }
@@ -1182,7 +1202,7 @@ export default class Util {
    * @description
    */
   static AboutBot() {
-    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nUSDT, SHIB (BEP-20 Wallet) \n0xd6a5fca15a95ba5e59783a31f6bf059146192fd5\n\nDoge Wallet: \nDBioMBjMJvpBVUhdtYvc4mLCjmHXFspZhF`;
+    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nTRON (TRX) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
 
     return text;
   }
@@ -1254,5 +1274,61 @@ export default class Util {
     const newsList = `** Market News Update **\n\n${nl1}`;
 
     return [newsList, nl2];
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} symbol
+   */
+  static async ParseTelegramCryptoPriceData(symbol) {
+    let data = await MemCachier.GetHashItem(`${symbol.toLowerCase()}Price`);
+
+    if (!data) {
+      data = await StockAPI.GetCryptoPrices(symbol);
+    }
+
+    const cryptosData = Object.values(data);
+    let text;
+
+    for (let i = 0; i < cryptosData.length; i += 1) {
+      const {
+        name,
+        symbol: ticker,
+        quote: {
+          // eslint-disable-next-line camelcase
+          USD: { price, volume_24h, percent_change_1h, market_cap },
+        },
+      } = cryptosData[i];
+
+      text = `${name} (¢${ticker.toUpperCase()})\nPrice: $${price}\n% Change (1h): ${this.FormatLargeNumbers(percent_change_1h)}\nMarket Cap: ${this.FormatLargeNumbers(
+        market_cap,
+      )}\n24h Volume: ${this.FormatLargeNumbers(volume_24h)}`;
+    }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description Get All Users
+   */
+  static async GetAllUsers() {
+    const { HEROKU_APP_URL } = process.env;
+    const response = await new RequestBuilder()
+      .withURL(`${HEROKU_APP_URL}/api`)
+      .method('POST')
+      .data({
+        query: `{
+            users {
+              facebookId,
+              fullName
+            },
+          }`,
+      })
+      .build()
+      .send();
+
+    return response.data.users;
   }
 }

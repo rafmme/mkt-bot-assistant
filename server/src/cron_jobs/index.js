@@ -401,6 +401,11 @@ export default class Cron {
           }
 
           const response = Util.CreateEconomicCalendarText(data);
+
+          if (response === 'Sorry 😔, no data was found.') {
+            return;
+          }
+
           const users = await this.GetAllUsers();
 
           for (let index = 0; index < users.length; index += 1) {
