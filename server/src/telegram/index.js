@@ -27,7 +27,7 @@ const storeUserData = async (chatId) => {
 };
 
 const getMarketHolidays = async () => {
-  TeleBot.onText(/\/holidays/, async (msg) => {
+  TeleBot.onText(/^\/holidays$/, async (msg) => {
     const chatId = msg.chat.id;
     await storeUserData(chatId);
     const response = Util.GetUpcomingHolidays(holidaysData);
@@ -37,7 +37,7 @@ const getMarketHolidays = async () => {
 };
 
 const getEconomicEvents = async () => {
-  TeleBot.onText(/\/events/, async (msg) => {
+  TeleBot.onText(/^\/events$/, async (msg) => {
     let data = await MemCachier.GetHashItem('ec_calendar');
 
     if (!data) {
@@ -100,7 +100,7 @@ const getCryptoInfo = async () => {
 };
 
 const getAboutMe = async () => {
-  TeleBot.onText(/\/about/, async (msg) => {
+  TeleBot.onText(/^\/about$/, async (msg) => {
     const chatId = msg.chat.id;
     await storeUserData(chatId);
     const response = Util.AboutBot();
@@ -109,7 +109,7 @@ const getAboutMe = async () => {
 };
 
 const getTrendingStocks = async () => {
-  TeleBot.onText(/\/trending/, async (msg) => {
+  TeleBot.onText(/^\/trending$/, async (msg) => {
     const chatId = msg.chat.id;
     await storeUserData(chatId);
     const response = await Util.ParseTelegramTrendingTickersData();
@@ -119,7 +119,7 @@ const getTrendingStocks = async () => {
 };
 
 const getMovers = async () => {
-  TeleBot.onText(/\/movers/, async (msg) => {
+  TeleBot.onText(/^\/movers$/, async (msg) => {
     const chatId = msg.chat.id;
     await storeUserData(chatId);
     const response = await Util.ParseTelegramTopMoversData();
