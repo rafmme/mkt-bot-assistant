@@ -129,7 +129,7 @@ const getMovers = async () => {
 };
 
 const getNews = async () => {
-  TeleBot.onText(/\/news/, async (msg) => {
+  TeleBot.onText(/^\/news$/, async (msg) => {
     const chatId = msg.chat.id;
     await storeUserData(chatId);
     const response = await Util.TelegramNews();
