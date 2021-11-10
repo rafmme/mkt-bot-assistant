@@ -1349,8 +1349,8 @@ export default class Util {
       return text;
     };
 
-    const nl1 = createNewsText(response.slice(0, 13));
-    const nl2 = createNewsText(response.slice(11, 26));
+    const nl1 = createNewsText(response.slice(0, 15));
+    const nl2 = createNewsText(response.slice(15, 29));
 
     const newsList = `** 🇺🇸 Market News Update **\n\n${nl1}`;
 
@@ -1380,7 +1380,7 @@ export default class Util {
     };
 
     const nl1 = createNewsText(response.slice(0, 13));
-    const nl2 = createNewsText(response.slice(11, 26));
+    const nl2 = createNewsText(response.slice(13, 26));
 
     const newsList = `** 🇳🇬 Naija News Update **\n\n${nl1}`;
 
