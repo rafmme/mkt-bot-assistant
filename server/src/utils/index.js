@@ -9,6 +9,7 @@ import createFinnHubNewsOptionButtons from '../fb_messenger/messenger_buttons/fi
 import createNewsOptionButtons from '../fb_messenger/messenger_buttons/newsButtons';
 import createNgNewsOptionButtons from '../fb_messenger/messenger_buttons/ngNewsButton';
 import createTickerOptionButtons from '../fb_messenger/messenger_buttons/tickerButton';
+import Scraper from '../scraper';
 import StockAPI from '../stock_apis';
 import RequestBuilder from './Request/RequestBuilder';
 
@@ -1092,6 +1093,65 @@ export default class Util {
   /**
    * @static
    * @description
+   * @param {*} data
+   */
+  static SanitizeTicker(data) {
+    const re = /[a-zA-Z]/;
+    const value = data ? `${data}` : undefined;
+    let ticker = '';
+
+    for (let i = 0; value && i < value.length; i += 1) {
+      if (re.test(value[i])) {
+        ticker += value[i];
+      }
+    }
+
+    return ticker.length >= 1 ? ticker : undefined;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} data
+   */
+  static CheckIfUpperCase(data) {
+    const re = /[A-Z]/;
+    const text = data ? `${data}` : undefined;
+    const ignoreLettersArray = ['I', 'A'];
+    let ticker;
+
+    for (let i = 0; text && i < text.length; i += 1) {
+      if (re.test(text[i]) && !ignoreLettersArray.includes(text)) {
+        ticker = text;
+      } else {
+        ticker = undefined;
+      }
+    }
+
+    return ticker || undefined;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} text
+   */
+  static GetUpperCaseWords(text) {
+    let ticker;
+
+    for (let i = 0; i < text.length; i += 1) {
+      const symbol = this.CheckIfUpperCase(this.SanitizeTicker(text[i]));
+      if (symbol) {
+        ticker = symbol;
+      }
+    }
+
+    return ticker;
+  }
+
+  /**
+   * @static
+   * @description
    * @param {*} telegramMessage
    */
   static GetTicker(telegramMessage) {
@@ -1105,7 +1165,28 @@ export default class Util {
       }
     }
 
-    return Number.isSafeInteger(Number.parseInt(ticker, 10)) ? undefined : ticker;
+    if (!ticker) {
+      ticker = this.GetUpperCaseWords(text);
+    }
+
+    return Number.isSafeInteger(Number.parseInt(ticker, 10)) ? undefined : this.SanitizeTicker(ticker);
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} telegramMessage
+   */
+  static SearchForTicker(telegramMessage) {
+    const msg = telegramMessage.toLowerCase();
+    const wordsArray = msg.startsWith('search for ') ? msg.replace('for', '|') : undefined;
+    let keyword;
+
+    if (wordsArray) {
+      keyword = wordsArray.split('|')[1].trim();
+    }
+
+    return keyword;
   }
 
   /**
@@ -1143,7 +1224,7 @@ export default class Util {
     const { Symbol: stockTicker, Name, Sector, Industry } = data;
 
     if (!Name) {
-      const overviewData = `Visit https://finance.yahoo.com/quote/${ticker}`;
+      const overviewData = `https://finance.yahoo.com/quote/${ticker}`;
       return overviewData;
     }
 
@@ -1268,10 +1349,40 @@ export default class Util {
       return text;
     };
 
-    const nl1 = createNewsText(response.slice(0, 11));
-    const nl2 = createNewsText(response.slice(11, 23));
+    const nl1 = createNewsText(response.slice(0, 13));
+    const nl2 = createNewsText(response.slice(11, 26));
 
     const newsList = `** 🇺🇸 Market News Update **\n\n${nl1}`;
+
+    return [newsList, nl2];
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static async TelegramNaijaNews() {
+    let response = await MemCachier.GetHashItem('ngNews');
+
+    if (!response) {
+      response = await Scraper.ScrapeNgNews();
+    }
+
+    const createNewsText = (list) => {
+      let text = '';
+
+      for (let i = 0; i < list.length; i += 1) {
+        const { title, url } = list[i];
+        text += `${title}\n${url}\n\n`;
+      }
+
+      return text;
+    };
+
+    const nl1 = createNewsText(response.slice(0, 13));
+    const nl2 = createNewsText(response.slice(11, 26));
+
+    const newsList = `** 🇳🇬 Naija News Update **\n\n${nl1}`;
 
     return [newsList, nl2];
   }
@@ -1353,5 +1464,155 @@ export default class Util {
       .send();
 
     return response.data.users;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} symbol
+   */
+  static async ParseTelegramStockOverviewData(symbol) {
+    let data = await MemCachier.GetHashItem(`${symbol.toLowerCase()}Overview`);
+
+    if (!data) {
+      data = await StockAPI.GetStockOverview(symbol);
+    }
+
+    const {
+      Symbol: stockTicker,
+      AssetType,
+      Name,
+      Description,
+      Exchange,
+      Currency,
+      Country,
+      Sector,
+      Industry,
+      Address,
+      FullTimeEmployees,
+      FiscalYearEnd,
+      LatestQuarter,
+      MarketCapitalization,
+      EBITDA,
+      PERatio,
+      PEGRatio,
+      BookValue,
+      DividendPerShare,
+      DividendYield,
+      EPS,
+      RevenuePerShareTTM,
+      ProfitMargin,
+      OperatingMarginTTM,
+      ReturnOnAssetsTTM,
+      ReturnOnEquityTTM,
+      RevenueTTM,
+      GrossProfitTTM,
+      DilutedEPSTTM,
+      QuarterlyEarningsGrowthYOY,
+      QuarterlyRevenueGrowthYOY,
+      AnalystTargetPrice,
+      TrailingPE,
+      ForwardPE,
+      PriceToSalesRatioTTM,
+      PriceToBookRatio,
+      EVToRevenue,
+      EVToEBITDA,
+      Beta,
+      SharesOutstanding,
+      SharesFloat,
+      SharesShort,
+      SharesShortPriorMonth,
+      ShortRatio,
+      ShortPercentOutstanding,
+      ShortPercentFloat,
+      PercentInsiders,
+      PercentInstitutions,
+      ForwardAnnualDividendRate,
+      ForwardAnnualDividendYield,
+      PayoutRatio,
+      DividendDate,
+      ExDividendDate,
+      LastSplitFactor,
+      LastSplitDate,
+    } = data;
+
+    if (!Name) {
+      const overviewData = `https://finance.yahoo.com/quote/${symbol}`;
+      return overviewData;
+    }
+
+    const overviewData = {
+      first: `*** ${stockTicker} Overview ***\n\nAssetType: ${AssetType}\nName: ${Name}\nDescription: ${Description}`,
+
+      second: `Exchange: ${Exchange}\nCurrency: ${Currency}\nCountry: ${Country}\nSector: ${Sector}\nIndustry: ${Industry}\nAddress: ${Address}\nFullTimeEmployees: ${FullTimeEmployees}\nFiscalYearEnd: ${FiscalYearEnd}\nLatestQuarter: ${LatestQuarter}\nMarketCapitalization: ${this.FormatLargeNumbers(
+        MarketCapitalization,
+      )}\nEBITDA: ${this.FormatLargeNumbers(EBITDA)}\nPERatio: ${PERatio}\nPEGRatio: ${PEGRatio}\nBookValue: ${BookValue}\nDividendPerShare: ${DividendPerShare}\nDividendYield: ${
+        DividendYield * 100
+      }%\nEPS: ${EPS}`,
+
+      third: `RevenuePerShareTTM: ${RevenuePerShareTTM}\nProfitMargin: ${ProfitMargin}\nOperatingMarginTTM: ${OperatingMarginTTM}\nReturnOnAssetsTTM: ${ReturnOnAssetsTTM}\nReturnOnEquityTTM: ${ReturnOnEquityTTM}\nRevenueTTM: ${this.FormatLargeNumbers(
+        RevenueTTM,
+      )}\nGrossProfitTTM: ${this.FormatLargeNumbers(
+        GrossProfitTTM,
+      )}\nDilutedEPSTTM: ${DilutedEPSTTM}\nQuarterlyEarningsGrowthYOY: ${QuarterlyEarningsGrowthYOY}\nQuarterlyRevenueGrowthYOY: ${QuarterlyRevenueGrowthYOY}\nAnalystTargetPrice: ${AnalystTargetPrice}\nTrailingPE: ${TrailingPE}\nForwardPE: ${ForwardPE}\nPriceToSalesRatioTTM: ${PriceToSalesRatioTTM}\nPriceToBookRatio: ${PriceToBookRatio}\nEVToRevenue: ${EVToRevenue}\nEVToEBITDA: ${EVToEBITDA}\nBeta: ${Beta}\n52WeekHigh: ${
+        data['52WeekHigh']
+      }\n52WeekLow: ${data['52WeekLow']}`,
+
+      fourth: `50DayMovingAverage: ${data['50DayMovingAverage']}\n200DayMovingAverage: ${data['200DayMovingAverage']}\nSharesOutstanding: ${this.FormatLargeNumbers(
+        SharesOutstanding,
+      )}\nSharesFloat: ${this.FormatLargeNumbers(SharesFloat)}\nSharesShort: ${this.FormatLargeNumbers(SharesShort)}\nSharesShortPriorMonth: ${this.FormatLargeNumbers(
+        SharesShortPriorMonth,
+      )}\nShortRatio: ${ShortRatio}\nShortPercentOutstanding: ${ShortPercentOutstanding}\nShortPercentFloat: ${ShortPercentFloat}\nPercentInsiders: ${PercentInsiders}\nPercentInstitutions: ${PercentInstitutions}\nForwardAnnualDividendRate: ${ForwardAnnualDividendRate}\nForwardAnnualDividendYield: ${
+        ForwardAnnualDividendYield * 100
+      }%\nPayoutRatio: ${PayoutRatio}\nDividendDate: ${DividendDate}\nExDividendDate: ${ExDividendDate}\nLastSplitFactor: ${LastSplitFactor}\nLastSplitDate: ${LastSplitDate}`,
+    };
+
+    return overviewData;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} keyword
+   */
+  static async ParseTelegramCompaniesSearchResultData(keyword) {
+    let matches = await MemCachier.GetHashItem(keyword);
+    let text = `** Search result for ${keyword} **\n\n`;
+
+    if (!matches) {
+      matches = await StockAPI.SearchForCompanies(keyword);
+    }
+
+    if (matches.length === 0 || !matches) {
+      return `Sorry 😔, no match was found for ${keyword}`;
+    }
+
+    for (let i = 0; i < matches.length; i += 1) {
+      text += `${i + 1}. ${matches[i]['2. name']} ($${matches[i]['1. symbol']})\n\n`;
+    }
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
+  static async ParseTelegramIPOCalendarData() {
+    let text = '** 🇺🇸 Upcoming IPOs **\n\n';
+    let data = await MemCachier.GetHashItem('ipo_calendar');
+
+    if (!data) {
+      data = await StockAPI.GetIPOCalendar();
+    }
+
+    for (let i = 0; i < data.length; i += 1) {
+      const { date, exchange, name, numberOfShares, price, status, symbol, totalSharesValue } = data[i];
+      text += `${i + 1}. ${name} ($${symbol})\nDate: ${date}\nPrice: ${price}\nStatus: ${status}\nExchange: ${exchange}\nNumber of Shares: ${this.FormatLargeNumbers(
+        numberOfShares,
+      )}\nTotal Shares Value: $${this.FormatLargeNumbers(totalSharesValue)}\n\n`;
+    }
+
+    return text;
   }
 }

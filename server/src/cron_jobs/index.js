@@ -432,9 +432,43 @@ export default class Cron {
   /**
    * @static
    * @description
+   * @param {} schedule
+   * @param {} timezone
+   */
+  static SendNaijaDailyNewsUpdate(schedule, timezone = TZ) {
+    if (cron.validate(schedule)) {
+      const task = cron.schedule(
+        schedule,
+        async () => {
+          const users = await this.GetAllUsers();
+
+          for (let index = 0; index < users.length; index += 1) {
+            const userId = users[index].facebookId;
+
+            if (userId.startsWith('TelgBoT_')) {
+              const chatId = userId.split('TelgBoT_')[1];
+              const newsList = await Util.TelegramNaijaNews();
+              TeleBot.sendMessage(chatId, newsList[0]);
+              TeleBot.sendMessage(chatId, newsList[1]);
+            }
+          }
+        },
+        {
+          timezone,
+        },
+      );
+      return task;
+    }
+    throw new Error(`${schedule} is not valid`);
+  }
+
+  /**
+   * @static
+   * @description
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
+    this.SendNaijaDailyNewsUpdate('0 2 * * Monday-Friday').start();
     this.GetEarningsForTheWeek('0 1 * * 0').start();
     this.SendUpcomingEarnings('0 3 * * 0').start();
     this.SendEarningsForToday('0 2 * * Monday-Friday').start();

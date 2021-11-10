@@ -15,7 +15,7 @@ US Stock Market Chat Bot Assistant is a Facebook Messenger Chat Bot tools that p
 
 To use US Stock Market Chat Bot Assistant, follow these steps:
 
-STEP 1: Visit either one of these links [m.me/LewisTheAssistant](https://m.me/LewisTheAssistant) or [https://facebook.com/LewisTheAssistant](https://facebook.com/LewisTheAssistant)
+STEP 1: Visit either one of these links [m.me/LewisTheAssistant](https://m.me/LewisTheAssistant) or [https://facebook.com/LewisTheAssistant](https://facebook.com/LewisTheAssistant) or [https://t.me/LewisSMBot](https://t.me/LewisSMBot) for Telegram version
 
 STEP 2: Click on the Get Started Button or Text Hi or any message.
 
