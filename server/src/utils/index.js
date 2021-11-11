@@ -1165,9 +1165,9 @@ export default class Util {
       }
     }
 
-    if (!ticker) {
-      ticker = this.GetUpperCaseWords(text);
-    }
+    // if (!ticker) {
+      // ticker = this.GetUpperCaseWords(text);
+    // }
 
     return Number.isSafeInteger(Number.parseInt(ticker, 10)) ? undefined : this.SanitizeTicker(ticker);
   }
