@@ -44,7 +44,7 @@ const getMarketHolidays = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = Util.GetUpcomingHolidays(holidaysData);
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
@@ -65,7 +65,7 @@ const getEconomicEvents = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = Util.CreateEconomicCalendarText(data);
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
@@ -80,7 +80,7 @@ const getUpcomingIPO = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = await Util.ParseTelegramIPOCalendarData();
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
@@ -127,7 +127,7 @@ const getStockInfo = async () => {
       }
 
       const response = await Util.ParseStockDataTelegram(overview, ticker);
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -142,7 +142,7 @@ const getCryptoInfo = async () => {
       const response = await Util.ParseTelegramCryptoPriceData(symbol);
 
       if (response) {
-        TeleBot.sendMessage(chatId, response);
+        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       }
     }
   });
@@ -157,7 +157,7 @@ const getAboutMe = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = Util.AboutBot();
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -171,7 +171,7 @@ const getTrendingStocks = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = await Util.ParseTelegramTrendingTickersData();
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
@@ -186,7 +186,7 @@ const getMovers = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = await Util.ParseTelegramTopMoversData();
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
@@ -201,8 +201,8 @@ const getNews = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = await Util.TelegramNews();
-      TeleBot.sendMessage(chatId, response[0]);
-      TeleBot.sendMessage(chatId, response[1]);
+      TeleBot.sendMessage(chatId, response[0], { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, response[1], { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -216,8 +216,8 @@ const getNaijaNews = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
       const response = await Util.TelegramNaijaNews();
-      TeleBot.sendMessage(chatId, response[0]);
-      TeleBot.sendMessage(chatId, response[1]);
+      TeleBot.sendMessage(chatId, response[0], { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, response[1], { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -231,7 +231,7 @@ const searchForCompanies = async () => {
 
     if (searchKeyword) {
       const response = await Util.ParseTelegramCompaniesSearchResultData(searchKeyword);
-      TeleBot.sendMessage(chatId, response);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
