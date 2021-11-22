@@ -1249,7 +1249,8 @@ export default class Util {
       data = await StockAPI.GetTrendingTickers();
     }
 
-    let text = '** Trending Tickers **\n\n';
+    const date = new Date();
+    let text = `** Trending Tickers ${date.toString()} **\n\n`;
 
     for (let i = 0; i < data.length; i += 1) {
       const { shortName, symbol } = data[i];
@@ -1323,7 +1324,8 @@ export default class Util {
       }
     }
 
-    const text = `Here's the US Stock Market Top Gainers, Losers and Most Active\n\n${gainersText}\n\n${losersText}\n\n${activeText}`;
+    const date = new Date();
+    const text = `Here's the US Stock Market Top Gainers, Losers and Most Active\n${date.toString()}\n\n${gainersText}\n\n${losersText}\n\n${activeText}`;
     return text;
   }
 
