@@ -1250,7 +1250,7 @@ export default class Util {
     }
 
     const date = new Date();
-    let text = `** Trending Tickers ${date.toString()} **\n\n`;
+    let text = `${date.toString()}\n\nTrending Tickers\n\n`;
 
     for (let i = 0; i < data.length; i += 1) {
       const { shortName, symbol } = data[i];
@@ -1325,7 +1325,7 @@ export default class Util {
     }
 
     const date = new Date();
-    const text = `Here's the US Stock Market Top Gainers, Losers and Most Active\n${date.toString()}\n\n${gainersText}\n\n${losersText}\n\n${activeText}`;
+    const text = `${date.toString()}\n\nHere's the US Stock Market Top Gainers, Losers and Most Active\n\n${gainersText}\n\n${losersText}\n\n${activeText}`;
     return text;
   }
 
