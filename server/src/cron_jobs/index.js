@@ -468,7 +468,7 @@ export default class Cron {
    */
   static StartCronJobs() {
     this.SendDailyNewsUpdate('0 4 * * Monday-Friday').start();
-    this.SendNaijaDailyNewsUpdate('0 2 * * Monday-Friday').start();
+    // this.SendNaijaDailyNewsUpdate('0 2 * * Monday-Friday').start();
     this.GetEarningsForTheWeek('0 1 * * 0').start();
     this.SendUpcomingEarnings('0 3 * * 0').start();
     this.SendEarningsForToday('0 2 * * Monday-Friday').start();
