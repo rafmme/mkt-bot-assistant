@@ -1276,7 +1276,8 @@ export default class Util {
   static FundSolicitation() {
     const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nTRON (TRX) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
 
-    return text;
+    // return text;
+    return '';
   }
 
   /**
