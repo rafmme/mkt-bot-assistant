@@ -1199,9 +1199,14 @@ export default class Util {
     let symbol;
 
     for (let i = 0; i < text.length; i += 1) {
-      if (text[i].startsWith('¢') || text[i].endsWith('$')) {
-        const data = text[i].split('¢') || text[i].split('$');
-        symbol = data[0] !== '' ? data[0] : data[1];
+      if (text[i].startsWith('¢')) {
+        const data = text[i].split('¢');
+        symbol = data[1];
+      }
+
+      if (text[i].endsWith('$')) {
+        const data = text[i].split('$');
+        symbol = data[0];
       }
     }
 
@@ -1274,7 +1279,7 @@ export default class Util {
    * @description
    */
   static FundSolicitation() {
-    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nTRON (TRX) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
+    const text = `Please help keep me running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nTRON (TRX), USDT (TRC20) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
 
     // return text;
     return '';
@@ -1284,8 +1289,18 @@ export default class Util {
    * @static
    * @description
    */
+  static Donation(name) {
+    const text = `Hi ${name}, Thanks for considering donating to help keep me running. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nTRON (TRX), USDT (TRC20) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
+
+    return text;
+  }
+
+  /**
+   * @static
+   * @description
+   */
   static AboutBot() {
-    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nTRON (TRX) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
+    const text = `Hi there, I'm a bot created to give you updates on the US Stock Market\nYou can find me on FaceBook Messenger too. https://m.me/LewisTheAssistant \n\nPlease help keep this bot/project running by donating. Any amount is appreciated.\nThanks.\n\nPayStack: https://paystack.com/pay/2m39897gfh\n\nTRON (TRX), USDT (TRC20) Wallet Address: \nTSZvE1pW7nrY8UbHaqdGQaY4xNKJvBwegW\n\nRipple (XRP) Wallet Address: \nrp4qPV8raAAq9RQnMBse5yGMAegspk4RcV\n\nDoge Wallet Address: \nDJtp2x4iPLqhPZJKkMG5pAwdM4Yq6bsCGw`;
 
     return text;
   }
@@ -1603,6 +1618,10 @@ export default class Util {
    * @param {*} keyword
    */
   static async ParseInlineSearch(keyword) {
+    if (keyword === '' || keyword.length < 1) {
+      return;
+    }
+
     let matches = await MemCachier.GetHashItem(keyword);
     const result = [];
 
@@ -1622,17 +1641,15 @@ export default class Util {
         overview = await StockAPI.GetStockOverview(ticker);
       }
 
-      result.push([
-        {
-          type: 'article',
-          id: ticker,
-          title: `$${ticker}`,
-          input_message_content: {
-            message_text: Util.ParseStockDataTelegram(overview, ticker),
-          },
-          description: matches[i]['2. name'],
+      result.push({
+        type: 'article',
+        id: ticker,
+        title: `$${ticker}`,
+        input_message_content: {
+          message_text: `$${matches[i]['1. symbol']} - ${matches[i]['2. name']}`,
         },
-      ]);
+        description: matches[i]['2. name'],
+      });
     }
 
     return result;

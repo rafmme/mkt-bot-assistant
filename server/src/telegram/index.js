@@ -93,7 +93,7 @@ const getStockInfo = async () => {
     const ticker = Util.GetTicker(msg.text);
     const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
 
-    if (msg.text.startsWith('/overview') || msg.text.startsWith('/tnews') || msg.text.startsWith('/search')) {
+    if (msg.text.startsWith('/overview') || msg.text.startsWith('/tnews') || msg.text.startsWith('/search') || msg.text.startsWith('/news')) {
       return;
     }
 
@@ -345,6 +345,19 @@ const handleStart = async () => {
   });
 };
 
+const donation = async () => {
+  TeleBot.onText(/\/donate/, async (msg) => {
+    const re1 = /^\/donate$/;
+    const re2 = /^\/donate@LewisSMBot$/;
+
+    if (re1.test(msg.text) || re2.test(msg.text)) {
+      const chatId = msg.chat.id;
+      await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
+      TeleBot.sendMessage(chatId, Util.Donation(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
+    }
+  });
+};
+
 const handleInlineQuery = async () => {
   TeleBot.on('inline_query', async (queryData) => {
     const { id, query } = queryData;
@@ -400,8 +413,8 @@ const handleSendImage = async () => {
     const chatId = msg.chat.id;
     const receivedMsg = msg.caption;
 
-    const sendImage = (receipientId, fileId) => {
-      TeleBot.sendPhoto(receipientId, fileId);
+    const sendImage = (receipientId, caption, fileId) => {
+      TeleBot.sendPhoto(receipientId, fileId, { caption });
     };
 
     if (`${TG_ID}` === `${chatId}` && (receivedMsg.startsWith('IMG|') || receivedMsg.startsWith('img|'))) {
@@ -416,13 +429,13 @@ const handleSendImage = async () => {
 
           if (userId.startsWith('TelgBoT_')) {
             const receiverId = userId.split('TelgBoT_')[1];
-            sendImage(receiverId, fileId);
+            sendImage(receiverId, bcData[2], fileId);
           }
         }
         return;
       }
 
-      sendImage(bcData[1], fileId);
+      sendImage(bcData[1], bcData[2], fileId);
     }
   });
 };
@@ -443,6 +456,7 @@ const startTelegramBot = async () => {
   await getTickerNews();
   await getTickerSearchData();
   await handleStart();
+  await donation();
   await getPMs();
   await handleInlineQuery();
   await broadcastMessage();
