@@ -93,11 +93,15 @@ const getStockInfo = async () => {
     const ticker = Util.GetTicker(msg.text);
     const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
 
+    if (msg.text.startsWith('/overview') || msg.text.startsWith('/tnews') || msg.text.startsWith('/search')) {
+      return;
+    }
+
     if (receivedMsg && receivedMsg.length > 1) {
       if (receivedMsg[1].toLowerCase() === 'news') {
         const symbol = receivedMsg[0].split('$')[1];
         const response = await Util.ParseTelegramTickerNewsData(symbol);
-        TeleBot.sendMessage(chatId, response);
+        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
         return;
       }
 
@@ -107,14 +111,14 @@ const getStockInfo = async () => {
         const { first, second, third, fourth } = response;
 
         if (typeof response === 'string') {
-          TeleBot.sendMessage(chatId, response);
+          TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
           return;
         }
 
-        TeleBot.sendMessage(chatId, first);
-        TeleBot.sendMessage(chatId, second);
-        TeleBot.sendMessage(chatId, third);
-        TeleBot.sendMessage(chatId, fourth);
+        TeleBot.sendMessage(chatId, first, { reply_to_message_id: msg.message_id });
+        TeleBot.sendMessage(chatId, second, { reply_to_message_id: msg.message_id });
+        TeleBot.sendMessage(chatId, third, { reply_to_message_id: msg.message_id });
+        TeleBot.sendMessage(chatId, fourth, { reply_to_message_id: msg.message_id });
         return;
       }
     }
@@ -236,6 +240,130 @@ const searchForCompanies = async () => {
   });
 };
 
+const getStockOverviewData = async () => {
+  TeleBot.onText(/\/overview/, async (msg) => {
+    const re1 = /^\/overview$/;
+    const re2 = /^\/overview@LewisSMBot$/;
+    const textArray = msg.text.split(' ');
+
+    if ((re1.test(textArray[0]) || re2.test(textArray[0])) && textArray[1]) {
+      const chatId = msg.chat.id;
+      const ticker = Util.GetTicker(textArray[1]);
+      await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
+
+      const response = await Util.ParseTelegramStockOverviewData(ticker);
+      const { first, second, third, fourth } = response;
+
+      if (typeof response === 'string') {
+        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+        return;
+      }
+
+      TeleBot.sendMessage(chatId, first, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, second, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, third, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, fourth, { reply_to_message_id: msg.message_id });
+    }
+  });
+};
+
+const getTickerSearchData = async () => {
+  TeleBot.onText(/\/search/, async (msg) => {
+    const re1 = /^\/search$/;
+    const re2 = /^\/search@LewisSMBot$/;
+    const textArray = msg.text.split(' ');
+
+    if ((re1.test(textArray[0]) || re2.test(textArray[0])) && textArray[1].length >= 1) {
+      const chatId = msg.chat.id;
+      await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
+      const response = await Util.ParseTelegramCompaniesSearchResultData(textArray[1]);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+    }
+  });
+};
+
+const getTickerNews = async () => {
+  TeleBot.onText(/\/tnews/, async (msg) => {
+    const re1 = /^\/tnews$/;
+    const re2 = /^\/tnews@LewisSMBot$/;
+    const textArray = msg.text.split(' ');
+
+    if ((re1.test(textArray[0]) || re2.test(textArray[0])) && textArray[1]) {
+      const chatId = msg.chat.id;
+      const ticker = Util.GetTicker(textArray[1]);
+      await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
+      const response = await Util.ParseTelegramTickerNewsData(ticker);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+    }
+  });
+};
+
+const handleStart = async () => {
+  const botUsageInfo = (name) => {
+    const user = ` ${name}` || ' ';
+    return `Hi${user}, I am a bot created to give you updates on the US Stock.\n\nThe bot detects asset "Symbols" by prefixing the symbol with $ for Stock ticker or ¢ for Crypto coin. You can also add $ after a symbol for Crypto coin.
+    \n\nCalling a symbol in any message that the bot can see will return the current price of the asset. Sending a message  like: "I need to buy some $aapl stock." will return the current price of the asset. It's case insensitive.
+    \n\nCrypto coin example: "eth$" or "I'm purchasing some units of ¢BNB"
+    \n\nGet news on a particular stock: "$aapl news"
+    \n\nGet info on a particular stock: "$aapl overview"
+    \n\nSearch for a company's ticker: "Search for Lucid Motors"
+    \n\nCommands
+          - /about - Information about me
+          - /news - Read US Market general news headlines
+          - /ngnews - Read news on the economy of Nigeria
+          - /ipo - Show upcoming IPOs 
+          - /holidays - Show upcoming holidays
+          - /tnews $[symbol] - News about the symbol. 📰
+          - /overview $[symbol] - General information about the symbol.
+          - /movers - Show Top Gainers, Top Losers & Most Active for the present day
+          - /search [keywords] Search for a company's ticker
+          - /trending Trending Stocks for the present day
+    \n\nInline Features
+        You can type @LewisSMBot [keywords] in any chat or direct message to search for company's full list of stock and their tickers with the current price.`;
+  };
+
+  TeleBot.onText(/\/help/, async (msg) => {
+    const re1 = /^\/help$/;
+    const re2 = /^\/help@LewisSMBot$/;
+
+    if (re1.test(msg.text) || re2.test(msg.text)) {
+      const chatId = msg.chat.id;
+      await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
+      TeleBot.sendMessage(chatId, botUsageInfo(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
+    }
+  });
+
+  TeleBot.onText(/\/start/, async (msg) => {
+    const re1 = /^\/start$/;
+    const re2 = /^\/start@LewisSMBot$/;
+
+    if (re1.test(msg.text) || re2.test(msg.text)) {
+      const chatId = msg.chat.id;
+      await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
+      TeleBot.sendMessage(chatId, botUsageInfo(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
+    }
+  });
+};
+
+const handleInlineQuery = async () => {
+  TeleBot.on('inline_query', async (queryData) => {
+    const { id, query } = queryData;
+    const result = await Util.ParseInlineSearch(query);
+    TeleBot.answerInlineQuery(id, result);
+  });
+};
+
+const getPMs = async () => {
+  TeleBot.onText(/(?:)/, async (msg) => {
+    const chatId = msg.chat.id;
+
+    if (`${TG_ID}` !== `${chatId}` && msg.chat.type === 'private') {
+      const response = `From User ${msg.from.id} --- ${msg.from.first_name} ${msg.from.last_name}\n\n${msg.text}\n\n${msg.from.username}`;
+      TeleBot.sendMessage(TG_ID, response);
+    }
+  });
+};
+
 const broadcastMessage = async () => {
   TeleBot.onText(/(?:)/, async (msg) => {
     const chatId = msg.chat.id;
@@ -267,6 +395,38 @@ const broadcastMessage = async () => {
   });
 };
 
+const handleSendImage = async () => {
+  TeleBot.on('photo', async (msg) => {
+    const chatId = msg.chat.id;
+    const receivedMsg = msg.caption;
+
+    const sendImage = (receipientId, fileId) => {
+      TeleBot.sendPhoto(receipientId, fileId);
+    };
+
+    if (`${TG_ID}` === `${chatId}` && (receivedMsg.startsWith('IMG|') || receivedMsg.startsWith('img|'))) {
+      const bcData = receivedMsg.split('|');
+      const fileId = msg.photo[0].file_id;
+
+      if (bcData[1] === 'all') {
+        const users = await Util.GetAllUsers();
+
+        for (let index = 0; index < users.length; index += 1) {
+          const userId = users[index].facebookId;
+
+          if (userId.startsWith('TelgBoT_')) {
+            const receiverId = userId.split('TelgBoT_')[1];
+            sendImage(receiverId, fileId);
+          }
+        }
+        return;
+      }
+
+      sendImage(bcData[1], fileId);
+    }
+  });
+};
+
 const startTelegramBot = async () => {
   await getMarketHolidays();
   await getAboutMe();
@@ -279,7 +439,14 @@ const startTelegramBot = async () => {
   await getNaijaNews();
   await getTrendingStocks();
   await searchForCompanies();
+  await getStockOverviewData();
+  await getTickerNews();
+  await getTickerSearchData();
+  await handleStart();
+  await getPMs();
+  await handleInlineQuery();
   await broadcastMessage();
+  await handleSendImage();
 };
 
 export { startTelegramBot, TeleBot };

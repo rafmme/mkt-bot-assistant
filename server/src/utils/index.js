@@ -1166,7 +1166,7 @@ export default class Util {
     }
 
     // if (!ticker) {
-      // ticker = this.GetUpperCaseWords(text);
+    // ticker = this.GetUpperCaseWords(text);
     // }
 
     return Number.isSafeInteger(Number.parseInt(ticker, 10)) ? undefined : this.SanitizeTicker(ticker);
@@ -1199,9 +1199,9 @@ export default class Util {
     let symbol;
 
     for (let i = 0; i < text.length; i += 1) {
-      if (text[i].startsWith('¢')) {
-        const data = text[i].split('¢');
-        symbol = data[1];
+      if (text[i].startsWith('¢') || text[i].endsWith('$')) {
+        const data = text[i].split('¢') || text[i].split('$');
+        symbol = data[0] !== '' ? data[0] : data[1];
       }
     }
 
@@ -1595,6 +1595,47 @@ export default class Util {
     }
 
     return text;
+  }
+
+  /**
+   * @static
+   * @description
+   * @param {*} keyword
+   */
+  static async ParseInlineSearch(keyword) {
+    let matches = await MemCachier.GetHashItem(keyword);
+    const result = [];
+
+    if (!matches) {
+      matches = await StockAPI.SearchForCompanies(keyword);
+    }
+
+    if (matches.length === 0 || !matches) {
+      return;
+    }
+
+    for (let i = 0; i < matches.length; i += 1) {
+      const ticker = matches[i]['1. symbol'];
+      let overview = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Overview`);
+
+      if (!overview) {
+        overview = await StockAPI.GetStockOverview(ticker);
+      }
+
+      result.push([
+        {
+          type: 'article',
+          id: ticker,
+          title: `$${ticker}`,
+          input_message_content: {
+            message_text: Util.ParseStockDataTelegram(overview, ticker),
+          },
+          description: matches[i]['2. name'],
+        },
+      ]);
+    }
+
+    return result;
   }
 
   /**
