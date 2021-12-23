@@ -1216,10 +1216,9 @@ export default class Util {
   /**
    * @static
    * @description
-   * @param {*} data
    * @param {} ticker
    */
-  static async ParseStockDataTelegram(data, ticker) {
+  static async ParseStockDataTelegram(ticker) {
     let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
 
     if (!quote) {
@@ -1231,7 +1230,7 @@ export default class Util {
     const priceChange = `${change}`.slice(0, 5);
     const percentChange = `${changePercent * 100}`.slice(0, 5);
 
-    const text = `${companyName} (${stockTicker})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nTime: ${latestTime} GMT -5`;
+    const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nTime: ${latestTime} GMT -5`;
 
     return text;
   }
