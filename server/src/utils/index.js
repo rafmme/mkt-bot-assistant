@@ -1226,19 +1226,12 @@ export default class Util {
       quote = await StockAPI.GetStockQuote(ticker);
     }
 
-    const { Symbol: stockTicker, Name, Sector, Industry } = data;
-
-    if (!Name) {
-      const overviewData = `https://finance.yahoo.com/quote/${ticker}`;
-      return overviewData;
-    }
-
-    const { latestPrice, latestTime, change, changePercent } = quote;
+    const { companyName, latestPrice, latestTime, change, changePercent } = quote;
     const stockMovement = `${change}`.startsWith('-') ? '🔻' : '🆙';
     const priceChange = `${change}`.slice(0, 5);
     const percentChange = `${changePercent * 100}`.slice(0, 5);
 
-    const text = `${Name} (${stockTicker})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nIndustry: ${Industry}\nSector: ${Sector}\n\nTime: ${latestTime} GMT -5\n\nhttps://finance.yahoo.com/quote/${ticker}`;
+    const text = `${companyName} (${stockTicker})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nTime: ${latestTime} GMT -5`;
 
     return text;
   }
