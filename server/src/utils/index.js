@@ -1232,7 +1232,7 @@ export default class Util {
 
     const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nMarket Cap: $${this.FormatLargeNumbers(
       marketCap,
-    )}\nP/E Ratio: ${peRatio}\nYTD: ${this.FormatLargeNumbers(ytdChange) * 100}%\n\nTime: ${latestTime} GMT -5`;
+    )}\n\nP/E Ratio: ${peRatio}\n\nYTD: ${this.FormatLargeNumbers(ytdChange) * 100}%\n\nTime: ${latestTime} GMT -5`;
 
     return text;
   }
