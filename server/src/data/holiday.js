@@ -8,7 +8,7 @@ const holidaysData = {
     { holiday: 'Independence Day 🇺🇸', date: 'Mon Jul 05 2021' },
     { holiday: 'Labor Day 👷🏿', date: 'Mon Sep 06 2021' },
     { holiday: 'Thanksgiving Day 🦃', date: 'Thu Nov 25 2021' },
-    { holiday: 'Christmas Day 🎄🎅🏿', date: 'Fri Dec 24 2021' },
+    { holiday: 'Christmas Eve 🎄🎅🏿', date: 'Fri Dec 24 2021' },
   ],
   2022: [
     { holiday: 'Martin Luther King, Jr. Day 💪🏿', date: 'Mon Jan 17 2022' },
@@ -18,7 +18,7 @@ const holidaysData = {
     { holiday: 'Independence Day 🇺🇸', date: 'Mon Jul 04 2022' },
     { holiday: 'Labor Day 👷🏿', date: 'Mon Sep 05 2022' },
     { holiday: 'Thanksgiving Day 🦃', date: 'Thu Nov 24 2022' },
-    { holiday: 'Christmas Day 🎄🎅🏿', date: 'Mon Dec 26 2022' },
+    { holiday: 'Boxing Day 💝', date: 'Mon Dec 26 2022' },
   ],
   2023: [
     { holiday: 'New Years Day 🎉', date: 'Mon Jan 02 2023' },
