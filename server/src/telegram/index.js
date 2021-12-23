@@ -124,13 +124,7 @@ const getStockInfo = async () => {
     }
 
     if (ticker) {
-      let overview = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Overview`);
-
-      if (!overview) {
-        overview = await StockAPI.GetStockOverview(ticker);
-      }
-
-      const response = await Util.ParseStockDataTelegram(overview, ticker);
+      const response = await Util.ParseStockDataTelegram(ticker);
       TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
