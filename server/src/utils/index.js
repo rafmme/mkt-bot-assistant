@@ -1225,12 +1225,14 @@ export default class Util {
       quote = await StockAPI.GetStockQuote(ticker);
     }
 
-    const { companyName, latestPrice, latestTime, change, changePercent } = quote;
+    const { companyName, marketCap, ytdChange, peRatio, latestPrice, latestTime, change, changePercent } = quote;
     const stockMovement = `${change}`.startsWith('-') ? '🔻' : '🆙';
     const priceChange = `${change}`.slice(0, 5);
     const percentChange = `${changePercent * 100}`.slice(0, 5);
 
-    const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nTime: ${latestTime} GMT -5`;
+    const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nMarket Cap: $${this.FormatLargeNumbers(
+      marketCap,
+    )}\nP/E Ratio: ${peRatio}\nYTD: ${this.FormatLargeNumbers(ytdChange) * 100}%\n\nTime: ${latestTime} GMT -5`;
 
     return text;
   }
