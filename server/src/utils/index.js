@@ -1225,14 +1225,33 @@ export default class Util {
       quote = await StockAPI.GetStockQuote(ticker);
     }
 
-    const { companyName, marketCap, ytdChange, peRatio, latestPrice, latestTime, change, changePercent } = quote;
+    const {
+      companyName,
+      peRatio: peR,
+      latestPrice,
+      latestTime,
+      previousClose,
+      previousVolume,
+      change,
+      changePercent,
+      avgTotalVolume,
+      marketCap,
+      week52High,
+      week52Low,
+      ytdChange,
+    } = quote;
+
     const stockMovement = `${change}`.startsWith('-') ? '🔻' : '🆙';
     const priceChange = `${change}`.slice(0, 5);
     const percentChange = `${changePercent * 100}`.slice(0, 5);
+    const ytd = `${this.FormatLargeNumbers(ytdChange) * 100}`.slice(0, 5);
+    const peRatio = !peR ? 'N/A' : peR;
 
-    const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nMarket Cap: $${this.FormatLargeNumbers(
+    const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nPrevious Close: $${previousClose}\n52 Week Low: $${week52Low}\n52 Week High: $${week52High}\nMarket Cap: $${this.FormatLargeNumbers(
       marketCap,
-    )}\n\nP/E Ratio: ${peRatio}\n\nYTD: ${this.FormatLargeNumbers(ytdChange) * 100}%\n\nTime: ${latestTime} GMT -5`;
+    )}\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\nAverage Total Volume: ${this.FormatLargeNumbers(
+      avgTotalVolume,
+    )}\nP/E Ratio: ${peRatio}\nYTD: ${ytd}%\n\nTime: ${latestTime} GMT -5\nhttps://finance.yahoo.com/quote/${ticker.toUpperCase()}`;
 
     return text;
   }
