@@ -54,16 +54,18 @@ export default class Cron {
           const users = await this.GetAllUsers();
           const marketNews = await StockAPI.GetGeneralMarketNewsFromYahooFinance();
           const news = Util.convertAPIResponseToMessengerList(marketNews);
+          const newsList = await Util.TelegramNews();
 
           for (let index = 0; index < users.length; index += 1) {
             const userId = users[index].facebookId;
 
             if (userId.startsWith('TelgBoT_')) {
               const chatId = userId.split('TelgBoT_')[1];
-              const newsList = await Util.TelegramNews();
-              TeleBot.sendMessage(chatId, newsList[0]);
-              TeleBot.sendMessage(chatId, newsList[1]);
-              // TeleBot.sendMessage(chatId, Util.FundSolicitation());
+              if (Util.CheckTelgID(chatId) === false) {
+                // TeleBot.sendMessage(chatId, newsList[0]);
+                // TeleBot.sendMessage(chatId, newsList[1]);
+                // TeleBot.sendMessage(chatId, Util.FundSolicitation());
+              }
             } else {
               const firstName = users[index].fullName.split(' ')[0];
 
@@ -200,7 +202,10 @@ export default class Cron {
                 if (userId.startsWith('TelgBoT_')) {
                   const text = `Hi there, this is to remind you that the Market will not open today ${date} in observance of the ${holiday}.\nHappy holidays!`;
                   const chatId = userId.split('TelgBoT_')[1];
-                  TeleBot.sendMessage(chatId, text);
+
+                  if (Util.CheckTelgID(chatId) === false) {
+                    // TeleBot.sendMessage(chatId, text);
+                  }
                 } else {
                   const firstName = users[index].fullName.split(' ')[0];
                   await FBGraphAPIRequest.SendTextMessage(
@@ -247,7 +252,10 @@ export default class Cron {
                 if (userId.startsWith('TelgBoT_')) {
                   const text = `Hi there, this is to notify you that the Market will not open tomorrow ${date} in observance of the ${holiday}.\nHappy holidays!`;
                   const chatId = userId.split('TelgBoT_')[1];
-                  TeleBot.sendMessage(chatId, text);
+
+                  if (Util.CheckTelgID(chatId) === false) {
+                    // TeleBot.sendMessage(chatId, text);
+                  }
                 } else {
                   const firstName = users[index].fullName.split(' ')[0];
                   await FBGraphAPIRequest.SendTextMessage(
@@ -267,7 +275,10 @@ export default class Cron {
                 if (userId.startsWith('TelgBoT_')) {
                   const text = `Hi there, this is to notify you that the Market will not open this coming Monday ${date} in observance of the ${holiday}.\nHappy holidays!`;
                   const chatId = userId.split('TelgBoT_')[1];
-                  TeleBot.sendMessage(chatId, text);
+
+                  if (Util.CheckTelgID(chatId) === false) {
+                    // TeleBot.sendMessage(chatId, text);
+                  }
                 } else {
                   const firstName = users[index].fullName.split(' ')[0];
                   await FBGraphAPIRequest.SendTextMessage(
@@ -368,9 +379,12 @@ export default class Cron {
 
             if (userId.startsWith('TelgBoT_')) {
               const chatId = userId.split('TelgBoT_')[1];
-              const advice = Util.BotAdvice();
-              TeleBot.sendMessage(chatId, advice);
-              // TeleBot.sendMessage(chatId, Util.FundSolicitation());
+
+              if (Util.CheckTelgID(chatId) === false) {
+                const advice = Util.BotAdvice();
+                // TeleBot.sendMessage(chatId, advice);
+                // TeleBot.sendMessage(chatId, Util.FundSolicitation());
+              }
             }
           }
         },
@@ -413,8 +427,11 @@ export default class Cron {
 
             if (userId.startsWith('TelgBoT_')) {
               const chatId = userId.split('TelgBoT_')[1];
-              TeleBot.sendMessage(chatId, response);
-              TeleBot.sendMessage(chatId, Util.FundSolicitation());
+
+              if (Util.CheckTelgID(chatId) === false) {
+                // TeleBot.sendMessage(chatId, response);
+                // TeleBot.sendMessage(chatId, Util.FundSolicitation());
+              }
             } else {
               await FBGraphAPIRequest.SendLongText({ sender: userId, text: response });
             }
@@ -441,15 +458,18 @@ export default class Cron {
         schedule,
         async () => {
           const users = await this.GetAllUsers();
+          const newsList = await Util.TelegramNaijaNews();
 
           for (let index = 0; index < users.length; index += 1) {
             const userId = users[index].facebookId;
 
             if (userId.startsWith('TelgBoT_')) {
               const chatId = userId.split('TelgBoT_')[1];
-              const newsList = await Util.TelegramNaijaNews();
-              TeleBot.sendMessage(chatId, newsList[0]);
-              TeleBot.sendMessage(chatId, newsList[1]);
+
+              if (Util.CheckTelgID(chatId) === false) {
+                // TeleBot.sendMessage(chatId, newsList[0]);
+                // TeleBot.sendMessage(chatId, newsList[1]);
+              }
             }
           }
         },

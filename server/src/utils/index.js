@@ -1670,4 +1670,14 @@ export default class Util {
 
     return text;
   }
+
+  /**
+   * @static
+   * @description Check if is BMBGroup
+   * @param {object} msgObject
+   */
+  static CheckTelgID(msgObject) {
+    const groupTitle = msgObject.chat.title ? msgObject.chat.title.toLowerCase() : '';
+    return (groupTitle === 'bamboo telegram group' || groupTitle.startsWith('bamboo') || groupTitle.includes('bamboo')) && msgObject.chat.type === 'group';
+  }
 }
