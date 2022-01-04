@@ -44,11 +44,9 @@ const getMarketHolidays = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = Util.GetUpcomingHolidays(holidaysData);
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, Util.FundSolicitation());
-      }
+      const response = Util.GetUpcomingHolidays(holidaysData);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
 };
@@ -68,11 +66,9 @@ const getEconomicEvents = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = Util.CreateEconomicCalendarText(data);
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, Util.FundSolicitation());
-      }
+      const response = Util.CreateEconomicCalendarText(data);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
 };
@@ -86,11 +82,9 @@ const getUpcomingIPO = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.ParseTelegramIPOCalendarData();
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, Util.FundSolicitation());
-      }
+      const response = await Util.ParseTelegramIPOCalendarData();
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
 };
@@ -99,44 +93,43 @@ const getStockInfo = async () => {
   TeleBot.onText(/(?:)/, async (msg) => {
     const chatId = msg.chat.id;
     await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
-    if (Util.CheckTelgID(msg) === false) {
-      const ticker = Util.GetTicker(msg.text);
-      const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
 
-      if (msg.text.startsWith('/overview') || msg.text.startsWith('/tnews') || msg.text.startsWith('/search') || msg.text.startsWith('/news')) {
+    const ticker = Util.GetTicker(msg.text);
+    const receivedMsg = msg.text.startsWith('$') ? msg.text.split(' ') : null;
+
+    if (msg.text.startsWith('/overview') || msg.text.startsWith('/tnews') || msg.text.startsWith('/search') || msg.text.startsWith('/news')) {
+      return;
+    }
+
+    if (receivedMsg && receivedMsg.length > 1) {
+      if (receivedMsg[1].toLowerCase() === 'news') {
+        const symbol = receivedMsg[0].split('$')[1];
+        const response = await Util.ParseTelegramTickerNewsData(symbol);
+        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
         return;
       }
 
-      if (receivedMsg && receivedMsg.length > 1) {
-        if (receivedMsg[1].toLowerCase() === 'news') {
-          const symbol = receivedMsg[0].split('$')[1];
-          const response = await Util.ParseTelegramTickerNewsData(symbol);
+      if (receivedMsg[1].toLowerCase() === 'overview') {
+        const symbol = receivedMsg[0].split('$')[1];
+        const response = await Util.ParseTelegramStockOverviewData(symbol);
+        const { first, second, third, fourth } = response;
+
+        if (typeof response === 'string') {
           TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
           return;
         }
 
-        if (receivedMsg[1].toLowerCase() === 'overview') {
-          const symbol = receivedMsg[0].split('$')[1];
-          const response = await Util.ParseTelegramStockOverviewData(symbol);
-          const { first, second, third, fourth } = response;
-
-          if (typeof response === 'string') {
-            TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-            return;
-          }
-
-          TeleBot.sendMessage(chatId, first, { reply_to_message_id: msg.message_id });
-          TeleBot.sendMessage(chatId, second, { reply_to_message_id: msg.message_id });
-          TeleBot.sendMessage(chatId, third, { reply_to_message_id: msg.message_id });
-          TeleBot.sendMessage(chatId, fourth, { reply_to_message_id: msg.message_id });
-          return;
-        }
+        TeleBot.sendMessage(chatId, first, { reply_to_message_id: msg.message_id });
+        TeleBot.sendMessage(chatId, second, { reply_to_message_id: msg.message_id });
+        TeleBot.sendMessage(chatId, third, { reply_to_message_id: msg.message_id });
+        TeleBot.sendMessage(chatId, fourth, { reply_to_message_id: msg.message_id });
+        return;
       }
+    }
 
-      if (ticker) {
-        const response = await Util.ParseStockDataTelegram(ticker);
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-      }
+    if (ticker) {
+      const response = await Util.ParseStockDataTelegram(ticker);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -146,15 +139,13 @@ const getCryptoInfo = async () => {
     const chatId = msg.chat.id;
     await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-    if (Util.CheckTelgID(msg) === false) {
-      const symbol = Util.GetCryptoSymbol(msg.text);
+    const symbol = Util.GetCryptoSymbol(msg.text);
 
-      if (symbol) {
-        const response = await Util.ParseTelegramCryptoPriceData(symbol);
+    if (symbol) {
+      const response = await Util.ParseTelegramCryptoPriceData(symbol);
 
-        if (response) {
-          TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-        }
+      if (response) {
+        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
       }
     }
   });
@@ -169,10 +160,8 @@ const getAboutMe = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = Util.AboutBot();
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-      }
+      const response = Util.AboutBot();
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -186,11 +175,9 @@ const getTrendingStocks = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.ParseTelegramTrendingTickersData();
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, Util.FundSolicitation());
-      }
+      const response = await Util.ParseTelegramTrendingTickersData();
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
 };
@@ -204,11 +191,9 @@ const getMovers = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.ParseTelegramTopMoversData();
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, Util.FundSolicitation());
-      }
+      const response = await Util.ParseTelegramTopMoversData();
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, Util.FundSolicitation());
     }
   });
 };
@@ -222,11 +207,9 @@ const getNews = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.TelegramNews();
-        TeleBot.sendMessage(chatId, response[0], { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, response[1], { reply_to_message_id: msg.message_id });
-      }
+      const response = await Util.TelegramNews();
+      TeleBot.sendMessage(chatId, response[0], { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, response[1], { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -240,11 +223,9 @@ const getNaijaNews = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.TelegramNaijaNews();
-        TeleBot.sendMessage(chatId, response[0], { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, response[1], { reply_to_message_id: msg.message_id });
-      }
+      const response = await Util.TelegramNaijaNews();
+      TeleBot.sendMessage(chatId, response[0], { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, response[1], { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -256,11 +237,9 @@ const searchForCompanies = async () => {
 
     await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-    if (Util.CheckTelgID(msg) === false) {
-      if (searchKeyword) {
-        const response = await Util.ParseTelegramCompaniesSearchResultData(searchKeyword);
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-      }
+    if (searchKeyword) {
+      const response = await Util.ParseTelegramCompaniesSearchResultData(searchKeyword);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -276,20 +255,18 @@ const getStockOverviewData = async () => {
       const ticker = Util.GetTicker(textArray[1]);
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.ParseTelegramStockOverviewData(ticker);
-        const { first, second, third, fourth } = response;
+      const response = await Util.ParseTelegramStockOverviewData(ticker);
+      const { first, second, third, fourth } = response;
 
-        if (typeof response === 'string') {
-          TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-          return;
-        }
-
-        TeleBot.sendMessage(chatId, first, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, second, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, third, { reply_to_message_id: msg.message_id });
-        TeleBot.sendMessage(chatId, fourth, { reply_to_message_id: msg.message_id });
+      if (typeof response === 'string') {
+        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+        return;
       }
+
+      TeleBot.sendMessage(chatId, first, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, second, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, third, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, fourth, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -304,10 +281,8 @@ const getTickerSearchData = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.ParseTelegramCompaniesSearchResultData(textArray[1]);
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-      }
+      const response = await Util.ParseTelegramCompaniesSearchResultData(textArray[1]);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -323,10 +298,8 @@ const getTickerNews = async () => {
       const ticker = Util.GetTicker(textArray[1]);
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        const response = await Util.ParseTelegramTickerNewsData(ticker);
-        TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
-      }
+      const response = await Util.ParseTelegramTickerNewsData(ticker);
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -363,9 +336,7 @@ const handleStart = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        TeleBot.sendMessage(chatId, botUsageInfo(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
-      }
+      TeleBot.sendMessage(chatId, botUsageInfo(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
     }
   });
 
@@ -377,9 +348,7 @@ const handleStart = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        TeleBot.sendMessage(chatId, botUsageInfo(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
-      }
+      TeleBot.sendMessage(chatId, botUsageInfo(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -393,9 +362,7 @@ const donation = async () => {
       const chatId = msg.chat.id;
       await storeUserData(chatId, { userId: msg.from.id, name: `${msg.from.first_name}` || 'user' });
 
-      if (Util.CheckTelgID(msg) === false) {
-        TeleBot.sendMessage(chatId, Util.Donation(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
-      }
+      TeleBot.sendMessage(chatId, Util.Donation(`${msg.from.first_name}`), { reply_to_message_id: msg.message_id });
     }
   });
 };
@@ -440,16 +407,14 @@ const broadcastMessage = async () => {
           if (userId.startsWith('TelgBoT_')) {
             const receiverId = userId.split('TelgBoT_')[1];
 
-            if (Util.CheckTelgID(receiverId) === false) {
-              sendMessage(receiverId, bcData[2]);
-            }
+            sendMessage(receiverId, bcData[2]);
           }
         }
-        return;
       }
-
-      sendMessage(bcData[1], bcData[2]);
+      return;
     }
+
+    sendMessage(bcData[1], bcData[2]);
   });
 };
 
@@ -475,9 +440,7 @@ const handleSendImage = async () => {
           if (userId.startsWith('TelgBoT_')) {
             const receiverId = userId.split('TelgBoT_')[1];
 
-            if (Util.CheckTelgID(receiverId) === false) {
-              sendImage(receiverId, bcData[2], fileId);
-            }
+            sendImage(receiverId, bcData[2], fileId);
           }
         }
         return;
