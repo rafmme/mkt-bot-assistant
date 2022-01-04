@@ -1220,10 +1220,18 @@ export default class Util {
    */
   static async ParseStockDataTelegram(ticker) {
     let quote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}Quote`);
+    let fhQuote = await MemCachier.GetHashItem(`${ticker.toLowerCase()}FHQuote`);
+    // const yhfTickerUrl = `https://finance.yahoo.com/quote/${ticker.toUpperCase()}`;
+
+    if (!fhQuote) {
+      fhQuote = await StockAPI.GetStockQuote(ticker, 'fh');
+    }
 
     if (!quote) {
       quote = await StockAPI.GetStockQuote(ticker);
     }
+
+    const { o, h, l } = fhQuote;
 
     const {
       companyName,
@@ -1247,11 +1255,11 @@ export default class Util {
     const ytd = `${this.FormatLargeNumbers(ytdChange) * 100}`.slice(0, 5);
     const peRatio = !peR ? 'N/A' : peR;
 
-    const text = `${companyName} (${ticker.toUpperCase()})\n\n${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}\n\nPrevious Close: $${previousClose}\n52 Week Low: $${week52Low}\n52 Week High: $${week52High}\nMarket Cap: $${this.FormatLargeNumbers(
+    const text = `*${companyName} (${ticker.toUpperCase()})*\n\n_${stockMovement} $${latestPrice}   ${percentChange}%   $${priceChange}_\n\n*Previous Close:* $${previousClose}\n*Open:* $${o}\n*Day Range:* $${l} - $${h}\n*52 Week Range:* $${week52Low} - $${week52High}\n*Market Cap:* $${this.FormatLargeNumbers(
       marketCap,
-    )}\nPrevious Volume: ${this.FormatLargeNumbers(previousVolume)}\nAverage Total Volume: ${this.FormatLargeNumbers(
+    )}\n*Previous Volume:* ${this.FormatLargeNumbers(previousVolume)}\n*Average Total Volume:* ${this.FormatLargeNumbers(
       avgTotalVolume,
-    )}\nP/E Ratio: ${peRatio}\nYTD: ${ytd}%\n\nTime: ${latestTime} GMT -5\nhttps://finance.yahoo.com/quote/${ticker.toUpperCase()}`;
+    )}\n*P/E Ratio:* ${peRatio}\n*YTD:* ${ytd}%\n\n*Time:* _${latestTime} GMT -5_`;
 
     return text;
   }

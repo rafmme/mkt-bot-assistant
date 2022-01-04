@@ -129,7 +129,7 @@ const getStockInfo = async () => {
 
     if (ticker) {
       const response = await Util.ParseStockDataTelegram(ticker);
-      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id });
+      TeleBot.sendMessage(chatId, response, { reply_to_message_id: msg.message_id, parse_mode: 'Markdown' });
     }
   });
 };

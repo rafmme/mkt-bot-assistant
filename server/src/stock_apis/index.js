@@ -119,7 +119,7 @@ export default class StockAPI {
         .build()
         .send();
 
-      await MemCachier.SetHashItem(`${symbol.toLowerCase()}FHQuote`, response, 60);
+      await MemCachier.SetHashItem(`${symbol.toLowerCase()}FHQuote`, response, 60 * 15);
       return response;
     }
 
