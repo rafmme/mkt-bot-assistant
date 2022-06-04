@@ -14,18 +14,18 @@ export default class MemCachier {
    * @description
    */
   constructor() {
-    const { MEMCACHIER_SERVERS, MEMCACHIER_USERNAME, MEMCACHIER_PASSWORD } = process.env;
+    const { MEMCACHIER_BRONZE_SERVERS, MEMCACHIER_BRONZE_USERNAME, MEMCACHIER_BRONZE_PASSWORD } = process.env;
 
     if (typeof MemCachier.instance === 'object') {
       return MemCachier.instance;
     }
 
-    this.memCachierClient = memjs.Client.create(MEMCACHIER_SERVERS, {
+    this.memCachierClient = memjs.Client.create(MEMCACHIER_BRONZE_SERVERS, {
       failover: true,
       timeout: 1,
       keepAlive: true,
-      username: MEMCACHIER_USERNAME,
-      password: MEMCACHIER_PASSWORD,
+      username: MEMCACHIER_BRONZE_USERNAME,
+      password: MEMCACHIER_BRONZE_PASSWORD,
     });
 
     MemCachier.instance = this;

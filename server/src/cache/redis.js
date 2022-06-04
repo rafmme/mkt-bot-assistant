@@ -15,17 +15,13 @@ export default class RedisCache {
    * @description
    */
   constructor() {
-    const { REDIS_PORT: port, REDIS_HOST: host, REDIS_PASSWORD: password } = process.env;
+    const { REDIS_URL } = process.env;
 
     if (typeof RedisCache.instance === 'object') {
       return RedisCache.instance;
     }
 
-    this.redisClient = redis.createClient({
-      port,
-      host,
-      password,
-    });
+    this.redisClient = redis.createClient(REDIS_URL);
 
     this.getAsync = promisify(this.redisClient.get).bind(this.redisClient);
     this.setAsync = promisify(this.redisClient.set).bind(this.redisClient);
